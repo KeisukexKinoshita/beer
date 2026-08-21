@@ -1,0 +1,47 @@
+.customBtns {
+  position: relative;
+  clear:both;
+  padding-top:50px;
+  padding-bottom:20px;
+}
+.customBtns .arrowPrev, .customBtns .arrowNext {
+  position: absolute;
+  top: 5;
+  border: 3px solid transparent;
+  cursor: pointer;
+}
+.customBtns .arrowPrev {
+  left: 20vw; 
+  border-right: 16px solid #323232;/*←前へのボタン色*/
+}
+.customBtns .arrowPrev.jp-disabled {
+  border-right: 16px solid #acacac;/*←選択できないときのボタン色*/
+}
+.customBtns .arrowNext {
+  right: 20vw;
+  border-left: 16px solid #323232;/*←次へのボタン色*/
+}
+.customBtns .arrowNext.jp-disabled {
+  border-left: 16px solid #acacac;/*←選択できないときのボタン色*/
+}
+
+.holder {
+  position: absolute;
+  top: 50px;
+  left: 25vw;
+  display: flex;
+}
+.holder a {
+  font-size: 16px;
+  cursor: pointer;
+  text-decoration: none;
+  margin: 0 0.5vw;
+  color: #333;
+}
+.holder a:hover {
+  color: #acacac;/*←ホバー中のボタン色*/
+}
+.holder .jp-current, .holder a.jp-current:hover {
+  color: #006dac;/*←選択中のボタン色*/
+  font-weight: bold;
+}

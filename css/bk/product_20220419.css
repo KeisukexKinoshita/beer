@@ -1,0 +1,56 @@
+body{
+ background-color: black; 
+ font-family: "Meiryo" ; 
+}
+
+}
+
+
+div.top {
+  padding-bottom: 80px;
+ }
+
+ h1 {
+  color: white;
+  text-align: center;
+}
+
+.left{
+  color: white;
+  float: left;
+  width: 40%;
+  height: 70%;
+}
+
+.img_beer{
+  width: 80%;
+  height: 70%;
+  object-fit: cover;
+}
+
+
+.right{
+  float: left;
+  width: calc(100% - 50%);
+  height: 70%;
+}
+
+.outline{
+  color: white;
+  padding-bottom: 20px;
+}
+
+.rate{
+  color: white; 
+  padding-bottom: 40px;
+}
+
+.evaluation{
+  color: white; 
+  padding-bottom: 40px;
+}
+
+.links{
+  color: white;
+  padding-bottom: 40px;
+}

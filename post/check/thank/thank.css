@@ -1,0 +1,33 @@
+@charset "UTF-8";
+
+div.first_thank{
+  padding-top: 80px; 
+  background-image:url(../../../img/top.jpg);
+  height: 100vh;
+
+}
+
+div.first_thank img{
+  width:100%;
+  height:auto;
+}
+
+div.first_thank h2{
+  text-align:center;
+  color:white;
+  margin:1em;
+}
+
+div.first_thank h3{
+  text-align:center;
+  color:white;
+  margin-top:4em;
+}
+div.first_thank a{
+  text-decoration: none;
+  border-bottom:solid 1px white;
+}
+div.first_thank a:visited{
+  text-decoration: none;
+  color:white;
+}

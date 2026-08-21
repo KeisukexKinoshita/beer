@@ -1,0 +1,100 @@
+@charset "UTF-8";
+
+#main_wrap_check{
+  background-color:black;
+  color: #FFF;
+}
+
+
+ul.image_list {
+  padding:10px 0px 10px 0px;
+  border-top: solid 1.5px #333333;
+}
+
+label[class="text"]{
+  display    : inline-block;
+  padding:5px ;
+  margin:0 0 0 80px;
+}
+
+label[class="text"] span{
+	color:white;
+	font-size:16px;
+}
+
+label[class="img"]{
+  position:relative;
+  display    : inline-block;
+  border : 1px solid gray;
+  padding:40px ;
+  margin:0 0 0 80px;
+}
+
+label[class="photo"]{
+  display    : inline-block;
+  border : 1px solid gray;
+  padding: 0px ;
+  margin:0 0 0 80px;
+}
+
+label[class="img"] img.thumbnail{
+  width: 40px;
+  height:40px;
+  margin:auto;
+}
+
+label[class="photo"] img.thumbnail{
+  width: auto;
+  height:122px;
+  margin:auto;
+}
+
+label[class="img"] p{
+  position:absolute;
+  width: 80px;
+  top:70%;
+  left: 50%;
+  transform: translate(-50%, 0%);
+  font-size:14px;
+  text-align:center;
+   margin:0px 0px 10px 0px; 
+}
+
+
+
+div.submit {
+  display:flex;
+  justify-content:center;
+
+}
+
+div.submit input[type="submit"] {
+  font-size:16px;
+  font-weight:bold;
+  text-align    : center;     
+  cursor        : pointer;    
+  width: 200px;
+  height:40px;
+  padding       : 8px 0px;  
+  margin:0px;
+  background    : #0196EC;  
+  color         : black;    
+  line-height   : 1em;        
+  transition    : .3s;        
+  border : none;
+}
+
+div.submit button[type="button"] {
+  font-size:16px;
+  text-align    : center;     
+  cursor        : pointer;    
+  width: 200px;
+  height:40px;
+  padding       : 8px 0px;  
+  background    : #D5ECED;  
+  color         : black;    
+  line-height   : 1em;        
+  transition    : .3s;        
+  border : none;
+}
+

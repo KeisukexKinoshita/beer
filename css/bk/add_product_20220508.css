@@ -1,0 +1,144 @@
+@charset "UTF-8";
+
+body {
+  font-family: "Meiryo" ;
+  background-color:black;
+  color: silver;
+}
+
+
+div.top {
+  margin-bottom: 40px;
+ }
+h1 {
+  color: white;
+  border-bottom: solid 1px white;
+}
+
+
+ul.image_list {
+  padding:10px 0px 30px 0px;
+  border-top: solid 1.5px #333333;
+}
+
+ul.image_list p{
+  font-size:20px;
+  margin:0px 0px 10px 0px;
+}
+
+ul.image_list sup{
+  font-size:10px;
+  /*color:blue;*/
+}
+
+ul.image_list li {
+  display: inline-block;
+}
+
+ul.image_list select ,ul.image_list textarea{
+  width: 350px;
+  border-bottom:1px solid #cccccc;
+  border-right:none;
+  border-left:none;
+  border-top:none;
+}
+select.hidden{
+  color: #cccccc;
+}
+
+ul.image_list input[name^="chk_"] {
+  width: 120px;
+  border-bottom:1px solid #cccccc;
+  border-right:none;
+  border-left:none;
+  border-top:none;
+}
+
+div.img_box{
+	margin:auto;
+	padding:auto;
+}
+
+ul.image_list li  {
+  width: 120px;
+  height: 120px;
+  margin:4px;
+}
+.image_box img.thumbnail {
+  width: 40px;
+  height:40px;
+  margin:auto;
+}
+
+
+.image_box [class^="disabled_checkbox_"] {
+  display    : none; 
+}
+
+
+
+label[for^="chk_"]{
+  display    : inline-block;
+  border : 1px solid gray;
+  padding:40px ;
+  position:relative;
+}
+input[class^="disabled_checkbox_"]:checked ~ label[for^="chk_"] {
+  border : 1px solid #70AD47;
+}
+
+label[for^="chk_"] p{
+  position:absolute;
+  width: 80px;
+  top:70%;
+  left: 50%;
+  transform: translate(-50%, 0%);
+  font-size:14px;
+  text-align:center;
+}
+
+
+label.upimg_label {
+  padding: 10px 40px;
+  color: white;
+  background-color: gray;
+  cursor: pointer;
+  display: inline-block;
+  font-family: "Meiryo" ;
+  margin:5px;
+}
+
+input[type="file"] {
+  display:none;
+}
+
+p.msgimg {
+  font-size:5px;
+}
+
+div.submit {
+  text-align    : center;     
+
+}
+
+div.submit input[type="submit"] {
+  display       : inline-block;
+  font-size     : 16pt;       
+  text-align    : center;     
+  cursor        : pointer;    
+  width: 200px;
+  height:50px;
+  padding       : 8px 0px;  
+  background    : #8AD557;  
+  color         : black;    
+  line-height   : 1em;        
+  transition    : .3s;        
+  border        : none;
+}
+
+
+
+div.chart{
+  margin-top: 60px;
+}
+

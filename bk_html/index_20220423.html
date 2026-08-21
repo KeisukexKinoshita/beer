@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ja">
+ <head>
+<meta charset="utf-8">
+<title>CraftBeer</title>
+<link rel="stylesheet" href="./css/style.css">
+</head>
+
+<?php
+$sql_where = "''=''";
+//$sql_where_sty = "''=''";
+//$src_sty = "yes";
+require('php/sql.php');
+?>
+
+<body>
+<header>
+<h1>CraftBeer</h1>
+<nav class="pc-nav">
+<ul>
+<li><a href="./php/add_product.php">Post a new beer</a></li>
+</ul>
+</header>
+
+<p class='p1'>
+  Discover Your Favorite Craft Beer!
+</p>
+<p class='p2'>
+ This site is ...
+</p>
+
+
+<div>
+<p class='Brewery'>
+<span class='Brewery'>Brewery</span>
+</p>
+</div>
+
+<ul class="image_list"> 
+<?php
+for($i = 0 ; $i < count($mak_MakerID); $i++){
+   echo '<li>';
+   echo '<div class="image_box">';
+   //echo '<div class="Brewery_link';
+   //echo $i; 
+   //echo '"';
+   //echo ' style="position:relative; display:inline-block;">';
+   //echo ' position="relative">';
+   echo '<a href="php/maker.php?MakerID=';
+   echo $mak_MakerID[$i] ;
+   echo '">';
+   
+   echo '<img class="thumbnail" src="img/maker/';
+   echo $mak_MakerID[$i];
+   echo '.png" alt="';
+   echo $mak_MakerName[$i];
+   echo '" title="';
+   echo $mak_MakerName[$i];
+   //echo '" style="width:20%; height:20%;"';
+   echo '">';
+   echo '<span' ;
+   //echo ' style="position:absolute; top:5px; left:50%;" ' ;
+   echo '>';
+   echo $mak_MakerName[$i] ;
+   echo ' </span>' ;
+   echo '</a> ';
+   echo '</div>';
+   echo '</li>';
+}
+?>
+</ul>
+
+<div>
+<p class='Type'>
+<span class='Type'>Type</span>
+</p>
+<a href="php/hazy.php">
+<img src="img/hazy.png" alt="hazy" title="preview_hazy" width="20%" height="20%">
+</a>
+
+</div>
+
+</body>
+
+
+
+
+
+
+
+<?php
+$comment = $_GET['comment'];
+?>
+<! -------------------------Sbumit -------------------------------->
+<!--
+ <form action = "index.php" method = "GET">
+<input type = "number" name = "comment"><br/>
+<input type = "submit" value ="submit">
+</form>
+-->
+<! -------------------------Sbumit -------------------------------->
+
+
+
+
+</html>

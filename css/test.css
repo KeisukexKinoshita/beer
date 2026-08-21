@@ -1,0 +1,12 @@
+p{
+	color:blue;
+}
+
+label{
+  border : 9px solid red;
+}
+
+
+ input[type="checkbox"]:checked ~ label {
+  border : 9px solid blue;
+}
