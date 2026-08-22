@@ -1,0 +1,9 @@
+{
+  "id": "TC-SEL-STYSTYLES-01",
+  "type": "page",
+  "page": "style/styles.php",
+  "params": {
+    "get": {},
+    "post": {}
+  }
+}

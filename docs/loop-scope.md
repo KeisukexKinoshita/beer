@@ -32,6 +32,12 @@ seisan3-next サーバのコンテナで動かせる状態にする。
 - バインドパラメータのコロン欠け(sql_POST.php の 'Alcohol', 'Clarity_user')
 - 廃止済みGoogleアナリティクス(UA-)タグ、AdSenseタグの扱い
 - sql.php / sql_POST.php の重複コピー統合
+- 画像renameの相対パスバグ: sql_POST.php の rename('../img/tmp/...') は呼び出し元の階層に依存し、
+  post/check/thank/thank.php 経由(実運用の投稿導線)では失敗して投稿画像が反映されない
+  (TC-POST-THANK-NEW-02 で特性固定済み)
+- 壊れたページ2件 (fatalで特性固定済み、公開前に削除か修理を判断):
+  - style/detail/makers.php — require('../common/sql.php') の階層違いで常にFatal (TC-SEL-STYDETAILMAKERS-01)
+  - php/Strathcona_Beer_Company.php — 存在しないBREWERY列参照でPDOException (TC-SEL-STRATHCONA-01)
 
 ## ハーネス方針
 

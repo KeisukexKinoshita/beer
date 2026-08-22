@@ -1,0 +1,9 @@
+{
+  "id": "TC-SEL-STRATHCONA-01",
+  "type": "page",
+  "page": "php/Strathcona_Beer_Company.php",
+  "params": {
+    "get": {},
+    "post": {}
+  }
+}

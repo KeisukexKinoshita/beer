@@ -1,0 +1,11 @@
+{
+  "id": "TC-SEL-BRWMAKER-01",
+  "type": "page",
+  "page": "brewery/detail/maker.php",
+  "params": {
+    "get": {
+      "MakerID": "mk9002"
+    },
+    "post": {}
+  }
+}

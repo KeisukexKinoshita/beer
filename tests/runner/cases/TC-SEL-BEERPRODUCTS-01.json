@@ -1,0 +1,9 @@
+{
+  "id": "TC-SEL-BEERPRODUCTS-01",
+  "type": "page",
+  "page": "beer/products.php",
+  "params": {
+    "get": {},
+    "post": {}
+  }
+}

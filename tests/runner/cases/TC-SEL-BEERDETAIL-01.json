@@ -1,0 +1,11 @@
+{
+  "id": "TC-SEL-BEERDETAIL-01",
+  "type": "page",
+  "page": "beer/detail/product.php",
+  "params": {
+    "get": {
+      "ProductID": "102"
+    },
+    "post": {}
+  }
+}

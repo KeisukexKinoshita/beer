@@ -1,0 +1,11 @@
+{
+  "id": "TC-SEL-STYDETAIL-01",
+  "type": "page",
+  "page": "style/detail/style.php",
+  "params": {
+    "get": {
+      "StyleID": "2"
+    },
+    "post": {}
+  }
+}

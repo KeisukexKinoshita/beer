@@ -1,0 +1,9 @@
+{
+  "id": "TC-SEL-BRWMAKERS-01",
+  "type": "page",
+  "page": "brewery/makers.php",
+  "params": {
+    "get": {},
+    "post": {}
+  }
+}

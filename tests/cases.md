@@ -59,6 +59,27 @@ PHP8.5の実行結果、フィクスチャは `tests/fixtures/fixtures.sql`)を�
 5. **`array_search` の緩い比較**: PHP8でも `array_search($needle, $haystack)` はデフォルト非strict
    (`==`)。文字列同士の比較になる場面(GETパラメータ由来の文字列 vs フィクスチャの文字列)は
    通常の文字列一致として扱う。実測でも矛盾なし。
+6. **PDOのデフォルトエラーモード — 2026-08-22追加、実測で確定**: `common/sql.php`・`php/sql.php`
+   はいずれも `new PDO($db_dsn, $db_user, $db_pass)` のように接続オプション配列を渡していない。
+   PHP公式のRFC「Saner PDO defaults」によりPHP 8.0以降、オプション未指定時の
+   `PDO::ATTR_ERRMODE` の既定値は **`PDO::ERRMODE_EXCEPTION`**(PHP 7以前の既定だった
+   `PDO::ERRMODE_SILENT` ではない)。この環境(PHP 8.5.9)で
+   `$dbh->getAttribute(PDO::ATTR_ERRMODE)` を直接確認したところ `2`(=EXCEPTION)であることを
+   実測で確認した(`tests/`配下は変更していない、スクラッチパッド上の使い捨てスクリプトによる確認)。
+   **これは本台帳が過去に「デフォルトのERRMODE_SILENT下でexecute()が黙ってfalseを返す」等と
+   記載していた箇所の前提が不正確だったことを意味する**(該当のTC-POST-THANK-NEW-01/UPDATE-01の
+   「仮説B」の記述はコロン欠けバインドが失敗した場合に何が起きるかの説明として書いたものだが、
+   実際にはSILENTモードでの「静かな失敗」ではなく、EXCEPTIONモードでの
+   「即座にFatal error(未捕捉PDOException)」が正しい帰結だったはずである。結論(仮説A確定・
+   コロン欠けは実害なし)自体は実測で覆っていないため訂正不要だが、棄却された仮説Bのメカニズム
+   描写は不正確だった点をここに記録する)。
+   このデフォルト値は、**存在しないカラムへの参照や壊れたSQLを実行するページ**
+   (TC-SEL-STRATHCONA-01: `products`に無い`BREWERY`列を参照)の期待値算出に直接影響する:
+   `$dbh->query()` 自体が **`PDOException`を送出**し(`$res`に`false`が入ってから`fetchAll()`で
+   `TypeError`になるのではない)、`try/catch`が無いためそのまま **Fatal error: Uncaught
+   PDOException** として現れる。実測で `SQLSTATE[42S22]: Column not found: 1054 Unknown column
+   'BREWERY' in 'WHERE'` というメッセージ、および `php/sql.php` の `$dbh->query($query);` の行
+   (改修1適用後のオフセットで23行目)で例外が投げられることを確認した。
 
 ---
 
@@ -137,26 +158,32 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
 
 ## 2. カバレッジ対応表(分岐 × 到達経路)
 
-### 2.1 `common/sql.php`
+### 2.1 `common/sql.php` — 【2026-08-22 訂正】検証者(B)指摘1により9ページを追加調査した結果、
+以前「死んでいる分岐」としていた3分岐(`$src_mak=='no'`、`$src_cla=='yes'`、`$src_fru=='yes'`)は
+**実際には実ページ経由で到達する**ことが判明した。以下は訂正後の対応表。
 
 | 分岐 | 到達させるページ/ケース | 備考 |
 |---|---|---|
-| `$src_prd=='no'`(products SELECT スキップ) | TC-CORE-01(直接require) | 実ページでは到達不可(常に不設定 or else側) |
-| `$src_prd` else(products 全件) | TC-SEL-POSTADDP-01, TC-SEL-POSTEVAL-01, TC-SEL-CHECK-*, TC-CORE-02/03 | 実ページで到達 |
-| `$src_mak=='no'` | TC-CORE-01 | **実ページでは一切設定されない(死んでいる分岐)** |
-| `$src_mak=='yes'`(`$sql_where_mak`使用) | TC-CORE-02 | **実ページでは一切設定されない(死んでいる分岐)** |
-| `$src_mak` else(`$sql_where`使用) | TC-SEL-POSTADDP-01, TC-SEL-POSTEVAL-01, TC-SEL-CHECK-* | 実ページで到達 |
-| `$src_sty=='yes'` | TC-SEL-POSTADDP-01, TC-SEL-POSTEVAL-01, TC-SEL-CHECK-* | 実ページで到達(common使用ページは全て `sty='yes'` を設定) |
-| `$src_sty` スキップ | TC-CORE-01 | **実ページでは一切到達しない(死んでいる分岐)** |
-| `$src_cla=='yes'` | TC-CORE-03 | **実ページでは一切設定されない(死んでいる分岐)** |
+| `$src_prd=='no'`(products SELECT スキップ) | TC-CORE-01(直接require) | 実ページでは到達不可(常に不設定 or else側)。**訂正なし、引き続き死分岐** |
+| `$src_prd` else(products 全件) | TC-SEL-POSTADDP-01, TC-SEL-POSTEVAL-01, TC-SEL-CHECK-*, TC-CORE-02/03, 新規9ページ全件 | 実ページで到達 |
+| `$src_mak=='no'` | **TC-SEL-STYDETAIL-01**(`style/detail/style.php`が明示的に`$src_mak="no"`をセットする)、TC-CORE-01 | ~~実ページでは一切設定されない(死んでいる分岐)~~ **【訂正】生きている分岐**。`style/detail/style.php`がスタイル詳細ページでmaker一覧を使わないため明示的にスキップしている。TC-CORE-01は最小フィクスチャでの単体確認として引き続き有用(§2.4参照) |
+| `$src_mak=='yes'`(`$sql_where_mak`使用) | TC-CORE-02 | 実ページでは一切設定されない(死んでいる分岐。9ページ追加調査後も確認先なし) |
+| `$src_mak` else(`$sql_where`使用) | TC-SEL-POSTADDP-01, TC-SEL-POSTEVAL-01, TC-SEL-CHECK-*, TC-SEL-BRWMAKERS-01, TC-SEL-BRWMAKER-01, TC-SEL-BEERDETAIL-01, TC-SEL-STYDETAILMAKERS-01(到達前にfatal) | 実ページで到達 |
+| `$src_sty=='yes'` | TC-SEL-POSTADDP-01, TC-SEL-POSTEVAL-01, TC-SEL-CHECK-*, TC-SEL-STYSTYLES-01, TC-SEL-STYDETAIL-01 | 実ページで到達 |
+| `$src_sty` スキップ | TC-CORE-01, TC-SEL-BRWMAKERS-01, TC-SEL-BRWMAKER-01, TC-SEL-BEERPRODUCTS-01 | 実ページで到達(訂正なし、元から生きていた) |
+| `$src_cla=='yes'` | **TC-SEL-BEERDETAIL-01**(`beer/detail/product.php`が明示的に`$src_cla="yes"`をセットする)、TC-CORE-03 | ~~実ページでは一切設定されない(死んでいる分岐)~~ **【訂正】生きている分岐**。`beer/detail/product.php`(商品詳細ページ)が透明度画像・名称表示のために使用。TC-CORE-03は最小フィクスチャでの単体確認として引き続き有用(§2.4参照) |
 | `$src_cla` スキップ | TC-SEL-POSTADDP-01 等(未設定のため自動的に該当) | 実ページで到達 |
-| `$src_fru=='yes'` | TC-CORE-03 | **実ページでは一切設定されない(死んでいる分岐)** |
+| `$src_fru=='yes'` | **TC-SEL-BEERDETAIL-01**(同上、`$src_fru="yes"`も同時にセット)、TC-CORE-03 | ~~実ページでは一切設定されない(死んでいる分岐)~~ **【訂正】生きている分岐**。同上 |
 | `$src_fru` スキップ | 同上 | 実ページで到達 |
 
-→ `$src_mak`(3分岐すべて)・`$src_sty`のスキップ側・`$src_cla`/`$src_fru`の'yes'側は、
-現行の対象ページ群からは**到達不能な死分岐**。TC-CORE-01〜03 は `common/sql.php` を
-直接 require する薄いラッパー(ハーネス側で用意。対象コード自体は無改変)で変数を手動セットし、
-分岐単体を到達させる合成ユニットテスト。
+→ 9ページ追加調査の結果、**`common/sql.php`の11分岐のうち「実ページで到達不可能な死分岐」は
+`$src_prd=='no'` と `$src_mak=='yes'` の2つのみ**に訂正される(以前は5分岐を死分岐としていたが
+誤りだった)。TC-CORE-01〜03 は元々「死分岐を単体で踏むための直接requireラッパー」として設計したが、
+今回の訂正により **TC-CORE-01(`$src_mak='no'`)と TC-CORE-03(`$src_cla`/`$src_fru='yes'`)は
+実ページ経路が別途存在する分岐の追加ユニットテストという位置づけに変わる**
+(実ページ側は複数フィクスチャ行が絡む分、期待値計算が複雑になるため、TC-CORE-01/03の
+最小フィクスチャでの単体確認としての価値は引き続き高い。回帰時の切り分けにも有効なため
+削除はしない)。**TC-CORE-02(`$src_mak='yes'`)のみが真に死分岐単体テストとして残る**。
 
 ### 2.2 `php/sql.php`(commonとの差分は2箇所のみ、diff確認済み)
 
@@ -187,6 +214,33 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
 `php/sql_POST.php` と `common/sql_POST.php` は同一ファイルのため、両者を呼ぶページ
 (`php/thank.php` と `post/check/thank/thank.php`)は同一パラメータなら同一結果になるはず
 (TC-POST-THANK-NEW-01 と NEW-02 で相互確認)。
+
+### 2.4 共有SQL層をrequireする未テストページ9件(検証者(B)指摘1、2026-08-22追加)
+
+検証者(B)から「共有SQL層(`common/sql.php`・`php/sql.php`)をrequireするページのうち9件が
+台帳に未収録」との指摘を受け、オーケストレーターの構造調査をもとに実コードを読み、
+sandbox(`beer/`ディレクトリのコピーが追加済み)上で実行して確認した。結果は以下の3系統に分かれる:
+
+| ページ | 使用するSQL層 | 分岐上の位置づけ | 追加ケース |
+|---|---|---|---|
+| `brewery/makers.php` | `common/sql.php` | `$src_mak`else / `$src_sty`スキップ(既存カバー分岐の別ページからの再確認) | TC-SEL-BRWMAKERS-01 |
+| `brewery/detail/maker.php` | `common/sql.php` | 同上。`$sql_where`をproducts/maker両方に使い回す(`php/maker.php`と同型のイディオム) | TC-SEL-BRWMAKER-01 |
+| `beer/products.php` | `common/sql.php` | 同上 | TC-SEL-BEERPRODUCTS-01 |
+| `beer/detail/product.php` | `common/sql.php` | **`$src_cla='yes'`/`$src_fru='yes'`を初めて実ページ経由で踏む(§2.1訂正の根拠ページ)** | TC-SEL-BEERDETAIL-01 |
+| `style/styles.php` | `common/sql.php` | `$src_sty='yes'`(既存カバー分岐の別ページからの再確認) | TC-SEL-STYSTYLES-01 |
+| `style/detail/makers.php` | `common/sql.php`(到達前にfatal) | **壊れたページ(相対パスバグ)。分岐到達より前に`require()`が失敗** | TC-SEL-STYDETAILMAKERS-01 |
+| `style/detail/style.php` | `common/sql.php` | **`$src_mak='no'`を初めて実ページ経由で踏む(§2.1訂正の根拠ページ)** | TC-SEL-STYDETAIL-01 |
+| `php/check.php` | `php/sql.php`(**post/check/check.phpはcommon/sql.php**) | 既存カバー分岐の再確認だが、`post/check/check.php`との**分岐差分(common版 vs php版)を直接対比できる唯一のcheck.php系ペア** | TC-SEL-PHPCHECK-NEW-01 |
+| `php/Strathcona_Beer_Company.php` | `php/sql.php`(到達前にfatal) | **壊れたページ(存在しないカラムへのSQL参照)。分岐到達より前にPDOExceptionでfatal** | TC-SEL-STRATHCONA-01 |
+
+このうち `beer/detail/product.php` と `style/detail/style.php` の2ページは、
+**§2.1で「死んでいる分岐」としていた記述を訂正する直接の根拠**になっている
+(常設のGET/POSTページとして実際にこれらの分岐へ到達することが実測で確認できたため)。
+残り7ページは主に**既存分岐の別ルートからの再確認**、または**独立した「壊れたページ」の
+特性固定**が目的であり、新たな分岐は開拓しないが、「共有SQL層をrequireする全ページを
+台帳が把握している」という検証者(B)の懸念には直接応える。
+
+ケース設計の詳細は §3.4、期待値計算の前提(PDOのデフォルトエラーモード)は §0 前提6を参照。
 
 ---
 
@@ -719,6 +773,269 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
   HTML出力のrename失敗Warningはカテゴリ(b)の行番号シフト(L40→L41)のみを追加で確認、
   事象・原因に変化なし)
 
+### 3.4 追加ケース(検証者(B)指摘1、2026-08-22追加) — 共有SQL層をrequireする未テストページ9件
+
+**設計方針**:
+- 期待値は従来どおり §1 のフィクスチャ + 各ページの実コード(本セクションの根拠として引用する
+  行番号・変数名は現在の `tests/sandbox/` = 改修1・改修2適用後のコード)から手計算する。
+- **ゴールデンマスターは「改修後コード」を基準として新規に確定する**(sql層の改修1・改修2は
+  §8で既に挙動保存を確認済みのため、これらの新規9ページについては改修前コードとの突き合わせは
+  行わない。今回が初回のゴールデンマスター取得になる)。
+- 各ケースの期待値は、フィクスチャ・コード契約からの手計算に加えて、`tests/runner/exec_page.php`
+  (オーケストレーターの既存ハーネスと同一のランナー)を用いて `tests/fixtures/fixtures.sql`
+  投入直後の状態で**設計時の一次確認**を行った(このセッション内で `mysql beer <
+  tests/fixtures/fixtures.sql` → `php tests/runner/exec_page.php <page> <params.json>` を実行し、
+  出力を目視で手計算値と突き合わせた。tests/golden・tests/sandboxはこの確認のために変更していない、
+  読み取り専用の実行のみ)。**ただしこれは正式なゴールデンマスター取得ではない**
+  (ケースJSON・`tests/golden/`への格納はオーケストレーターの担当)。状態は全件「未実行」のまま
+  とし、一次確認で得た値を期待値として記載する。
+- 対象ページの中で分岐が生きていることが判明したページ(`beer/detail/product.php`,
+  `style/detail/style.php`)は §2.1 の訂正と対応させてある。
+
+**必要な追加sandbox/フィクスチャ(オーケストレーターへの依頼事項)**:
+- `beer/` ディレクトリのsandboxコピー: `tests/runner/make_sandbox.sh` は**確認時点で既に
+  `beer` が対象ディレクトリループに含まれており**(`for d in common css js php post style
+  brewery beer bk_html`)、`bash tests/runner/make_sandbox.sh` 実行で `tests/sandbox/beer/
+  products.php` ・ `tests/sandbox/beer/detail/product.php` が正しくコピーされることを確認した。
+  追加対応は不要(オーケストレーターの当初メッセージでは「未コピー」とのことだったが、
+  設計時点では既に反映されていた)。
+- `style/detail/`・`brewery/`・`php/check.php`・`php/Strathcona_Beer_Company.php` は
+  いずれも既存の `make_sandbox.sh` (`style`/`brewery`/`php` を丸ごとコピー)で既にsandboxに
+  含まれていることを確認済み。追加コピー不要。
+- ダミーファイルの追加は不要: `brewery/detail/explain/mk9001.html`〜`mk9003.html` は既存の
+  index.php向けダミー(`make_sandbox.sh`が生成)をそのまま流用できる。
+- 新規テーブル・フィクスチャ行の追加は不要(§1の既存フィクスチャのみで全9ケースをカバーできる)。
+- `$_FILES` 未対応というハーネス制約(既存の `TC-SEL-CHECK-NEW-01` 等と同じ)が
+  `TC-SEL-PHPCHECK-NEW-01` にも及ぶ。対応は必須ではない(既知の制約として期待値に織り込み済み)。
+- 追加のケースJSON(`tests/runner/cases/*.json`)とゴールデンマスター(`tests/golden/`)の作成は
+  オーケストレーターの担当。
+
+---
+
+#### TC-SEL-BRWMAKERS-01: `brewery/makers.php`
+
+- **目的**: `common/sql.php`経由のメーカー一覧ページ。ループが `index.php`(count-7の逆走査で
+  負インデックスに達する既知バグ)とは異なる **安全な逆順ループ**(`$i = count-1; $i>-1; $i--`)
+  であることを確認する。
+- **入力**: GET `/brewery/makers.php`(パラメータ無し)
+- **期待値**:
+  - `$sql_where="''=''"` のみ設定 → products/maker/style/clarity/fruityの取得は
+    `common/sql.php`のデフォルト分岐どおり(products全件・maker全件・sty/cla/fru=`0`)。
+  - `js_prd`=products全3行、`js_mak`=maker全3行(投入順)、`js_sty`/`js_cla`/`js_fru`=`0`。
+  - ループは `for($i = count($mak_MakerID) -1; $i >-1; $i--)`(count=3 → i=2,1,0の3回、
+    **負インデックスなし**)。逆順で mk9003(Gamma Brewing), mk9002(Beta Brewing),
+    mk9001(Alpha Brewing) の3件の`<li>`が出力される。各`<li>`内で
+    `require('detail/explain/'.$mak_MakerID[$i].'.html')` が実行され、対応するダミー
+    (`<p>fixture explain mk9003</p>` 等)がそのままインラインで挿入される。クラッシュしない。
+  - **PHP8リスク**: 末尾の `$comment = $_GET['comment'];`(brewery/makers.php 76行目)で
+    `Undefined array key "comment"` Warning 1件(非致命的、`$comment`は未使用)。
+  - 一次確認(`php tests/runner/exec_page.php brewery/makers.php`)で上記を実測し、完全一致を確認
+    (exit=0、Warningは`comment`の1件のみ、他のsql.php由来Warningは改修2により発生しない)。
+- **状態**: 未実行
+
+#### TC-SEL-BRWMAKER-01: `brewery/detail/maker.php`
+
+- **目的**: `$_GET['MakerID']`→`$sql_where`を products と maker の両方に使い回すイディオム
+  (`php/maker.php`のTC-SEL-MAK-01と同型)の common版。`require('./explain/'.$maker_id.'.html')`
+  がsandboxの既存ダミーで解決できることを確認する。
+- **入力**: GET `/brewery/detail/maker.php?MakerID=mk9002`
+- **期待値**:
+  - `$sql_where = "MakerID='mk9002'"`。products側: `WHERE MakerID='mk9002'` → P102のみ1行。
+    maker側(`$src_mak`未設定→else→同じ`$sql_where`使用): `WHERE MakerID='mk9002'` → mk9002のみ1行。
+  - `js_prd`=[P102の1行(`IBU_all`=フィクスチャ初期値`99.99`、まだthank.php未経由)]、
+    `js_mak`=[mk9002の1行]、`js_sty`/`js_cla`/`js_fru`=`0`。
+  - `$keyIndex_mak = array_search('mk9002', mak_MakerID) = 0`。
+  - 画面: `<h2>Beta Brewing</h2>`、`<p class='p2'>`内に`require('./explain/mk9002.html')`の
+    ダミー本文(`<p>fixture explain mk9002</p>`)がそのままインライン挿入、`<p class='p3'>`に
+    URL1リンク(`https://beta.example.com`)。
+  - sec2 商品ループ(`for($i=0;$i<count($prd_ProductID);$i++)`, count=1, 0始まりの通常ループ):
+    P102(Beta Light Pilsner)の`<li>`1件のみ。リンク先は`../../beer/detail/product.php?ProductID=102`。
+  - Warningなし(このページは`$_GET['comment']`を読まず、`$src_sty`/`$src_cla`/`$src_fru`も
+    改修2のisset初期化によりWarningを出さない)。
+  - 一次確認で上記を実測し完全一致を確認(exit=0、Warning 0件)。
+- **状態**: 未実行
+
+#### TC-SEL-BEERPRODUCTS-01: `beer/products.php`
+
+- **目的**: `common/sql.php`経由の全ビール一覧ページ。TC-SEL-BRWMAKERS-01と同型の安全な
+  逆順ループ(`$i = count-1; $i>-1; $i--`)であることを確認する。
+- **入力**: GET `/beer/products.php`(パラメータ無し)
+- **期待値**:
+  - `$sql_where="''=''"` のみ → products全3行・maker全3行取得、`js_sty`/`js_cla`/`js_fru`=`0`。
+  - ループ(count=3、i=2,1,0、負インデックスなし): 逆順で103(Gamma Dark Stout),
+    102(Beta Light Pilsner), 101(Alpha Citrus IPA)の3件の`<li>`。`<h2>`見出しは
+    `ビール 3件`。クラッシュしない。
+  - **PHP8リスク**: 末尾の`$comment = $_GET['comment'];`(90行目)で`Undefined array key
+    "comment"` Warning 1件。
+  - 一次確認で完全一致を確認(exit=0)。
+- **状態**: 未実行
+
+#### TC-SEL-BEERDETAIL-01: `beer/detail/product.php`(**§2.1訂正の直接根拠**)
+
+- **目的**: `common/sql.php`の`$src_cla='yes'`/`$src_fru='yes'`分岐が実ページ経由で到達することを
+  確認する(旧台帳で「死んでいる分岐」としていた記述の訂正根拠)。`php/product.php`
+  (TC-SEL-PRD-01)のcommon版に相当。
+- **入力**: GET `/beer/detail/product.php?ProductID=102`
+- **期待値**:
+  - `$sql_where`/`$sql_where_sty`/`$src_sty='yes'`/`$sql_where_cla="''=''"`/
+    `$sql_where_fru="''=''"`/`$src_cla='yes'`/`$src_fru='yes'` を全て明示設定 →
+    `common/sql.php`のproducts全件・maker(`$src_mak`未設定→else→`$sql_where`使用)全件・
+    style全件・**clarity全4行・fruity全4行**を取得。
+  - `js_prd`=products全3行、`js_mak`=maker全3行、`js_sty`=style全3行、
+    **`js_cla`=clarity全4行、`js_fru`=fruity全4行**(この2つが§2.1で「死分岐」としていた
+    `common/sql.php`のcla/fru='yes'側であり、本ケースで生きていることを実測確認した)。
+  - `$keyIndex_prd = array_search('102', prd_ProductID) = 1`。
+    `$keyIndex_mak = array_search($prd_MakerID[1]='mk9002', mak_MakerID) = 1`
+    (**`$_GET['MakerID']`ではなく`prd_MakerID`経由で導出する点が`php/product.php`との相違**)。
+    `$keyIndex_sty = array_search('2', sty_StyleID) = 1`(Pilsner)。
+    `$keyIndex_cla = array_search(round('2')=2, cla_ClarityValue) = 1`(Clear)。
+    `$keyIndex_fru = array_search(round('1')=1, fru_FruityValue) = 0`(Not Fruity)。
+  - 画面表示(日本語UI、`php/product.php`と表示文言が異なる版): `<h1> Beta Light Pilsner </h1>`
+    (メーカー名は併記しない)、`ブリュワリー : `+リンク`Beta Brewing`、
+    `スタイル : Pilsner`、色=Color2.png、透明度=Clarity2.png+`Clear`、`IBU : 99.99`
+    (フィクスチャ初期値、thank.php未経由)、フルティーさ=Fruity1.png+`Not Fruity`、
+    `アルコール度 : 4.80`、点数=`3.50`。評価リンクは
+    `../../post/evaluation.php?product_id=102`。
+  - **PHP8リスク**: 末尾の`$comment = $_GET['comment'];`(129行目)で`Undefined array key
+    "comment"` Warning 1件。
+  - 一次確認(`php tests/runner/exec_page.php beer/detail/product.php`、
+    `{"get":{"ProductID":"102"}}`)で上記全て実測し完全一致を確認(exit=0、
+    `js_cla`/`js_fru`が`0`ではなく4行のJSONであることを直接確認した)。
+- **状態**: 未実行
+
+#### TC-SEL-STYSTYLES-01: `style/styles.php`
+
+- **目的**: `common/sql.php`の`$src_sty='yes'`経由でのスタイル一覧。安全な逆順ループの再確認。
+- **入力**: GET `/style/styles.php`(パラメータ無し)
+- **期待値**:
+  - `$sql_where="''=''"`/`$sql_where_sty="''=''"`/`$src_sty='yes'` → products全3行・maker全3行・
+    style全3行取得、`js_cla`/`js_fru`=`0`。
+  - ループ(count=3、i=2,1,0、負インデックスなし): 逆順でStyleID=3(Stout), 2(Pilsner),
+    1(IPA)の3件の`<li>`。`<h2>`見出しは`Styles 3件`。クラッシュしない。
+  - **PHP8リスク**: `$comment`未定義Warning 1件(92行目)。
+  - 一次確認で完全一致を確認(exit=0)。
+- **状態**: 未実行
+
+#### TC-SEL-STYDETAILMAKERS-01: `style/detail/makers.php`(**壊れたページ、fatal特性固定**)
+
+- **目的**: `style/detail/makers.php`は`brewery/makers.php`からのコピー&ペーストと見られるが、
+  ディレクトリ階層(`style/detail/`は2階層)に対して相対パスの階層数(`../common/sql.php`は
+  1階層分)が合っておらず、`common/sql.php`に到達できない。この**壊れたページの特性を固定**する。
+- **入力**: GET `/style/detail/makers.php`(パラメータ無し)
+- **期待値**:
+  - `require('../common/sql.php')`(12行目)は実行時カレントディレクトリ
+    (=`tests/sandbox/style/detail/`)から見て`tests/sandbox/style/common/sql.php`を指すが、
+    このパスは存在しない(`common/`はリポジトリ直下=`tests/sandbox/common/`のみに存在する。
+    `style/detail/`から`common/`に到達するには`../../common/sql.php`が必要、
+    `style/detail/style.php`はそのとおり`../../common/sql.php`を使っており対照的)。
+  - よって出力は `<!DOCTYPE html>`〜`<link rel="stylesheet" href="../style.css">` までの
+    `<head>`前半部分のみが生成された時点で、
+    `Warning: require(../common/sql.php): Failed to open stream: No such file or directory
+    in .../tests/sandbox/style/detail/makers.php on line 12` に続き
+    `Fatal error: Uncaught Error: Failed opening required '../common/sql.php'
+    (include_path='.:/usr/share/pear:/usr/share/php') in
+    .../tests/sandbox/style/detail/makers.php:12` + スタックトレースで**即座に打ち切られる**
+    (`</head>`以降は一切出力されない。exit=255)。
+  - 一次確認で上記メッセージ・exit=255を完全一致で確認済み(§0前提6のとおり、こちらは
+    PDO関連ではなく単純な`require()`失敗のため、PHPのバージョンやPDOのERRMODE設定に関わらず
+    再現する)。
+  - この不具合は**本番でも`style/detail/makers.php`にアクセスすると常にFatal errorになる**
+    ことを意味する(実運用上の問題として、loop-scope.mdの「別課題として記録するもの」への
+    追加候補としてオーケストレーターへ申し送る)。
+- **状態**: 未実行
+
+#### TC-SEL-STYDETAIL-01: `style/detail/style.php`(**§2.1訂正の直接根拠**)
+
+- **目的**: `common/sql.php`の`$src_mak='no'`分岐が実ページ経由で到達することを確認する
+  (旧台帳で「死んでいる分岐」としていた記述の訂正根拠)。
+- **入力**: GET `/style/detail/style.php?StyleID=2`
+- **期待値**:
+  - `$style_id='2'`。`$sql_where = "StyleID='2'"`、`$sql_where_sty = "StyleID='2'"`、
+    **`$src_mak = "no"`**、`$src_sty = "yes"` を設定して `../../common/sql.php`
+    (2階層上、正しいパス)をrequire。
+  - products側: `WHERE StyleID='2'` → P102のみ1行。style側(`$src_sty='yes'`→
+    `$sql_where_sty`使用): `WHERE StyleID='2'` → StyleID=2(Pilsner)のみ1行。
+    **maker側: `$src_mak=='no'` → SELECTを実行せず、`$json_mak`は未代入のまま
+    → `js_mak = 0`**(§2.1で「死んでいる」としていた分岐が、まさにこの`0`という形で
+    可視化される)。
+  - `js_prd`=[P102の1行]、`js_sty`=[StyleID=2の1行]、`js_mak`=`0`、`js_cla`/`js_fru`=`0`。
+  - `$keyIndex_sty = array_search('2', sty_StyleID) = 0`。
+  - 画面: `<h2>Pilsner</h2>`、`<p class='p2'>Crisp, light lager style. </p>`
+    (mak_MakerNameは一切参照しないページのため`$src_mak='no'`にしても表示上の欠落は生じない
+    ——このページ自体がmaker一覧を使わない設計であることの裏付け)。
+    sec2商品ループ(0始まり、count=1、負インデックスなし):
+    P102(Beta Light Pilsner)の`<li>`1件、リンク先`../../beer/detail/product.php?ProductID=102`。
+  - Warningなし(`$_GET['comment']`読み取りが無いページ、改修2によりsql.php由来Warningも0件)。
+  - 一次確認で上記を実測し完全一致を確認(exit=0、`js_mak`が`0`であることを直接確認した)。
+- **状態**: 未実行
+
+#### TC-SEL-PHPCHECK-NEW-01: `php/check.php`(`New_Update=new`)(**common版との分岐差分の直接対比**)
+
+- **目的**: `post/check/check.php`(TC-SEL-CHECK-NEW-01、`common/sql.php`使用)の`php/`版コピーで
+  ある`php/check.php`が**`php/sql.php`(分岐差分のある別版)を使用する**ことを確認する。
+  ロジック本体(`$value`配列の構築、check画面の表示分岐)は`diff`でパス関連の差分以外
+  完全に同一であることを確認済み(相対パス・`require('sql.php')`のみが差分)。
+- **入力**: POST `/php/check.php`(TC-SEL-CHECK-NEW-01と完全に同一のPOSTパラメータ)
+  ```json
+  {"ProductID":"", "chk_MakerID":"mk9002", "chk_productname":"Delta Wheat",
+   "chk_StyleID":"2", "chk_alcohol":"5.10", "chk_ibu":"25.00", "chk_color":"5",
+   "chk_clarity":{"value":"3","explain":"Slight Haze"},
+   "chk_fruity":{"value":"2","explain":"Bit Fruity"},
+   "chk_favorite":"4", "UserID":"us0001", "New_Update":"new",
+   "comment":"First tasting.", "ProductExplain":"A new wheat beer."}
+  ```
+- **期待値**:
+  - **画面の可視内容(Brewery/BeerName/Alcohol/IBU/Color/Clarity/Fruity/Favorite/Comment/Photo)
+    および`value_http`の内容は TC-SEL-CHECK-NEW-01 と完全に同一**
+    (`$sql_where="''=''"`で全maker/全productsが対象になるため、`common/sql.php`版と
+    `php/sql.php`版で選択される行集合が一致する。`php/sql.php`のmaker分岐条件`$src_prd=='no'`は
+    `$src_prd`未設定のため`else`側に落ち、`common/sql.php`の`$src_mak`未設定→`else`側と
+    同じ`$sql_where`を使うため結果が一致する)。
+  - `value_http` = `userid=us0001&productid=&makerid=mk9002&productname=Delta+Wheat&styleid=2&alcohol=5.10&ibu=25.00&color=5&clarity=3&fruity=2&favorite=4&new_update=new&productexplain=A+new+wheat+beer.&comment=First+tasting.`
+    (TC-SEL-CHECK-NEW-01と1バイトも違わない)。
+  - **差分は`<script>`ブロックのみ**: `php/sql.php`版のためstyle抽出が3フィールド版
+    (`var sty_StyleID=[], sty_StyleName=[], sty_StyleIBU=[];`、TC-SEL-ADDP-01と同型)になり、
+    `common/sql.php`版(5フィールド、TC-SEL-CHECK-NEW-01)とはここでのみ相違する。
+  - **PHP8リスク**: `$_FILES['upimg']`未設定によるWarning群(`Undefined array key "upimg"`×2 +
+    `Trying to access array offset on null`×2 + `move_uploaded_file()`の`Deprecated`)は
+    TC-SEL-CHECK-NEW-01と同一パターン(行番号も25/26行目で共通、ファイル名のみ`php/check.php`
+    に変わる)。
+  - 一次確認で上記全てを実測し完全一致を確認(exit=0、可視内容・`value_http`は
+    TC-SEL-CHECK-NEW-01と同一、`<script>`ブロックのみ3フィールド版であることを確認)。
+- **状態**: 未実行
+
+#### TC-SEL-STRATHCONA-01: `php/Strathcona_Beer_Company.php`(**壊れたページ、fatal特性固定**)
+
+- **目的**: `products`テーブルに存在しない`BREWERY`列をWHERE句に使うSQLが実行され、
+  PDOの例外により**壊れたページとしてfatalする特性を固定**する。§0前提6(PDOのデフォルト
+  ERRMODE_EXCEPTION)を直接裏付けるケース。
+- **入力**: GET `/php/Strathcona_Beer_Company.php`(パラメータ無し)
+- **期待値**:
+  - `$sql_where = "BREWERY='Strathcona Beer Company'"` を設定して `require('sql.php')`
+    (`php/sql.php`)。
+  - `php/sql.php`内、`$src_prd`は改修2のisset初期化により`''`(空文字列)がデフォルトされ
+    `'no'`ではないため`else`分岐へ進み、`$query = "SELECT * FROM products WHERE
+    BREWERY='Strathcona Beer Company'"`を`$dbh->query($query)`で実行。
+  - `products`テーブルに`BREWERY`列は存在しない(§1のDDL参照)ため、MariaDBは
+    `Unknown column 'BREWERY' in 'WHERE'`(SQLSTATE 42S22)エラーを返す。
+  - §0前提6のとおり、この環境のPDOデフォルト`ATTR_ERRMODE`は`EXCEPTION`のため、
+    `$dbh->query()`の呼び出し自体が**`PDOException`を送出**し、`try/catch`が無いため
+    **Fatal error: Uncaught PDOException**として現れる
+    (`fetchAll()`呼び出し時点での`Call to a member function fetchAll() on bool`という
+    **TypeErrorにはならない**点に注意。これはSILENTモードを前提にした場合の誤った予測である)。
+  - 出力は `<html>`〜`<div class='chart'>` の開始タグまでの静的HTML部分のみが生成され、続けて
+    `Fatal error: Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown
+    column 'BREWERY' in 'WHERE' in .../tests/sandbox/php/sql.php:23` + スタックトレース
+    (`#0 .../php/sql.php(23): PDO->query()` / `#1 .../php/Strathcona_Beer_Company.php(22):
+    require('...')` / `#2 {main}`)で打ち切られる。exit=255。
+  - 一次確認でメッセージ・行番号(`php/sql.php:23`)・exit=255を完全一致で確認済み
+    (§0前提6に記載の実測結果と同一)。
+  - この不具合は**本番でも`php/Strathcona_Beer_Company.php`にアクセスすると常にFatal error
+    になる**ことを意味する(元々コメントアウトされていない生きたページとして残っているが、
+    実質「壊れて使えないページ」である。loop-scope.mdの「別課題として記録するもの」への
+    追加候補としてオーケストレーターへ申し送る)。
+- **状態**: 未実行
+
 ---
 
 ## 4. PHP8リスク まとめ(横断)
@@ -793,6 +1110,17 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
   (PASS/PASS/仕様不一致=HTML側のrenameパスバグを新規発見)。
 - **結果集計**: PASS(GM固定) 18件 / 仕様不一致 1件(TC-POST-THANK-NEW-02、DB副作用はPASS相当・
   HTML出力面の当初予測の誤りを修正) / FAIL 0件。
+- **【2026-08-22追記】検証者(B)指摘1により9件を追加設計**(§2.4・§3.4参照)。
+  総テストケース数は **28件**(実行・確定済み19件 + 新規設計9件・状態は未実行)になった。
+  新規9件のうち `brewery/makers.php`・`beer/products.php`・`style/styles.php` の3件は
+  既存分岐(`$src_sty`スキップ、`$src_mak`else 等)を別ページから再確認するもの、
+  `brewery/detail/maker.php` は `php/maker.php`(TC-SEL-MAK-01)のcommon版、
+  `beer/detail/product.php`・`style/detail/style.php` の2件は §2.1 で「死分岐」としていた
+  `$src_cla`/`$src_fru='yes'` および `$src_mak='no'` が実は生きていたことを示す訂正の根拠、
+  `php/check.php` は `post/check/check.php` との共有ロジックの`php/sql.php`版対比、
+  `style/detail/makers.php`・`php/Strathcona_Beer_Company.php` の2件は独立した
+  「壊れたページ」の特性固定(前者はディレクトリ階層に対する相対パス誤り、後者は
+  存在しない列へのSQL参照によるPDOException)。
 
 ---
 
@@ -997,3 +1325,58 @@ bash tests/runner/run_all.sh        # 全19ケース実行 → tests/out/ に出
   消失)と完全に一致する独立検証結果を得た。DB状態(`.db.txt`)・exitコード(`.exit`)・
   params(`.params.json`)は全19ケースで改修前後完全一致。
 - 改修1・改修2とも、§8に記載した根拠により「挙動保存」と判定する。追加の懸念事項は無い。
+
+---
+
+## 10. 検証者(B)指摘1への対応まとめ(2026-08-22)
+
+### 10.1 追加ケース一覧
+
+| ID | ページ | 入力の要点 | 期待値の要点 |
+|---|---|---|---|
+| TC-SEL-BRWMAKERS-01 | `brewery/makers.php` | GETパラメータ無し | maker全3行、安全な逆順ループ(負インデックスなし)、`comment`未定義Warning1件 |
+| TC-SEL-BRWMAKER-01 | `brewery/detail/maker.php` | `MakerID=mk9002` | products/maker各1行(Beta)、explainダミーインライン、sec2ループ1件、Warning0件 |
+| TC-SEL-BEERPRODUCTS-01 | `beer/products.php` | GETパラメータ無し | products全3行、安全な逆順ループ、`comment`未定義Warning1件 |
+| TC-SEL-BEERDETAIL-01 | `beer/detail/product.php` | `ProductID=102` | **`$src_cla`/`$src_fru='yes'`が生きている証拠**。`js_cla`/`js_fru`が4行のJSON(`0`ではない) |
+| TC-SEL-STYSTYLES-01 | `style/styles.php` | GETパラメータ無し | style全3行、安全な逆順ループ、`comment`未定義Warning1件 |
+| TC-SEL-STYDETAILMAKERS-01 | `style/detail/makers.php` | GETパラメータ無し | **壊れたページ**。`require('../common/sql.php')`が相対パス誤りでFatal、exit=255 |
+| TC-SEL-STYDETAIL-01 | `style/detail/style.php` | `StyleID=2` | **`$src_mak='no'`が生きている証拠**。`js_mak`が`0`(SELECT自体スキップ) |
+| TC-SEL-PHPCHECK-NEW-01 | `php/check.php` | TC-SEL-CHECK-NEW-01と同一POST | 可視内容・`value_http`は完全同一、`<script>`のみ3フィールド版(php/sql.php版) |
+| TC-SEL-STRATHCONA-01 | `php/Strathcona_Beer_Company.php` | GETパラメータ無し | **壊れたページ**。存在しない`BREWERY`列への参照でPDOException、exit=255。**orchestratorの想定(query()がfalseに→fetchAllでFatal)は誤りで、実際はquery()自体がPDOExceptionを送出することを実測で確認・訂正** |
+
+全9件、`tests/runner/exec_page.php`(オーケストレーターの既存ハーネス)を用いた一次確認で
+期待値どおりの出力(メッセージ文言・行番号・exitコードまで)を得た。状態は台帳の規律どおり
+「未実行」のまま(正式なゴールデンマスター取得・ケースJSON化はオーケストレーターの担当)。
+
+### 10.2 台帳訂正箇所
+
+1. **§2.1(`common/sql.php`のカバレッジ対応表)**: `$src_mak=='no'`・`$src_cla=='yes'`・
+   `$src_fru=='yes'` の3分岐を「死んでいる分岐」としていた記述を訂正。実際に死んでいるのは
+   `$src_prd=='no'` と `$src_mak=='yes'` の2分岐のみ。
+2. **TC-CORE-01/TC-CORE-03の位置づけ**: 「死分岐の単体テスト」から「実ページ経路が別途存在する
+   分岐の、最小フィクスチャでの追加ユニットテスト」に更新(§2.1内に記載)。削除はせず、
+   最小フィクスチャでの切り分け用途として維持する方針とした。TC-CORE-02のみが真の死分岐単体
+   テストとして残る。
+3. **§0に前提6を追加**: PDOのデフォルト`ATTR_ERRMODE`が(接続時にオプション指定が無い場合)
+   PHP 8.0以降`EXCEPTION`であることを実測で確定。過去の記述(TC-POST-THANK-NEW-01/UPDATE-01の
+   棄却済み「仮説B」)にあった「デフォルトのERRMODE_SILENT下で...」という説明が不正確だった点を
+   記録(結論自体=仮説A確定は変わらない)。
+4. **§2.4・§3.4を新設**: 9ページの構造整理表と9件のケース本体。
+5. **§6・末尾に追記**: 総テストケース数を19件→28件(新規9件は未実行)に更新。
+
+### 10.3 私(テストエンジニア)が用意すべきもの/オーケストレーターへの依頼事項
+
+- **オーケストレーターに依頼するもの**:
+  1. `tests/runner/cases/TC-SEL-BRWMAKERS-01.json` 等、新規9件分のケースJSON作成
+     (`type: "page"`、`page`は各ページの相対パス、`params`は本セクション10.1・§3.4の入力どおり。
+     `TC-SEL-STYDETAILMAKERS-01`・`TC-SEL-STRATHCONA-01`はDBダンプ不要、GETのみ)。
+  2. 上記9件の `tests/golden/` への正式なゴールデンマスター格納(`bash
+     tests/runner/run_all.sh` 相当の実行を追加ケース分についても行う)。
+  3. `style/detail/makers.php` と `php/Strathcona_Beer_Company.php` の2つの「壊れたページ」を
+     `docs/loop-scope.md`の「別課題として記録するもの」に追加するかどうかの判断
+     (このループでは直さない前提だが、少なくとも台帳上は特性として記録済み)。
+- **sandbox・フィクスチャの追加対応は不要と判断**: 確認時点で `tests/runner/make_sandbox.sh` は
+  既に `beer` ディレクトリを含んでおり(オーケストレーターの当初メッセージでは「未コピー」との
+  ことだったが設計時点で既に反映されていた)、`style/detail/`・`brewery/detail/explain/`の
+  ダミーファイルも含め、9件全てが既存のsandbox構成・既存フィクスチャ(§1)だけで動作することを
+  一次確認で検証済み。新規テーブル行・新規ダミーファイルの追加は不要。

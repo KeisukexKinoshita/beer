@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ja">
+ <head>
+<meta charset="utf-8">
+<meta name='description' content="クラフトビールの一覧">
+<meta name='keywords' content="craft beer,beer,クラフトビール、ビール、IPA">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> 
+<script src="../js/jPages-master/js/jPages.js"></script>
+<title>Darth Beer.com</title>
+<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../common/pages.css">
+
+<script>
+// product
+let js_prd = [{"ProductID":101,"MakerID":"mk9001","ProductName":"Alpha Citrus IPA","StyleID":"1","Alcohol":"5.50","IBU_all":"42.00","IBU":"42.00","Color":"3","Clarity":"1","Fruity":"2","Favorite":"4.20","ProductExplain":"A citrusy IPA from Alpha Brewing.","IBU_Style":"45.00","Comment":""},{"ProductID":102,"MakerID":"mk9002","ProductName":"Beta Light Pilsner","StyleID":"2","Alcohol":"4.80","IBU_all":"99.99","IBU":"0.00","Color":"2","Clarity":"2","Fruity":"1","Favorite":"3.50","ProductExplain":"A crisp pilsner from Beta Brewing.","IBU_Style":"30.00","Comment":""},{"ProductID":103,"MakerID":"mk9003","ProductName":"Gamma Dark Stout","StyleID":"3","Alcohol":"6.20","IBU_all":"35.00","IBU":"35.00","Color":"9","Clarity":"4","Fruity":"1","Favorite":"4.80","ProductExplain":"A roasty stout from Gamma Brewing.","IBU_Style":"35.00","Comment":""}];	 
+var prd_ProductID=[], prd_MakerID = [], prd_ProductName = [], prd_StyleID=[], prd_Alcohol = [], prd_IBU=[], prd_Color=[], prd_Clarity=[], prd_Fruity=[], prd_Favorite=[];
+js_prd.forEach(function(value) {
+     prd_ProductID.push(value['ProductID'])
+     prd_MakerID.push(value['MakerID'])
+     prd_ProductName.push(value['ProductName'])
+     prd_StyleID.push(value['StyleID'])
+     prd_Alcohol.push(value['Alcohol'])
+     prd_IBU.push(value['IBU_all'])
+     prd_Color.push(value['Color'])
+     prd_Clarity.push(value['Clarity'])
+     prd_Fruity.push(value['Fruity'])
+     prd_Favorite.push(value['Favorite'])
+});
+
+//maker
+let js_mak = [{"MakerID":"mk9001","MakerName":"Alpha Brewing","MakerExplain":"Craft brewery Alpha, known for citrusy IPA.","URL1":"https:\/\/alpha.example.com"},{"MakerID":"mk9002","MakerName":"Beta Brewing","MakerExplain":"Craft brewery Beta, focuses on lagers.","URL1":"https:\/\/beta.example.com"},{"MakerID":"mk9003","MakerName":"Gamma Brewing","MakerExplain":"Craft brewery Gamma, dark beer specialist.","URL1":"https:\/\/gamma.example.com"}];	 
+var mak_MakerID=[], mak_MakerName=[];
+js_mak.forEach(function(value) {
+     mak_MakerID.push(value['MakerID'])
+     mak_MakerName.push(value['MakerName'])
+});
+
+//style
+let js_sty = 0;	 
+var sty_StyleID=[], sty_FamilyName=[], sty_StyleName=[], sty_StyleIBU=[], sty_StyleExplain=[];
+js_sty.forEach(function(value) {
+   sty_StyleID.push(value['StyleID'])
+   sty_FamilyName.push(value['FamilyName'])
+   sty_StyleName.push(value['StyleName'])
+   sty_StyleIBU.push(value['StyleIBU'])
+   sty_StyleExplain.push(value['StyleExplain'])
+});
+
+//clarity
+let js_cla = 0;	 
+var cla_ClarityID=[], cla_ClarityValue=[], cla_ClarityName=[];
+js_cla.forEach(function(value) {
+   cla_ClarityID.push(value['ClarityID'])
+   cla_ClarityValue.push(value['ClarityValue'])
+   cla_ClarityName.push(value['ClarityName'])
+});
+
+//fruity
+let js_fru = 0;	 
+var fru_FruityID=[], fru_FruityValue=[], fru_FruityName=[];
+js_fru.forEach(function(value) {
+   fru_FruityID.push(value['FruityID'])
+   fru_FruityValue.push(value['FruityValue'])
+   fru_FruityName.push(value['FruityName'])
+});
+
+</script>
+
+</head>
+
+<body>
+<div id='wrap'>
+
+<header>
+
+<script src="https://code.jquery.com/jquery-2.2.4.js" integrity="sha256-iT6Q9iMJYuQiMWNd9lDyBUStIq/8PuOW33aOqmvFpqI=" crossorigin="anonymous"></script>
+   <script>
+   $(function() {
+      const hum = $('#hamburger, .close')
+      const nav = $('.sp-nav')
+      hum.on('click', function(){
+         nav.toggleClass('toggle');
+      });
+   });
+   </script>
+
+<a href="/workspace/tool/beer/tests/sandbox/common/../index.php"><h1>Darth Beer.com</h1></a>
+<nav class="pc-nav">
+<ul>
+	<li><a href="/workspace/tool/beer/tests/sandbox/common/../beer/products.php">ビール</a></li>
+	<li><a href="/workspace/tool/beer/tests/sandbox/common/../brewery/makers.php">ブリュワリー</a></li>
+	<!-- <li><a href="/workspace/tool/beer/tests/sandbox/common/../style/styles.php">スタイル</a></li> -->
+	<li><a href="/workspace/tool/beer/tests/sandbox/common/../post/add_product.php">ビールを投稿</a></li>
+</ul>
+</nav>
+<nav class="sp-nav">
+   <ul>
+	<li><a href="/workspace/tool/beer/tests/sandbox/common/../beer/products.php">ビール</a></li>
+	<li><a href="/workspace/tool/beer/tests/sandbox/common/../brewery/makers.php">ブリュワリー</a></li>
+	<!-- <li><a href="/workspace/tool/beer/tests/sandbox/common/../style/styles.php">スタイル</a></li> -->
+	<li><a href="/workspace/tool/beer/tests/sandbox/common/../post/add_product.php">ビールを投稿</a></li>
+      <li class="close"><span>閉じる</span></li>
+   </ul>
+ </nav>
+<div id="hamburger">
+      <span></span>
+</div>
+</header>
+
+<!--
+<div class='first'>
+<h2>
+</h2>
+<p>
+</p>
+</div>
+-->
+
+<div id='main_wrap'>
+<div id='main'>
+<div class='sec1'>
+<h2 class='Brewery'>ビール 3件</h2>
+
+<ul class="image_list" id="JPages"> 
+<li><div class="image_box"><a href="detail/product.php?ProductID=103"><img class="thumbnail" src="../img/product/103.png" alt="Gamma Dark Stout" title="Gamma Dark Stout"></div><h3 class="MakerName">Gamma Dark Stout </h3></a>  <p class="MakerExplain">A roasty stout from Gamma Brewing. </p></li><li><div class="image_box"><a href="detail/product.php?ProductID=102"><img class="thumbnail" src="../img/product/102.png" alt="Beta Light Pilsner" title="Beta Light Pilsner"></div><h3 class="MakerName">Beta Light Pilsner </h3></a>  <p class="MakerExplain">A crisp pilsner from Beta Brewing. </p></li><li><div class="image_box"><a href="detail/product.php?ProductID=101"><img class="thumbnail" src="../img/product/101.png" alt="Alpha Citrus IPA" title="Alpha Citrus IPA"></div><h3 class="MakerName">Alpha Citrus IPA </h3></a>  <p class="MakerExplain">A citrusy IPA from Alpha Brewing. </p></li></ul>
+
+<div class="customBtns">
+    <span class="arrowPrev"></span>
+    <span class="arrowNext"></span>
+    <div class="holder"></div>
+</div>
+<script>
+var class_color='disabled_checkbox_color'
+</script>
+<script src="../common/pages.js"></script>
+
+
+</div>  <!-- sec1 -->
+
+</div> <!--  id=main  -->
+</div> <!--  id=main_wrap  -->
+</div> <!--  id=wrap  -->
+</body>
+
+
+
+
+Warning: Undefined array key "comment" in /workspace/tool/beer/tests/sandbox/beer/products.php on line 90
+
+
+
+
+</html>
