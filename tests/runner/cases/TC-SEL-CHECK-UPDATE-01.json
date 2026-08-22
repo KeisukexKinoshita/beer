@@ -1,0 +1,25 @@
+{
+  "id": "TC-SEL-CHECK-UPDATE-01",
+  "type": "page",
+  "page": "post/check/check.php",
+  "params": {
+    "get": {},
+    "post": {
+      "ProductID": "101",
+      "chk_MakerID": "mk9001",
+      "chk_color": "7",
+      "chk_clarity": {
+        "value": "4",
+        "explain": "Hazy"
+      },
+      "chk_fruity": {
+        "value": "3",
+        "explain": "Fruity Beer"
+      },
+      "chk_favorite": "2",
+      "UserID": "us0003",
+      "New_Update": "update",
+      "comment": "Updated take."
+    }
+  }
+}

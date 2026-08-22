@@ -1,0 +1,101 @@
+
+Warning: Undefined variable $src_prd in /workspace/tool/beer/tests/sandbox/php/sql.php on line 11
+
+Warning: Undefined variable $src_prd in /workspace/tool/beer/tests/sandbox/php/sql.php on line 42
+
+Warning: Undefined variable $src_cla in /workspace/tool/beer/tests/sandbox/php/sql.php on line 82
+
+Warning: Undefined variable $src_fru in /workspace/tool/beer/tests/sandbox/php/sql.php on line 96
+
+<script>
+// product
+let js_prd = [{"ProductID":101,"MakerID":"mk9001","ProductName":"Alpha Citrus IPA","StyleID":"1","Alcohol":"5.50","IBU_all":"42.00","IBU":"42.00","Color":"3","Clarity":"1","Fruity":"2","Favorite":"4.20","ProductExplain":"A citrusy IPA from Alpha Brewing.","IBU_Style":"45.00","Comment":""},{"ProductID":102,"MakerID":"mk9002","ProductName":"Beta Light Pilsner","StyleID":"2","Alcohol":"4.80","IBU_all":"99.99","IBU":"0.00","Color":"2","Clarity":"2","Fruity":"1","Favorite":"3.50","ProductExplain":"A crisp pilsner from Beta Brewing.","IBU_Style":"30.00","Comment":""},{"ProductID":103,"MakerID":"mk9003","ProductName":"Gamma Dark Stout","StyleID":"3","Alcohol":"6.20","IBU_all":"35.00","IBU":"35.00","Color":"9","Clarity":"4","Fruity":"1","Favorite":"4.80","ProductExplain":"A roasty stout from Gamma Brewing.","IBU_Style":"35.00","Comment":""}];	 
+var prd_ProductID=[], prd_MakerID = [], prd_ProductName = [], prd_StyleID=[], prd_Alcohol = [], prd_IBU=[], prd_Color=[], prd_Clarity=[], prd_Fruity=[], prd_Favorite=[];
+js_prd.forEach(function(value) {
+     prd_ProductID.push(value['ProductID'])
+     prd_MakerID.push(value['MakerID'])
+     prd_ProductName.push(value['ProductName'])
+     prd_StyleID.push(value['StyleID'])
+     prd_Alcohol.push(value['Alcohol'])
+     prd_IBU.push(value['IBU_all'])
+     prd_Color.push(value['Color'])
+     prd_Clarity.push(value['Clarity'])
+     prd_Fruity.push(value['Fruity'])
+     prd_Favorite.push(value['Favorite'])
+});
+
+//maker
+let js_mak = [{"MakerID":"mk9001","MakerName":"Alpha Brewing","MakerExplain":"Craft brewery Alpha, known for citrusy IPA.","URL1":"https:\/\/alpha.example.com"},{"MakerID":"mk9002","MakerName":"Beta Brewing","MakerExplain":"Craft brewery Beta, focuses on lagers.","URL1":"https:\/\/beta.example.com"},{"MakerID":"mk9003","MakerName":"Gamma Brewing","MakerExplain":"Craft brewery Gamma, dark beer specialist.","URL1":"https:\/\/gamma.example.com"}];	 
+var mak_MakerID=[], mak_MakerName=[];
+js_mak.forEach(function(value) {
+     mak_MakerID.push(value['MakerID'])
+     mak_MakerName.push(value['MakerName'])
+});
+
+//style
+let js_sty = [{"StyleID":"1","FamilyName":"Ale","StyleName":"IPA","IBU":"45.00","StyleExplain":"Hoppy and bitter ale style."},{"StyleID":"2","FamilyName":"Lager","StyleName":"Pilsner","IBU":"30.00","StyleExplain":"Crisp, light lager style."},{"StyleID":"3","FamilyName":"Ale","StyleName":"Stout","IBU":"35.00","StyleExplain":"Dark, roasty ale style."}];	 
+var sty_StyleID=[], sty_StyleName=[], sty_StyleIBU=[];
+js_sty.forEach(function(value) {
+   sty_StyleID.push(value['StyleID'])
+   sty_StyleName.push(value['StyleName'])
+   sty_StyleIBU.push(value['StyleIBU'])
+});
+
+//clarity
+let js_cla = 
+Warning: Undefined variable $json_cla in /workspace/tool/beer/tests/sandbox/php/sql.php on line 145
+0;	 
+var cla_ClarityID=[], cla_ClarityValue=[], cla_ClarityName=[];
+js_cla.forEach(function(value) {
+   cla_ClarityID.push(value['ClarityID'])
+   cla_ClarityValue.push(value['ClarityValue'])
+   cla_ClarityName.push(value['ClarityName'])
+});
+
+//fruity
+let js_fru = 
+Warning: Undefined variable $json_fru in /workspace/tool/beer/tests/sandbox/php/sql.php on line 154
+0;	 
+var fru_FruityID=[], fru_FruityValue=[], fru_FruityName=[];
+js_fru.forEach(function(value) {
+   fru_FruityID.push(value['FruityID'])
+   fru_FruityValue.push(value['FruityValue'])
+   fru_FruityName.push(value['FruityName'])
+});
+
+</script>
+
+Warning: Undefined array key "product_id" in /workspace/tool/beer/tests/sandbox/php/list_style.php on line 7
+
+<html>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<!-- <script src="../js/base.js"></script> -->
+ <head>
+<meta charset="utf-8">
+<title>List of brewery</title>
+<link rel="stylesheet" href="../css/list_style.css">
+</head>
+
+<body>
+
+<div class='top'>
+<h1>List of style</h1>
+</div>
+
+<p class='p1'>
+Chose a style
+</p>
+
+
+
+<form action = "add_product.php" method = "POST">
+<ul class="image_list"><div class="image_box"><input class ="disabled_checkbox_style" type = "checkbox" name = "chk_style" value=1 >IPA</div></ul><ul class="image_list"><div class="image_box"><input class ="disabled_checkbox_style" type = "checkbox" name = "chk_style" value=2 >Pilsner</div></ul><ul class="image_list"><div class="image_box"><input class ="disabled_checkbox_style" type = "checkbox" name = "chk_style" value=3 >Stout</div></ul>
+<script>
+var class_color='disabled_checkbox_style' ;
+</script>
+<script src="../js/check_control.js"></script>
+
+<p> <input type = "submit" value ="submit"> </p>
+</form>
+</body>
+

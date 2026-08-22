@@ -1,0 +1,12 @@
+{
+  "id": "TC-CORE-03",
+  "type": "core",
+  "vars": {
+    "src_prd": "no",
+    "sql_where": "''=''",
+    "sql_where_cla": "''=''",
+    "sql_where_fru": "''=''",
+    "src_cla": "yes",
+    "src_fru": "yes"
+  }
+}

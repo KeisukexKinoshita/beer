@@ -1,0 +1,9 @@
+{
+  "id": "TC-SEL-IDX-01",
+  "type": "page",
+  "page": "index.php",
+  "params": {
+    "get": {},
+    "post": {}
+  }
+}

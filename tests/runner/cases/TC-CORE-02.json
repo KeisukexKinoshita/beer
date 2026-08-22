@@ -1,0 +1,9 @@
+{
+  "id": "TC-CORE-02",
+  "type": "core",
+  "vars": {
+    "src_prd": "no",
+    "src_mak": "yes",
+    "sql_where_mak": "MakerID='mk9002'"
+  }
+}

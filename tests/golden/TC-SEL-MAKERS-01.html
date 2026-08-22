@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ja">
+ <head>
+<meta charset="utf-8">
+<meta name='description' content="This site shows some craft beer">
+<meta name='keywords' content="craft beer,beer,クラフトビール、ビール、IPA">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Darth Beer.com</title>
+<link rel="stylesheet" href="../css/style.css">
+
+Warning: Undefined variable $src_prd in /workspace/tool/beer/tests/sandbox/php/sql.php on line 11
+
+Warning: Undefined variable $src_prd in /workspace/tool/beer/tests/sandbox/php/sql.php on line 42
+
+Warning: Undefined variable $src_sty in /workspace/tool/beer/tests/sandbox/php/sql.php on line 68
+
+Warning: Undefined variable $src_cla in /workspace/tool/beer/tests/sandbox/php/sql.php on line 82
+
+Warning: Undefined variable $src_fru in /workspace/tool/beer/tests/sandbox/php/sql.php on line 96
+
+<script>
+// product
+let js_prd = [{"ProductID":101,"MakerID":"mk9001","ProductName":"Alpha Citrus IPA","StyleID":"1","Alcohol":"5.50","IBU_all":"42.00","IBU":"42.00","Color":"3","Clarity":"1","Fruity":"2","Favorite":"4.20","ProductExplain":"A citrusy IPA from Alpha Brewing.","IBU_Style":"45.00","Comment":""},{"ProductID":102,"MakerID":"mk9002","ProductName":"Beta Light Pilsner","StyleID":"2","Alcohol":"4.80","IBU_all":"99.99","IBU":"0.00","Color":"2","Clarity":"2","Fruity":"1","Favorite":"3.50","ProductExplain":"A crisp pilsner from Beta Brewing.","IBU_Style":"30.00","Comment":""},{"ProductID":103,"MakerID":"mk9003","ProductName":"Gamma Dark Stout","StyleID":"3","Alcohol":"6.20","IBU_all":"35.00","IBU":"35.00","Color":"9","Clarity":"4","Fruity":"1","Favorite":"4.80","ProductExplain":"A roasty stout from Gamma Brewing.","IBU_Style":"35.00","Comment":""}];	 
+var prd_ProductID=[], prd_MakerID = [], prd_ProductName = [], prd_StyleID=[], prd_Alcohol = [], prd_IBU=[], prd_Color=[], prd_Clarity=[], prd_Fruity=[], prd_Favorite=[];
+js_prd.forEach(function(value) {
+     prd_ProductID.push(value['ProductID'])
+     prd_MakerID.push(value['MakerID'])
+     prd_ProductName.push(value['ProductName'])
+     prd_StyleID.push(value['StyleID'])
+     prd_Alcohol.push(value['Alcohol'])
+     prd_IBU.push(value['IBU_all'])
+     prd_Color.push(value['Color'])
+     prd_Clarity.push(value['Clarity'])
+     prd_Fruity.push(value['Fruity'])
+     prd_Favorite.push(value['Favorite'])
+});
+
+//maker
+let js_mak = [{"MakerID":"mk9001","MakerName":"Alpha Brewing","MakerExplain":"Craft brewery Alpha, known for citrusy IPA.","URL1":"https:\/\/alpha.example.com"},{"MakerID":"mk9002","MakerName":"Beta Brewing","MakerExplain":"Craft brewery Beta, focuses on lagers.","URL1":"https:\/\/beta.example.com"},{"MakerID":"mk9003","MakerName":"Gamma Brewing","MakerExplain":"Craft brewery Gamma, dark beer specialist.","URL1":"https:\/\/gamma.example.com"}];	 
+var mak_MakerID=[], mak_MakerName=[];
+js_mak.forEach(function(value) {
+     mak_MakerID.push(value['MakerID'])
+     mak_MakerName.push(value['MakerName'])
+});
+
+//style
+let js_sty = 
+Warning: Undefined variable $json_sty in /workspace/tool/beer/tests/sandbox/php/sql.php on line 136
+0;	 
+var sty_StyleID=[], sty_StyleName=[], sty_StyleIBU=[];
+js_sty.forEach(function(value) {
+   sty_StyleID.push(value['StyleID'])
+   sty_StyleName.push(value['StyleName'])
+   sty_StyleIBU.push(value['StyleIBU'])
+});
+
+//clarity
+let js_cla = 
+Warning: Undefined variable $json_cla in /workspace/tool/beer/tests/sandbox/php/sql.php on line 145
+0;	 
+var cla_ClarityID=[], cla_ClarityValue=[], cla_ClarityName=[];
+js_cla.forEach(function(value) {
+   cla_ClarityID.push(value['ClarityID'])
+   cla_ClarityValue.push(value['ClarityValue'])
+   cla_ClarityName.push(value['ClarityName'])
+});
+
+//fruity
+let js_fru = 
+Warning: Undefined variable $json_fru in /workspace/tool/beer/tests/sandbox/php/sql.php on line 154
+0;	 
+var fru_FruityID=[], fru_FruityValue=[], fru_FruityName=[];
+js_fru.forEach(function(value) {
+   fru_FruityID.push(value['FruityID'])
+   fru_FruityValue.push(value['FruityValue'])
+   fru_FruityName.push(value['FruityName'])
+});
+
+</script>
+
+</head>
+
+<body>
+<div id='wrap'>
+
+<header>
+
+<a href="/workspace/tool/beer/tests/sandbox/php/../index.php"><h1>Darth Beer.com</h1></a>
+<nav class="pc-nav">
+<ul>
+<li><a href="/workspace/tool/beer/tests/sandbox/php/makers.php">ブリュワリー</a></li>
+<li><a href="/workspace/tool/beer/tests/sandbox/php/add_product.php">新しいビールを投稿する</a></li>
+</ul>
+</nav>
+</header>
+
+<!--
+<div class='first'>
+<h2>
+</h2>
+<p>
+</p>
+</div>
+-->
+
+<div id='main_wrap'>
+<div id='main'>
+<div class='sec1'>
+<h2 class='Brewery'>Breweries 3件</h2>
+
+<ul class="image_list"> 
+<li><div class="image_box"><a href="maker.php?MakerID=mk9001"><img class="thumbnail" src="../img/maker/mk9001.png" alt="Alpha Brewing" title="Alpha Brewing"><h3 class="MakerName">Alpha Brewing </h3></a>  <p class="MakerExplain">Craft brewery Alpha, known for citrusy IPA. </p></div></li><li><div class="image_box"><a href="maker.php?MakerID=mk9002"><img class="thumbnail" src="../img/maker/mk9002.png" alt="Beta Brewing" title="Beta Brewing"><h3 class="MakerName">Beta Brewing </h3></a>  <p class="MakerExplain">Craft brewery Beta, focuses on lagers. </p></div></li><li><div class="image_box"><a href="maker.php?MakerID=mk9003"><img class="thumbnail" src="../img/maker/mk9003.png" alt="Gamma Brewing" title="Gamma Brewing"><h3 class="MakerName">Gamma Brewing </h3></a>  <p class="MakerExplain">Craft brewery Gamma, dark beer specialist. </p></div></li></ul>
+
+</div>
+
+</div> <!--  id=main  -->
+</div> <!--  id=main_wrap  -->
+</div> <!--  id=wrap  -->
+</body>
+
+
+
+
+Warning: Undefined array key "comment" in /workspace/tool/beer/tests/sandbox/php/makers.php on line 76
+
+
+
+
+</html>

@@ -1,0 +1,11 @@
+{
+  "id": "TC-SEL-MAK-01",
+  "type": "page",
+  "page": "php/maker.php",
+  "params": {
+    "get": {
+      "MakerID": "mk9001"
+    },
+    "post": {}
+  }
+}

@@ -1,0 +1,70 @@
+
+Warning: Undefined variable $src_sty in /workspace/tool/beer/tests/sandbox/common/sql.php on line 70
+
+Warning: Undefined variable $src_cla in /workspace/tool/beer/tests/sandbox/common/sql.php on line 86
+
+Warning: Undefined variable $src_fru in /workspace/tool/beer/tests/sandbox/common/sql.php on line 100
+
+<script>
+// product
+let js_prd = 
+Warning: Undefined variable $json_prd in /workspace/tool/beer/tests/sandbox/common/sql.php on line 116
+0;	 
+var prd_ProductID=[], prd_MakerID = [], prd_ProductName = [], prd_StyleID=[], prd_Alcohol = [], prd_IBU=[], prd_Color=[], prd_Clarity=[], prd_Fruity=[], prd_Favorite=[];
+js_prd.forEach(function(value) {
+     prd_ProductID.push(value['ProductID'])
+     prd_MakerID.push(value['MakerID'])
+     prd_ProductName.push(value['ProductName'])
+     prd_StyleID.push(value['StyleID'])
+     prd_Alcohol.push(value['Alcohol'])
+     prd_IBU.push(value['IBU_all'])
+     prd_Color.push(value['Color'])
+     prd_Clarity.push(value['Clarity'])
+     prd_Fruity.push(value['Fruity'])
+     prd_Favorite.push(value['Favorite'])
+});
+
+//maker
+let js_mak = [{"MakerID":"mk9002","MakerName":"Beta Brewing","MakerExplain":"Craft brewery Beta, focuses on lagers.","URL1":"https:\/\/beta.example.com"}];	 
+var mak_MakerID=[], mak_MakerName=[];
+js_mak.forEach(function(value) {
+     mak_MakerID.push(value['MakerID'])
+     mak_MakerName.push(value['MakerName'])
+});
+
+//style
+let js_sty = 
+Warning: Undefined variable $json_sty in /workspace/tool/beer/tests/sandbox/common/sql.php on line 140
+0;	 
+var sty_StyleID=[], sty_FamilyName=[], sty_StyleName=[], sty_StyleIBU=[], sty_StyleExplain=[];
+js_sty.forEach(function(value) {
+   sty_StyleID.push(value['StyleID'])
+   sty_FamilyName.push(value['FamilyName'])
+   sty_StyleName.push(value['StyleName'])
+   sty_StyleIBU.push(value['StyleIBU'])
+   sty_StyleExplain.push(value['StyleExplain'])
+});
+
+//clarity
+let js_cla = 
+Warning: Undefined variable $json_cla in /workspace/tool/beer/tests/sandbox/common/sql.php on line 151
+0;	 
+var cla_ClarityID=[], cla_ClarityValue=[], cla_ClarityName=[];
+js_cla.forEach(function(value) {
+   cla_ClarityID.push(value['ClarityID'])
+   cla_ClarityValue.push(value['ClarityValue'])
+   cla_ClarityName.push(value['ClarityName'])
+});
+
+//fruity
+let js_fru = 
+Warning: Undefined variable $json_fru in /workspace/tool/beer/tests/sandbox/common/sql.php on line 160
+0;	 
+var fru_FruityID=[], fru_FruityValue=[], fru_FruityName=[];
+js_fru.forEach(function(value) {
+   fru_FruityID.push(value['FruityID'])
+   fru_FruityValue.push(value['FruityValue'])
+   fru_FruityName.push(value['FruityName'])
+});
+
+</script>

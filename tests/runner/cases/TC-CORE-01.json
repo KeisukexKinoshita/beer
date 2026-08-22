@@ -1,0 +1,8 @@
+{
+  "id": "TC-CORE-01",
+  "type": "core",
+  "vars": {
+    "src_prd": "no",
+    "src_mak": "no"
+  }
+}

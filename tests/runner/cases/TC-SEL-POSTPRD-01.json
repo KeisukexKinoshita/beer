@@ -1,0 +1,11 @@
+{
+  "id": "TC-SEL-POSTPRD-01",
+  "type": "page",
+  "page": "php/post_product.php",
+  "params": {
+    "get": {
+      "serch": "Beta"
+    },
+    "post": {}
+  }
+}

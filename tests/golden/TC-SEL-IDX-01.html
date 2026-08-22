@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ja">
+ <head>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3292112504579579"
+     crossorigin="anonymous"></script>
+
+<meta charset="utf-8">
+<meta name='description' content="世界中のあらゆるクラフトビールを見つけることができます。">
+<meta name='keywords' content="craft beer,beer,クラフトビール、ビール、IPA">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Darth Beer.com</title>
+<link rel="stylesheet" href="style.css">
+
+Warning: Undefined variable $src_prd in /workspace/tool/beer/tests/sandbox/common/sql.php on line 11
+
+Warning: Undefined variable $src_mak in /workspace/tool/beer/tests/sandbox/common/sql.php on line 42
+
+Warning: Undefined variable $src_mak in /workspace/tool/beer/tests/sandbox/common/sql.php on line 44
+
+Warning: Undefined variable $src_cla in /workspace/tool/beer/tests/sandbox/common/sql.php on line 86
+
+Warning: Undefined variable $src_fru in /workspace/tool/beer/tests/sandbox/common/sql.php on line 100
+
+<script>
+// product
+let js_prd = [{"ProductID":101,"MakerID":"mk9001","ProductName":"Alpha Citrus IPA","StyleID":"1","Alcohol":"5.50","IBU_all":"42.00","IBU":"42.00","Color":"3","Clarity":"1","Fruity":"2","Favorite":"4.20","ProductExplain":"A citrusy IPA from Alpha Brewing.","IBU_Style":"45.00","Comment":""},{"ProductID":102,"MakerID":"mk9002","ProductName":"Beta Light Pilsner","StyleID":"2","Alcohol":"4.80","IBU_all":"99.99","IBU":"0.00","Color":"2","Clarity":"2","Fruity":"1","Favorite":"3.50","ProductExplain":"A crisp pilsner from Beta Brewing.","IBU_Style":"30.00","Comment":""},{"ProductID":103,"MakerID":"mk9003","ProductName":"Gamma Dark Stout","StyleID":"3","Alcohol":"6.20","IBU_all":"35.00","IBU":"35.00","Color":"9","Clarity":"4","Fruity":"1","Favorite":"4.80","ProductExplain":"A roasty stout from Gamma Brewing.","IBU_Style":"35.00","Comment":""}];	 
+var prd_ProductID=[], prd_MakerID = [], prd_ProductName = [], prd_StyleID=[], prd_Alcohol = [], prd_IBU=[], prd_Color=[], prd_Clarity=[], prd_Fruity=[], prd_Favorite=[];
+js_prd.forEach(function(value) {
+     prd_ProductID.push(value['ProductID'])
+     prd_MakerID.push(value['MakerID'])
+     prd_ProductName.push(value['ProductName'])
+     prd_StyleID.push(value['StyleID'])
+     prd_Alcohol.push(value['Alcohol'])
+     prd_IBU.push(value['IBU_all'])
+     prd_Color.push(value['Color'])
+     prd_Clarity.push(value['Clarity'])
+     prd_Fruity.push(value['Fruity'])
+     prd_Favorite.push(value['Favorite'])
+});
+
+//maker
+let js_mak = [{"MakerID":"mk9001","MakerName":"Alpha Brewing","MakerExplain":"Craft brewery Alpha, known for citrusy IPA.","URL1":"https:\/\/alpha.example.com"},{"MakerID":"mk9002","MakerName":"Beta Brewing","MakerExplain":"Craft brewery Beta, focuses on lagers.","URL1":"https:\/\/beta.example.com"},{"MakerID":"mk9003","MakerName":"Gamma Brewing","MakerExplain":"Craft brewery Gamma, dark beer specialist.","URL1":"https:\/\/gamma.example.com"}];	 
+var mak_MakerID=[], mak_MakerName=[];
+js_mak.forEach(function(value) {
+     mak_MakerID.push(value['MakerID'])
+     mak_MakerName.push(value['MakerName'])
+});
+
+//style
+let js_sty = [{"StyleID":"1","FamilyName":"Ale","StyleName":"IPA","IBU":"45.00","StyleExplain":"Hoppy and bitter ale style."},{"StyleID":"2","FamilyName":"Lager","StyleName":"Pilsner","IBU":"30.00","StyleExplain":"Crisp, light lager style."},{"StyleID":"3","FamilyName":"Ale","StyleName":"Stout","IBU":"35.00","StyleExplain":"Dark, roasty ale style."}];	 
+var sty_StyleID=[], sty_FamilyName=[], sty_StyleName=[], sty_StyleIBU=[], sty_StyleExplain=[];
+js_sty.forEach(function(value) {
+   sty_StyleID.push(value['StyleID'])
+   sty_FamilyName.push(value['FamilyName'])
+   sty_StyleName.push(value['StyleName'])
+   sty_StyleIBU.push(value['StyleIBU'])
+   sty_StyleExplain.push(value['StyleExplain'])
+});
+
+//clarity
+let js_cla = 
+Warning: Undefined variable $json_cla in /workspace/tool/beer/tests/sandbox/common/sql.php on line 151
+0;	 
+var cla_ClarityID=[], cla_ClarityValue=[], cla_ClarityName=[];
+js_cla.forEach(function(value) {
+   cla_ClarityID.push(value['ClarityID'])
+   cla_ClarityValue.push(value['ClarityValue'])
+   cla_ClarityName.push(value['ClarityName'])
+});
+
+//fruity
+let js_fru = 
+Warning: Undefined variable $json_fru in /workspace/tool/beer/tests/sandbox/common/sql.php on line 160
+0;	 
+var fru_FruityID=[], fru_FruityValue=[], fru_FruityName=[];
+js_fru.forEach(function(value) {
+   fru_FruityID.push(value['FruityID'])
+   fru_FruityValue.push(value['FruityValue'])
+   fru_FruityName.push(value['FruityName'])
+});
+
+</script>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-249697077-2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-249697077-2');
+</script>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-3XWPBKZR5Z"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-3XWPBKZR5Z');
+</script>
+
+</head>
+
+<body>
+
+<header>
+
+<script src="https://code.jquery.com/jquery-2.2.4.js" integrity="sha256-iT6Q9iMJYuQiMWNd9lDyBUStIq/8PuOW33aOqmvFpqI=" crossorigin="anonymous"></script>
+   <script>
+   $(function() {
+      const hum = $('#hamburger, .close')
+      const nav = $('.sp-nav')
+      hum.on('click', function(){
+         nav.toggleClass('toggle');
+      });
+   });
+   </script>
+
+<a href="/workspace/tool/beer/tests/sandbox/common/../index.php"><h1>Darth Beer.com</h1></a>
+<nav class="pc-nav">
+<ul>
+	<li><a href="/workspace/tool/beer/tests/sandbox/common/../beer/products.php">ビール</a></li>
+	<li><a href="/workspace/tool/beer/tests/sandbox/common/../brewery/makers.php">ブリュワリー</a></li>
+	<!-- <li><a href="/workspace/tool/beer/tests/sandbox/common/../style/styles.php">スタイル</a></li> -->
+	<li><a href="/workspace/tool/beer/tests/sandbox/common/../post/add_product.php">ビールを投稿</a></li>
+</ul>
+</nav>
+<nav class="sp-nav">
+   <ul>
+	<li><a href="/workspace/tool/beer/tests/sandbox/common/../beer/products.php">ビール</a></li>
+	<li><a href="/workspace/tool/beer/tests/sandbox/common/../brewery/makers.php">ブリュワリー</a></li>
+	<!-- <li><a href="/workspace/tool/beer/tests/sandbox/common/../style/styles.php">スタイル</a></li> -->
+	<li><a href="/workspace/tool/beer/tests/sandbox/common/../post/add_product.php">ビールを投稿</a></li>
+      <li class="close"><span>閉じる</span></li>
+   </ul>
+ </nav>
+<div id="hamburger">
+      <span></span>
+</div>
+</header>
+
+<div class='first'>
+<!-- <img src='../img/top.jpg' alt='top'>  -->
+<h2>
+  Discover Your Favorite Craft Beer!
+</h2>
+<p>
+このサイトはクラフトビールを専門に扱います。</br>
+おすすめのクラフトビールやブリュワリー、スタイルを参考にしてお気に入りのクラフトビールを見つけましょう。
+</p>
+</div>
+
+<div id='main_wrap'>
+<div id='main'>
+<div class='sec1'>
+<h2 class='Brewery'>新着のクラフトビール</h2>
+
+<ul class="image_list"> 
+<li><div class="image_box"><a href="beer/detail/product.php?ProductID=103"><img class="thumbnail" src="../img/product/103.png" alt="Gamma Dark Stout" title="Gamma Dark Stout"></div><h3 class="MakerName">Gamma Dark Stout </h3></a>  <p class="MakerExplain">A roasty stout from Gamma Brewing. </p></li><li><div class="image_box"><a href="beer/detail/product.php?ProductID=102"><img class="thumbnail" src="../img/product/102.png" alt="Beta Light Pilsner" title="Beta Light Pilsner"></div><h3 class="MakerName">Beta Light Pilsner </h3></a>  <p class="MakerExplain">A crisp pilsner from Beta Brewing. </p></li><li><div class="image_box"><a href="beer/detail/product.php?ProductID=101"><img class="thumbnail" src="../img/product/101.png" alt="Alpha Citrus IPA" title="Alpha Citrus IPA"></div><h3 class="MakerName">Alpha Citrus IPA </h3></a>  <p class="MakerExplain">A citrusy IPA from Alpha Brewing. </p></li><li><div class="image_box"><a href="beer/detail/product.php?ProductID=
+Warning: Undefined array key -1 in /workspace/tool/beer/tests/sandbox/index.php on line 70
+"><img class="thumbnail" src="../img/product/
+Warning: Undefined array key -1 in /workspace/tool/beer/tests/sandbox/index.php on line 73
+.png" alt="
+Warning: Undefined array key -1 in /workspace/tool/beer/tests/sandbox/index.php on line 75
+" title="
+Warning: Undefined array key -1 in /workspace/tool/beer/tests/sandbox/index.php on line 77
+"></div><h3 class="MakerName">
+Warning: Undefined array key -1 in /workspace/tool/beer/tests/sandbox/index.php on line 81
+ </h3></a>  <p class="MakerExplain">
+Warning: Undefined array key -1 in /workspace/tool/beer/tests/sandbox/index.php on line 85
+ </p></li><li><div class="image_box"><a href="beer/detail/product.php?ProductID=
+Warning: Undefined array key -2 in /workspace/tool/beer/tests/sandbox/index.php on line 70
+"><img class="thumbnail" src="../img/product/
+Warning: Undefined array key -2 in /workspace/tool/beer/tests/sandbox/index.php on line 73
+.png" alt="
+Warning: Undefined array key -2 in /workspace/tool/beer/tests/sandbox/index.php on line 75
+" title="
+Warning: Undefined array key -2 in /workspace/tool/beer/tests/sandbox/index.php on line 77
+"></div><h3 class="MakerName">
+Warning: Undefined array key -2 in /workspace/tool/beer/tests/sandbox/index.php on line 81
+ </h3></a>  <p class="MakerExplain">
+Warning: Undefined array key -2 in /workspace/tool/beer/tests/sandbox/index.php on line 85
+ </p></li><li><div class="image_box"><a href="beer/detail/product.php?ProductID=
+Warning: Undefined array key -3 in /workspace/tool/beer/tests/sandbox/index.php on line 70
+"><img class="thumbnail" src="../img/product/
+Warning: Undefined array key -3 in /workspace/tool/beer/tests/sandbox/index.php on line 73
+.png" alt="
+Warning: Undefined array key -3 in /workspace/tool/beer/tests/sandbox/index.php on line 75
+" title="
+Warning: Undefined array key -3 in /workspace/tool/beer/tests/sandbox/index.php on line 77
+"></div><h3 class="MakerName">
+Warning: Undefined array key -3 in /workspace/tool/beer/tests/sandbox/index.php on line 81
+ </h3></a>  <p class="MakerExplain">
+Warning: Undefined array key -3 in /workspace/tool/beer/tests/sandbox/index.php on line 85
+ </p></li></ul>
+<p class='seemore'>
+<button type=“button” onclick="location.href='beer/products.php'"><h3>全てのクラフトビールを見る</h3></button>
+</p>
+</div>   <!-- sec1 -->
+
+<div class='sec1'>
+<h2 class='Brewery'>新着のブリュワリー</h2>
+
+<ul class="image_list"> 
+<li><div class="image_box"><a href="brewery/detail/maker.php?MakerID=mk9003"><img class="thumbnail" src="../img/maker/mk9003.png" alt="Gamma Brewing" title="Gamma Brewing"></div><h3 class="MakerName">Gamma Brewing </h3></a>  <p class="MakerExplain"><p>fixture explain mk9003</p>
+ </p></li><li><div class="image_box"><a href="brewery/detail/maker.php?MakerID=mk9002"><img class="thumbnail" src="../img/maker/mk9002.png" alt="Beta Brewing" title="Beta Brewing"></div><h3 class="MakerName">Beta Brewing </h3></a>  <p class="MakerExplain"><p>fixture explain mk9002</p>
+ </p></li><li><div class="image_box"><a href="brewery/detail/maker.php?MakerID=mk9001"><img class="thumbnail" src="../img/maker/mk9001.png" alt="Alpha Brewing" title="Alpha Brewing"></div><h3 class="MakerName">Alpha Brewing </h3></a>  <p class="MakerExplain"><p>fixture explain mk9001</p>
+ </p></li><li><div class="image_box"><a href="brewery/detail/maker.php?MakerID=
+Warning: Undefined array key -1 in /workspace/tool/beer/tests/sandbox/index.php on line 105
+"><img class="thumbnail" src="../img/maker/
+Warning: Undefined array key -1 in /workspace/tool/beer/tests/sandbox/index.php on line 108
+.png" alt="
+Warning: Undefined array key -1 in /workspace/tool/beer/tests/sandbox/index.php on line 110
+" title="
+Warning: Undefined array key -1 in /workspace/tool/beer/tests/sandbox/index.php on line 112
+"></div><h3 class="MakerName">
+Warning: Undefined array key -1 in /workspace/tool/beer/tests/sandbox/index.php on line 116
+ </h3></a>  <p class="MakerExplain">
+Warning: Undefined array key -1 in /workspace/tool/beer/tests/sandbox/index.php on line 120
+
+Warning: require(brewery/detail/explain/.html): Failed to open stream: No such file or directory in /workspace/tool/beer/tests/sandbox/index.php on line 120
+
+Fatal error: Uncaught Error: Failed opening required 'brewery/detail/explain/.html' (include_path='.:/usr/share/pear:/usr/share/php') in /workspace/tool/beer/tests/sandbox/index.php:120
+Stack trace:
+#0 /workspace/tool/beer/tests/runner/exec_page.php(34): require()
+#1 {main}
+  thrown in /workspace/tool/beer/tests/sandbox/index.php on line 120

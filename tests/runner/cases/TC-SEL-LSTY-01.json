@@ -1,0 +1,9 @@
+{
+  "id": "TC-SEL-LSTY-01",
+  "type": "page",
+  "page": "php/list_style.php",
+  "params": {
+    "get": {},
+    "post": {}
+  }
+}

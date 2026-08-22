@@ -1,0 +1,12 @@
+{
+  "id": "TC-SEL-PRD-01",
+  "type": "page",
+  "page": "php/product.php",
+  "params": {
+    "get": {
+      "product_id": "102",
+      "maker_id": "mk9002"
+    },
+    "post": {}
+  }
+}

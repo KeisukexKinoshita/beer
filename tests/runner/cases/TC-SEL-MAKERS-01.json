@@ -1,0 +1,9 @@
+{
+  "id": "TC-SEL-MAKERS-01",
+  "type": "page",
+  "page": "php/makers.php",
+  "params": {
+    "get": {},
+    "post": {}
+  }
+}

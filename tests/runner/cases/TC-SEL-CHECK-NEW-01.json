@@ -1,0 +1,30 @@
+{
+  "id": "TC-SEL-CHECK-NEW-01",
+  "type": "page",
+  "page": "post/check/check.php",
+  "params": {
+    "get": {},
+    "post": {
+      "ProductID": "",
+      "chk_MakerID": "mk9002",
+      "chk_productname": "Delta Wheat",
+      "chk_StyleID": "2",
+      "chk_alcohol": "5.10",
+      "chk_ibu": "25.00",
+      "chk_color": "5",
+      "chk_clarity": {
+        "value": "3",
+        "explain": "Slight Haze"
+      },
+      "chk_fruity": {
+        "value": "2",
+        "explain": "Bit Fruity"
+      },
+      "chk_favorite": "4",
+      "UserID": "us0001",
+      "New_Update": "new",
+      "comment": "First tasting.",
+      "ProductExplain": "A new wheat beer."
+    }
+  }
+}

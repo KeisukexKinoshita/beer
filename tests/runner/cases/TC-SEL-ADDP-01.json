@@ -1,0 +1,9 @@
+{
+  "id": "TC-SEL-ADDP-01",
+  "type": "page",
+  "page": "php/add_product.php",
+  "params": {
+    "get": {},
+    "post": {}
+  }
+}

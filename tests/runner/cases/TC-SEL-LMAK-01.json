@@ -1,0 +1,9 @@
+{
+  "id": "TC-SEL-LMAK-01",
+  "type": "page",
+  "page": "php/list_maker.php",
+  "params": {
+    "get": {},
+    "post": {}
+  }
+}
