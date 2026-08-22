@@ -769,9 +769,27 @@ sandbox(`beer/`ディレクトリのコピーが追加済み)上で実行して�
   1バイトも違わない)。rename失敗という事象自体・その原因(ディレクトリ深さ依存の固定相対パス)・
   DB副作用が完全一致であることに変化はなく、単なる行番号シフトであるため
   「挙動保存(behavior-preserving)」の範囲内と判断する。§8参照。
-- **状態**: 仕様不一致(期待値をGM側に修正・確定。改修後もDB副作用は完全一致・PASS相当。
-  HTML出力のrename失敗Warningはカテゴリ(b)の行番号シフト(L40→L41)のみを追加で確認、
-  事象・原因に変化なし)
+- **【2026-08-22 最終確定】修正1(commit db02f69)によりrename()の実装がcwd依存の相対パスから
+  `dirname(__FILE__)` 基準の絶対パス(§11.2参照)に変更され、このケースが特性固定していた
+  バグ自体が**意図的に修正**された。`bash tests/runner/run_all.sh` 再実行で独立確認
+  (`tests/golden`との差分はこのケースの`.html`/`.db.txt`のみ、他25ケースは差分ゼロ):
+  - `tests/out/TC-POST-THANK-NEW-02.html` から `Warning: rename(...): No such file or
+    directory ...` の2行(Warning本文+空行)が消失。
+  - `tests/out/TC-POST-THANK-NEW-02.db.txt` の `== img/product ==` セクションに
+    `104.png` が追加された(修正前は空だった)。
+  - products/rate_userの内容(104行追加・102のIBU_all=30.00等)・exitコード(0)は完全に不変。
+  - **期待値を修正後の挙動に更新する**: `post/check/thank/thank.php`経由でも`php/thank.php`と
+    完全に同じ結果になる(rename成功・`img/product/104.png`生成・Warningなし)。
+    これにより本ケースの元々の設計意図(「commonとphpのsql_POST.phpがbyte-identicalなら
+    同一パラメータで同一結果になるはず」という相互確認)が、**HTML出力面でも真に成立する**
+    ようになった(旧仕様不一致は「意図しないバグ」に起因していたため、修正後は台帳の当初の
+    期待値どおりに戻った形)。
+  - オーケストレーターがこの新しい出力を`tests/golden/`に再ベースラインする予定
+    (本メッセージ時点ではまだ`tests/golden/TC-POST-THANK-NEW-02.*`は旧バグ入りの内容のまま
+    残っているため、`tests/out`との差分としてここに記録した。再ベースライン後は差分ゼロになる
+    見込み)。
+- **状態**: PASS(修正済み)。旧「仕様不一致」は解消(§11.2参照。rename成功・104.png生成・
+  Warningなしを確認。goldenの再ベースラインはオーケストレーター側で対応予定)
 
 ### 3.4 追加ケース(検証者(B)指摘1、2026-08-22追加) — 共有SQL層をrequireする未テストページ9件
 
@@ -969,7 +987,14 @@ sandbox(`beer/`ディレクトリのコピーが追加済み)上で実行して�
   No such file or directory`のWarning、続けて`Fatal error: Uncaught Error: Failed opening
   required '../common/sql.php'`(12行目)+スタックトレースで打ち切り。exit=255
   (オーケストレーター提示のexitコードとも一致)。
-- **状態**: PASS(GM固定)
+- **【2026-08-22 ページ削除に伴うケース撤去】修正2(commit db02f69)により、この壊れたページ
+  `style/detail/makers.php` 自体がリポジトリから削除された(§11.3参照。「別課題として記録する」
+  ではなく「孤児ページを削除する」という判断がなされた)。対応するケースJSON
+  (`tests/runner/cases/TC-SEL-STYDETAILMAKERS-01.json`)と`tests/golden/
+  TC-SEL-STYDETAILMAKERS-01.*`も削除済み。`bash tests/runner/run_all.sh`で本ケースはもはや
+  実行されない(対象ページが存在しないため)。
+- **状態**: 削除(ページごと撤去。commit db02f69。上記の期待値・PASS実績は削除前の最終確認結果
+  として記録を残す)
 
 #### TC-SEL-STYDETAIL-01: `style/detail/style.php`(**§2.1訂正の直接根拠**)
 
@@ -1078,7 +1103,13 @@ sandbox(`beer/`ディレクトリのコピーが追加済み)上で実行して�
   'BREWERY' in 'WHERE' in .../php/sql.php:23`、スタックトレース1行目が
   `#0 .../php/sql.php(23): PDO->query()`であることも一致。出力は`<div class='chart'>`の
   開始タグまでで打ち切り。exit=255(オーケストレーター提示のexitコードとも一致)。
-- **状態**: PASS(GM固定)
+- **【2026-08-22 ページ削除に伴うケース撤去】修正2(commit db02f69)により、この壊れたページ
+  `php/Strathcona_Beer_Company.php` 自体がリポジトリから削除された(§11.3参照)。対応する
+  ケースJSON(`tests/runner/cases/TC-SEL-STRATHCONA-01.json`)と`tests/golden/
+  TC-SEL-STRATHCONA-01.*`も削除済み。`bash tests/runner/run_all.sh`で本ケースはもはや
+  実行されない(対象ページが存在しないため)。
+- **状態**: 削除(ページごと撤去。commit db02f69。上記の期待値・PASS実績は削除前の最終確認結果
+  として記録を残す)
 
 ---
 
@@ -1136,6 +1167,10 @@ sandbox(`beer/`ディレクトリのコピーが追加済み)上で実行して�
 ---
 
 ## 6. カバレッジ集計・実行結果
+
+> **【最新の正式な件数は §11.4 を参照】** 本セクション以下(§6〜§10)は各ラウンド時点での
+> 件数・結果を歴史的記録として残しているため、19件→28件→**26件**(最終)と段階的に増減した
+> 記述が混在する。現時点の正しい総ケース数・結果内訳は §11.4 の「最終ケース数集計」を参照。
 
 - 総テストケース数: **19件**(`tests/runner/cases/*.json` 実ファイル数と一致。
   台帳初版時点の「17件」は集計ミスであり本改訂で訂正)。
@@ -1473,3 +1508,109 @@ diff -rq tests/out tests/golden # 差分ゼロを確認(全87ファイル: html/
   ことだったが設計時点で既に反映されていた)、`style/detail/`・`brewery/detail/explain/`の
   ダミーファイルも含め、9件全てが既存のsandbox構成・既存フィクスチャ(§1)だけで動作することを
   一次確認で検証済み。新規テーブル行・新規ダミーファイルの追加は不要。
+
+---
+
+## 11. クリーンアップ+公開前修正の記録(2026-08-22、commit 8621067 / db02f69)
+
+ユーザー指示によりオーケストレーターが適用した3件の変更(共有SQL層のクリーンアップ1件+
+意図的な挙動修正2件)を記録する。独立確認は `bash tests/runner/make_sandbox.sh && bash
+tests/runner/run_all.sh` を実行し、`tests/golden/`(この時点でのオーケストレーター提供版)との
+差分を検分する形で行った。
+
+### 11.1 クリーンアップ(commit 8621067、挙動保存)
+
+**対象**: `common/sql.php`・`common/sql_POST.php`・`php/sql.php`・`php/sql_POST.php` の4ファイル。
+
+**変更内容**(現物を確認して裏付けた):
+1. **死コード除去**: 各SELECT/INSERT/UPDATEブロックの直前で毎回 `new PDO(...)` していたのを、
+   ファイル冒頭で1回だけ生成した `$dbh` を使い回す形に統合(§0前提6のPDO接続文字列自体は不変。
+   接続オプション未指定なのでERRMODE=EXCEPTIONのデフォルトも変わらない)。
+2. **PDO接続の1回集約**: 上記1と同じ変更の別表現。`sql.php`は10行目、`sql_POST.php`は5行目に
+   `$dbh = new PDO($db_dsn, $db_user, $db_pass);` が1箇所だけ存在することを確認した。
+3. **`fetchALL`→`fetchAll`の表記統一**: PHPのメソッド名は大文字小文字を区別しないため
+   (`fetchALL`も`fetchAll`も同一メソッドを指す)、**純粋に表記上の変更で機能に影響しない**。
+   `common/sql.php`・`php/sql.php`の全箇所(products/maker/style/clarity/fruityの5箇所)と
+   `sql_POST.php`の全箇所(MAX(ProductID)/style IBU/MAX(Rate_userID)の3箇所)で確認した。
+4. **バインドキーのコロン表記統一**: `common/sql_POST.php`(`php/sql_POST.php`も同一)の
+   `'Alcohol' => ...` → `':Alcohol' => ...`、`'Clarity_user' => ...` → `':Clarity_user' => ...`
+   に修正され、他の全キーと同じ`:`プレフィックス形式に統一された(27行目・61行目で確認)。
+   §0前提3で確定させたとおり、コロン有無はPDOのemulated prepareが正規化して吸収するため
+   **元々実害の無いバインドだった**(TC-POST-THANK-NEW-01のDB実測でAlcohol/Clarity_userとも
+   正しく反映されることを確認済み)。したがってこの表記統一は**挙動を変えない**
+  (`array(':ProductID' => ..., ':Alcohol' => ...)` のように単にキー名の見た目が揃っただけ)。
+
+**確認結果**: `bash tests/runner/run_all.sh` の実行で、**26ケース中25ケース
+(TC-POST-THANK-NEW-02を除く全て)が`tests/golden/`と`diff`差分ゼロ**であることを確認した。
+これは「HTML本文不変・行番号シフトのみ」というオーケストレーターの説明と整合する
+(改修1でも同様のパターンだったため、今回の`require_once`行数に変化が無いクリーンアップでは
+行番号シフトすら発生せず、全ケースが完全一致した)。**クリーンアップは挙動保存として確認できた**。
+
+### 11.2 修正1: `rename()`のファイル基準絶対パス化(commit db02f69、意図的な挙動変更)
+
+**変更内容**(`common/sql_POST.php` 39〜42行目、現物確認済み):
+```php
+// 呼び出し元ページの階層に依存しないよう、このファイル基準の絶対パスで移動する
+// (旧実装は cwd 依存の '../img/...' で、post/check/thank/ 経由の投稿では常に失敗していた)
+$img_root = dirname(__FILE__).'/../img';
+rename($img_root.'/tmp/'.$image_name_http, $img_root.'/product/'.$image_rename);
+```
+旧実装の `rename('../img/tmp/'.., '../img/product/'..)` は実行時カレントディレクトリ
+(=エントリページの設置ディレクトリ)に依存する相対パスだったため、`php/thank.php`
+(サイトルートから1階層)経由では成功する一方、`post/check/thank/thank.php`
+(サイトルートから3階層、**実際の投稿導線そのもの**)経由では常に失敗していた
+(TC-POST-THANK-NEW-02で特性固定済みのバグ、§3.3参照)。新実装は`dirname(__FILE__)`
+(=`common/`ディレクトリ)基準の絶対パスを使うため、エントリページの階層に関わらず常に
+正しい`img/tmp/`・`img/product/`を指す。
+
+**これは挙動保存ではなく、意図的なバグ修正である**(検証者(B)の指摘や台帳の分析で発見した
+「実運用で新規投稿の画像が反映されない」という実害のあるバグの是正)。
+
+**独立確認結果**(`tests/out` vs `tests/golden`。※`tests/golden`は本メッセージ時点でまだ旧版
+=修正前の値のままのため、この差分自体が「修正が正しく効いている」ことの証拠になる):
+- `TC-POST-THANK-NEW-02.html`: `Warning: rename(../img/tmp/upload_test.png,
+  ../img/product/104.png): No such file or directory in .../common/sql_POST.php on line 41`
+  という行(Warning本文+空行の計2行)が**消失**。
+- `TC-POST-THANK-NEW-02.db.txt`: `== img/product ==` セクションに **`104.png`が追加**
+  (修正前は空だった)。
+- products/rate_userテーブルの内容(ProductID=104行・102のIBU_all=30.00・Rate_userID=3行等)・
+  exitコード(0)は完全に不変。
+- 他の25ケース(sql_POST系の`TC-POST-THANK-NEW-01`・`TC-POST-THANK-UPDATE-01`を含む)は
+  この変更の影響を受けず、全て`tests/golden`と差分ゼロ。
+
+**§3.3のTC-POST-THANK-NEW-02の状態を「仕様不一致」→「PASS(修正済み)」に更新した**
+(期待値は「rename成功・`img/product/104.png`生成・Warningなし」に修正済み)。
+オーケストレーターがこの新しい出力を正式な`tests/golden/`として再ベースラインする予定。
+
+### 11.3 修正2: 孤児ページ2件の削除(commit db02f69、意図的な挙動変更)
+
+`style/detail/makers.php`(TC-SEL-STYDETAILMAKERS-01が特性固定していた、相対パスの階層誤りで
+`require()`が常にFatalするページ)と `php/Strathcona_Beer_Company.php`
+(TC-SEL-STRATHCONA-01が特性固定していた、存在しない`BREWERY`列参照でPDOExceptionが常に
+発生するページ)の2ファイルがリポジトリから削除された。いずれも「アクセスすると必ずFatal
+errorになるだけの孤児ページ」であり、§10.3で台帳から申し送った「`docs/loop-scope.md`の
+別課題として記録するか」という論点に対し、**「記録して残す」ではなく「削除する」という判断が
+下された**形になる。
+
+**台帳側の対応**:
+- 対応するケースJSON(`tests/runner/cases/TC-SEL-STYDETAILMAKERS-01.json`・
+  `TC-SEL-STRATHCONA-01.json`)と`tests/golden/`配下の該当ファイルは削除済み
+  (`bash tests/runner/run_all.sh`実行時に自動的に対象外となることを確認した)。
+- §3.4の該当2ケースは**削除**したことを明記しつつ本文は削除前の最終確認結果として残した
+  (「削除(ページごと撤去)」、§3.4参照)。これにより「なぜこの2ケースが台帳に無いのか」を
+  将来の読者が追跡できるようにする。
+- §2.4の表・§10.1の一覧は歴史的記録として残し、削除の事実はここ(§11.3)と各ケース本文に
+  集約して記載する(表自体の書き換えは行わない。書き換えると「元々存在しなかった」かのように
+  読めてしまうため)。
+
+### 11.4 最終ケース数集計
+
+- **削除前**: 28件(PASS(GM固定/改修後) 27件 + 仕様不一致 1件)
+- **削除後**: **26件**(TC-SEL-STYDETAILMAKERS-01・TC-SEL-STRATHCONA-01の2件を撤去)
+  - PASS(GM固定/改修後) **25件**
+  - PASS(修正済み) **1件**(TC-POST-THANK-NEW-02、旧仕様不一致から復帰)
+  - 削除 **2件**(ケース数の集計には含めない。台帳上は記録として残す)
+  - FAIL **0件**
+- `bash tests/runner/run_all.sh` は26ケースを実行し(`tests/runner/cases/*.json`が26ファイル)、
+  独立確認の結果、想定外の差分は**0件**(TC-POST-THANK-NEW-02の差分は修正1で意図されたとおりの
+  変化であり、想定内)。
