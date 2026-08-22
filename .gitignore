@@ -1,3 +1,5 @@
 .DS_Store
 *.log
 db_config.local.php
+tests/sandbox/
+tests/out/
