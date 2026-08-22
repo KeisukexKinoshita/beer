@@ -30,6 +30,16 @@
 - `bk_html/`, `php/bk/` は当時の手動バックアップ。動作に不要だが履歴として残している。
 - `img/` に商品画像 約118MB。
 
+## 進捗 (new-site)
+
+- ① 環境準備: 完了 (2026-08-22)
+- ② 開発: **完了** (2026-08-22)。loop-engineering により特性テスト28ケースで挙動固定
+  (27 PASS / 1 仕様不一致=既知renameバグの特性固定)。改修は
+  「DB接続の db_config.local.php 方式化」+「PHP 8.5対応(sql層の警告解消)」の2件で、
+  検証者(beer-test-verifier)の敵対的検証で**承認**済み。詳細は tests/cases.md と docs/loop-scope.md
+- ③ 公開: 未着手。deploy/ 一式は準備済み。**公開ドメインの新規取得待ち**
+  (seisan3系サブドメインは使わない方針)。RDSの `beer_dev` スキーマ作成も③で実施
+
 ## 開発の約束事
 
 - 接続情報は `db_config.local.php` 方式 (gitignore済み + サーバ内で注入)。
