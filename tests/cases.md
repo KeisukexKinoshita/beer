@@ -237,7 +237,11 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
   `common/sql.php`側のUndefined variable Warningは`$src_prd`/`$src_mak`×2/`$src_cla`/`$src_fru`
   の計5件、`$json_cla`/`$json_fru`のUndefined variable Warning計2件、合計7件で一致。
   §5の要確認事項5(fatal errorの正確な形)を確定。
-- **状態**: PASS(GM固定)
+- **改修後(2026-08-22, commit 37c70b3/18ff215)の再突合せ**: `tests/golden`比較で差分は
+  カテゴリ(a)のみ(`common/sql.php`由来の`Undefined variable`警告ブロック計7件が消失。
+  `$src_prd`/`$src_mak`x2/`$src_cla`/`$src_fru`の5件と、`$json_cla`/`$json_fru`の2件)。
+  §8参照。fatal error本体・その直前までの出力・DB非該当ケースの結論に変化なし。
+- **状態**: PASS(改修後、差分は記録済みの2種のみ)
 
 #### TC-SEL-PRD-01: `php/product.php`(php/sql.php 経由、全分岐 yes)
 
@@ -264,7 +268,10 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
   FRUITY=Fruity1.png/Not Fruity・ALCOHOL=4.80・reviewNum=3.50、全て予測どおり。
   Warningは `$src_prd`(php/sql.php L11・L42の2件、product.phpとmaker取得の両方が`$src_prd`
   未設定を参照する差分分岐由来)+ `Undefined array key "comment"`(1件)の計3件。
-- **状態**: PASS(GM固定)
+- **改修後の再突合せ**: 差分はカテゴリ(a)のみ(`php/sql.php`由来の`$src_prd`x2の
+  `Undefined variable`警告2件が消失)。`Undefined array key "comment"`は`product.php`自身の
+  警告でありsql.php層とは無関係のため変化なし(改修2の対象外)。§8参照。
+- **状態**: PASS(改修後、差分は記録済みの2種のみ)
 
 #### TC-SEL-MAK-01: `php/maker.php`
 
@@ -286,7 +293,9 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
 - **実測との突合せ**: `tests/golden/TC-SEL-MAK-01.html`と完全一致。products/maker各1行、
   sec2ループ1件(P101)、Warning実測は `$src_prd`(L11・L42) x2 + `$src_sty` + `$src_cla` +
   `$src_fru` + `$json_sty`/`$json_cla`/`$json_fru` x3 = **8件で確定**(予測どおり)。
-- **状態**: PASS(GM固定)
+- **改修後の再突合せ**: 差分はカテゴリ(a)のみ。上記8件の`Undefined variable`/`Undefined variable`
+  ($json_*)警告が全て消失し、他の出力(products/maker各1行、sec2ループ1件)は不変。§8参照。
+- **状態**: PASS(改修後、差分は記録済みの2種のみ)
 
 #### TC-SEL-MAKERS-01: `php/makers.php`
 
@@ -303,7 +312,11 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
   3件のmakerリスト(1,2,3の正順)は予測どおり。**追加の発見**: `php/makers.php`末尾にも
   `$comment = $_GET['comment'];` があり(未読取)、`Undefined array key "comment"` Warning が
   1件追加で発生する(当初の期待値には未記載だったため本項で補完。挙動の予測自体に誤りは無い)。
-- **状態**: PASS(GM固定、期待値に`comment`未定義Warningを追記して確定)
+- **改修後の再突合せ**: 差分はカテゴリ(a)のみ(`php/sql.php`由来の`$src_prd`x2/`$src_sty`/
+  `$src_cla`/`$src_fru`(計5件)+`$json_sty`/`$json_cla`/`$json_fru`(計3件)= **8件**が消失、
+  TC-SEL-MAK-01と同型)。`$_GET['comment']`未定義Warning(product.php層とは
+  無関係のmakers.php自身の警告)は改修2の対象外のため不変。§8参照。
+- **状態**: PASS(改修後、差分は記録済みの2種のみ)
 
 #### TC-SEL-EVAL-01: `php/evaluation.php`
 
@@ -328,7 +341,11 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
   key ""` Warningの直前に `Deprecated: Using null as an array offset is deprecated, use an
   empty string instead` (PHP8.1+の仕様)が出力されることを確認(当初の期待値には未記載のため
   補完)。`nl2br(null)`のDeprecated、`$product_id`未定義Warningも予測どおり発生。
-- **状態**: PASS(GM固定、Deprecated文言を追記して確定)
+- **改修後の再突合せ**: 差分はカテゴリ(a)のみ(`php/sql.php`由来の`$src_prd`x2/`$src_cla`/
+  `$src_fru`(計4件)+`$json_cla`/`$json_fru`(計2件)= **6件**が消失)。`evaluation.php`自身の
+  `$keyIndex_mak`/`$product_id`未定義Warningと`Deprecated`群(改修2の対象外、対象は
+  `common/sql.php`・`php/sql.php`のみ)は不変。§8参照。
+- **状態**: PASS(改修後、差分は記録済みの2種のみ)
 
 #### TC-SEL-LMAK-01: `php/list_maker.php`
 
@@ -344,7 +361,10 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
     3件分描画される。クラッシュなし。
 - **実測との突合せ**: `tests/golden/TC-SEL-LMAK-01.html`と完全一致(mk9001〜mk9003×MakerName、
   `Undefined array key "product_id"` Warning 1件)。
-- **状態**: PASS(GM固定)
+- **改修後の再突合せ**: 差分はカテゴリ(a)のみ(`php/sql.php`由来の`$src_prd`x2/`$src_sty`/
+  `$src_cla`/`$src_fru`(計5件)+`$json_sty`/`$json_cla`/`$json_fru`(計3件)= **8件**が消失、
+  TC-SEL-MAK-01と同型)。`product_id`未定義Warning(list_maker.php自身)は不変。§8参照。
+- **状態**: PASS(改修後、差分は記録済みの2種のみ)
 
 #### TC-SEL-LSTY-01: `php/list_style.php`
 
@@ -356,7 +376,10 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
   - チェックボックスフォーム: `chk_style` の value に 1/2/3、ラベルに IPA/Pilsner/Stout が3件分描画。
 - **実測との突合せ**: `tests/golden/TC-SEL-LSTY-01.html`と完全一致(1/2/3×StyleName、
   `Undefined array key "product_id"` Warning 1件)。
-- **状態**: PASS(GM固定)
+- **改修後の再突合せ**: 差分はカテゴリ(a)のみ(list_style.phpは`$src_sty='yes'`を設定しているため
+  style分岐自体は実行される。`php/sql.php`由来の`$src_prd`x2/`$src_cla`/`$src_fru`(計4件)+
+  `$json_cla`/`$json_fru`(計2件)= **6件**が消失)。`product_id`未定義Warning(list_style.php自身)は不変。§8参照。
+- **状態**: PASS(改修後、差分は記録済みの2種のみ)
 
 #### TC-SEL-ADDP-01: `php/add_product.php`
 
@@ -370,7 +393,9 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
 - **実測との突合せ**: `tests/golden/TC-SEL-ADDP-01.html`と完全一致(`<option value=mk9001 >`〜
   `mk9003`、`value=1`〜`3`、`$product_id`未定義Warning、`$src_prd`x2/`$src_cla`/`$src_fru`/
   `$json_cla`/`$json_fru`のWarning計6件)。
-- **状態**: PASS(GM固定)
+- **改修後の再突合せ**: 差分はカテゴリ(a)のみ(上記6件の`php/sql.php`由来Warningが全て消失)。
+  `product_id`未定義Warning(add_product.php自身)は不変。§8参照。
+- **状態**: PASS(改修後、差分は記録済みの2種のみ)
 
 #### TC-SEL-POSTADDP-01: `post/add_product.php`(`common/sql.php` 経由)
 
@@ -386,7 +411,10 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
 - **実測との突合せ**: `tests/golden/TC-SEL-POSTADDP-01.html`と完全一致。style抽出の5フィールド版
   (`var sty_StyleID=[], sty_FamilyName=[], sty_StyleName=[], sty_StyleIBU=[], sty_StyleExplain=[];`)
   を実測で確認、`php/sql.php`版(3フィールド、TC-SEL-ADDP-01)との差分をそのまま確定させた。
-- **状態**: PASS(GM固定)
+- **改修後の再突合せ**: 差分はカテゴリ(a)のみ(`common/sql.php`由来の`$src_prd`/`$src_mak`x2/
+  `$src_cla`/`$src_fru`/`$json_cla`/`$json_fru`のWarning計7件が消失)。5フィールド版style script・
+  `product_id`未定義Warning(add_product.php自身)は不変。§8参照。
+- **状態**: PASS(改修後、差分は記録済みの2種のみ)
 
 #### TC-SEL-POSTEVAL-01: `post/evaluation.php`(`common/sql.php` 経由)
 
@@ -398,7 +426,9 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
   `$product_id` 未定義Warning(hidden ProductIDが空)。TC-SEL-POSTADDP-01と同型。
 - **実測との突合せ**: `tests/golden/TC-SEL-POSTEVAL-01.html`と完全一致(5フィールド版styleスクリプト、
   `$product_id`未定義Warningを含めTC-SEL-POSTADDP-01と同型のWarningパターン)。
-- **状態**: PASS(GM固定)
+- **改修後の再突合せ**: 差分はカテゴリ(a)のみ(`common/sql.php`由来のWarning計7件が消失、
+  TC-SEL-POSTADDP-01と同型)。`product_id`未定義Warningは不変。§8参照。
+- **状態**: PASS(改修後、差分は記録済みの2種のみ)
 
 #### TC-SEL-POSTPRD-01: `php/post_product.php`(**php/sql.php の分岐差分の直接検証**)
 
@@ -425,7 +455,10 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
   ページ末尾に `print_r($mak_MakerName[0])` の生出力 `Beta Brewing` を確認。
   `"MakerName like"."'%".$serch."%'"`(空白無し連結)がMariaDBで構文エラーにならないことも
   実測で確認(§5 要確認事項6を確定)。
-- **状態**: PASS(GM固定)
+- **改修後の再突合せ**: 差分はカテゴリ(a)のみ(`php/sql.php`由来の`$src_sty`/`$src_cla`/`$src_fru`
+  + `$json_prd`/`$json_sty`/`$json_cla`/`$json_fru`のWarning計7件が消失)。`js_mak`=Beta Brewing
+  1行のみ・`print_r`出力は不変。§8参照。
+- **状態**: PASS(改修後、差分は記録済みの2種のみ)
 
 #### TC-SEL-CHECK-NEW-01: `post/check/check.php`(`New_Update=new`)
 
@@ -467,7 +500,10 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
   `Deprecated: move_uploaded_file(): Passing null to parameter #1 ($from) of type string is
   deprecated`(1件)が発生する。ハーネスが`$_FILES`未対応であることに起因する既知の制約
   (対象コードのバグではない)として確定。
-- **状態**: PASS(GM固定、Warning文言を確定)
+- **改修後の再突合せ**: 差分はカテゴリ(a)のみ(`common/sql.php`由来の`$src_prd`/`$src_mak`x2/
+  `$src_cla`/`$src_fru`/`$json_cla`/`$json_fru`のWarning計7件が消失)。画面内容・`value_http`・
+  `$_FILES`関連Warning群(post/check/check.php自身、改修2の対象外)は不変。§8参照。
+- **状態**: PASS(改修後、差分は記録済みの2種のみ)
 
 #### TC-SEL-CHECK-UPDATE-01: `post/check/check.php`(`New_Update=update`)
 
@@ -491,7 +527,9 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
     代入されないため`http_build_query`に現れない)。
 - **実測との突合せ**: `tests/golden/TC-SEL-CHECK-UPDATE-01.html`と完全一致(画面内容・`value_http`
   とも予測どおり。$_FILES関連の処理が無い分岐のためファイル関連Warningは発生しない)。
-- **状態**: PASS(GM固定)
+- **改修後の再突合せ**: 差分はカテゴリ(a)のみ(`common/sql.php`由来のWarning計7件が消失、
+  TC-SEL-CHECK-NEW-01と同型)。画面内容・`value_http`は不変。§8参照。
+- **状態**: PASS(改修後、差分は記録済みの2種のみ)
 
 ### 3.2 `common/sql.php` 死分岐の直接カバレッジ(ハーネス側ラッパー使用)
 
@@ -510,7 +548,10 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
   `js_fru`すべて`0`、Warning実測は`$src_sty`+`$src_cla`+`$src_fru`+`$json_prd`/`$json_mak`/
   `$json_sty`/`$json_cla`/`$json_fru`の計8件(`$src_prd`/`$src_mak`はラッパーで明示セット済みの
   ためWarningなし、予測どおり)。
-- **状態**: PASS(GM固定)
+- **改修後の再突合せ**: 差分はカテゴリ(a)のみ(`common/sql.php`由来の`$src_sty`/`$src_cla`/
+  `$src_fru`+`$json_prd`/`$json_mak`/`$json_sty`/`$json_cla`/`$json_fru`のWarning計8件が消失、
+  `$src_prd`/`$src_mak`はラッパーで明示セット済みのため元々Warningなし)。`js_*=0`の内容は不変。§8参照。
+- **状態**: PASS(改修後、差分は記録済みの2種のみ)
 
 #### TC-CORE-02: `$src_mak='yes'`
 
@@ -520,7 +561,11 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
   `js_sty`/`js_cla`/`js_fru`=`0`(未設定)。
 - **実測との突合せ**: `tests/golden/TC-CORE-02.html`と完全一致。`js_mak`=mk9002(Beta Brewing)の
   1行のみ、他は`0`。commonのみに存在する`$src_mak=='yes'`分岐(実ページ到達不能)を単体で確認。
-- **状態**: PASS(GM固定)
+- **改修後の再突合せ**: 差分はカテゴリ(a)のみ(`$src_sty`/`$src_cla`/`$src_fru`(計3件)+`$json_prd`/
+  `$json_sty`/`$json_cla`/`$json_fru`(計4件)= **7件**が消失。`$src_mak`は当ケースでラッパーが
+  明示的に`'yes'`をセットするためWarning対象外、`$json_mak`もmk9002の1行が定義されるためWarning
+  対象外)。`js_mak`=mk9002のみの内容は不変。§8参照。
+- **状態**: PASS(改修後、差分は記録済みの2種のみ)
 
 #### TC-CORE-03: `$src_cla='yes'` かつ `$src_fru='yes'`
 
@@ -534,7 +579,11 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
   `[{"ClarityID":1,"ClarityValue":1,...},...]`(前提1のとおりINT列は非クオート数値)、
   `js_fru`も同様に全4行、`js_mak`=maker全3行、`js_prd`/`js_sty`=`0`。commonのみに存在する
   `$src_cla`/`$src_fru`='yes'分岐(実ページ到達不能)を単体で確認。
-- **状態**: PASS(GM固定)
+- **改修後の再突合せ**: 差分はカテゴリ(a)のみ(`$src_mak`x2/`$src_sty`(計3件)+`$json_prd`/
+  `$json_sty`(計2件)= **5件**が消失。`$src_cla`/`$src_fru`はラッパーが明示セット済みのため対象外、
+  `$json_cla`/`$json_fru`も全4行が定義されるため対象外)。`js_cla`/`js_fru`全4行・`js_mak`全3行の
+  内容は不変。§8参照。
+- **状態**: PASS(改修後、差分は記録済みの2種のみ)
 
 ### 3.3 sql_POST系(INSERT/UPDATE の副作用検証)
 
@@ -587,7 +636,12 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
     (`Clarity_user`のコロン欠けも実害なし)。
   - `img/product/104.png` が作成されている(rename成功、Warningなし)。
   仮説Bは棄却。§0前提3・前提4、§5要確認事項3・4を確定。
-- **状態**: PASS(GM固定)
+- **改修後の再突合せ**: `tests/out/TC-POST-THANK-NEW-01.html`/`.db.txt`/`.exit`は
+  `tests/golden`と**完全に一致(差分ゼロ)**。`php/thank.php`→`common/sql_POST.php`の経路には
+  sql.php由来のUndefined variable警告もrename警告も含まれないため、カテゴリ(a)(b)いずれの
+  対象にもならない(改修1のrequire_once追加はこのファイルの行番号を+1シフトさせるが、
+  当ケースの出力にはWarning行が元々無いため観測されるHTML上の差は生じない)。§8参照。
+- **状態**: PASS(改修後、差分なし)
 
 #### TC-POST-THANK-UPDATE-01: `php/thank.php`(追加評価, `new_update=update`)
 
@@ -616,7 +670,10 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
   `ProductID=101, UserID=us0003, Color_user=7, Clarity_user=4(コロン欠けも実害なし), Fruity_user=3,
   Favorite_user=2, New_Update=update, Comment=Updated take.` で正しく追加。rename()は呼ばれず
   `img/product/`は空のまま。仮説A(コロン欠け実害なし)を再確認。
-- **状態**: PASS(GM固定)
+- **改修後の再突合せ**: `tests/out/TC-POST-THANK-UPDATE-01.html`/`.db.txt`/`.exit`は
+  `tests/golden`と**完全に一致(差分ゼロ)**。TC-POST-THANK-NEW-01と同じ理由でカテゴリ(a)(b)
+  いずれの対象にもならない。§8参照。
+- **状態**: PASS(改修後、差分なし)
 
 #### TC-POST-THANK-NEW-02: `post/check/thank/thank.php`(TC-POST-THANK-NEW-01と同一パラメータ)
 
@@ -651,8 +708,16 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
   維持されているが、「HTML差分は相対パスのみ」という当初の予測は誤りだったため、本ケースは
   「期待値と実装のズレ」ではなく「**台帳側の当初予測の誤り**」として仕様不一致に分類し、
   期待値を上記の実挙動に修正する。オーケストレーターへの報告事項として最終報告に含める。
-- **状態**: 仕様不一致(期待値をGM側に修正・確定。DB副作用はPASS相当、HTML出力に
-  ディレクトリ深さ依存のrename失敗Warningが追加で発生する点を新規に記録)
+- **改修後の再突合せ**: 差分は**カテゴリ(b)のみ**(このケースはsql.php層を経由しないため
+  カテゴリ(a)は非該当)。`common/sql_POST.php` L40の`rename()`失敗Warningが、改修1で同ファイル
+  先頭に`require_once dirname(__FILE__).'/../db_config.local.php';`が1行追加された影響で
+  **L41にシフト**した(`tests/golden`は`on line 40`、`tests/out`は`on line 41`。それ以外は
+  1バイトも違わない)。rename失敗という事象自体・その原因(ディレクトリ深さ依存の固定相対パス)・
+  DB副作用が完全一致であることに変化はなく、単なる行番号シフトであるため
+  「挙動保存(behavior-preserving)」の範囲内と判断する。§8参照。
+- **状態**: 仕様不一致(期待値をGM側に修正・確定。改修後もDB副作用は完全一致・PASS相当。
+  HTML出力のrename失敗Warningはカテゴリ(b)の行番号シフト(L40→L41)のみを追加で確認、
+  事象・原因に変化なし)
 
 ---
 
@@ -789,3 +854,146 @@ byte-identical(`diff -rq`差分ゼロ)。再現性を確認済み。
   というUI上の不具合にとどまるが、`post/check/thank/thank.php`が実際の投稿導線であることを踏まえると
   実運用上のバグとして扱う価値があり、オーケストレーターへの申し送り事項とする
   (loop-scope.mdの「別課題として記録するもの」への追加を提案)。
+
+---
+
+## 8. 改修後の期待値変更の記録(2026-08-22、commit 37c70b3 / 18ff215 適用後)
+
+「無言の期待値変更禁止」の原則に基づき、改修適用後に `tests/golden/`(改修前基準)と
+`tests/out/`(改修後の実行結果)の間に生じた差分を、**改修ごとに・理由と挙動保存の根拠を添えて**
+ここに記録する。以降このセクションが「改修後の正」の期待値注記となる。
+
+**再現・独立検証の方法**: `bash tests/runner/make_sandbox.sh && bash tests/runner/start_db.sh &&
+bash tests/runner/run_all.sh` の後、以下を実行して機械的に全差分を分類した(本セクションの数値は
+この検証で独立に算出したもの):
+```bash
+# (a) sql.php由来のUndefined variable警告の総数(golden側)
+for f in tests/golden/*.html; do grep "Undefined variable" "$f" | grep -c "/sql\.php on line"; done \
+  | paste -sd+ | bc   # → 106
+
+# (b) 全19ケースの exit / db.txt / params.json が完全一致することの確認
+for f in tests/golden/*.{exit,db.txt,params.json}; do
+  b=$(basename "$f"); diff -q "$f" "tests/out/$b" || echo "DIFF: $b"
+done   # → 出力なし(差分ゼロ)
+
+# html差分が下記2種のみで説明しきれることの確認(golden側からWarning行を機械的に除去し、
+# 既知のrename行番号シフトを適用したうえでoutと完全一致するかを検証)
+# → 19ファイル全てで「UNEXPLAINED DIFF」ゼロ件を確認
+```
+
+### 8.1 改修1(commit 37c70b3、DB接続の db_config.local.php 方式化)による差分
+
+- **変更内容**: `common/sql.php` / `common/sql_POST.php` / `php/sql.php` / `php/sql_POST.php`
+  の4ファイル先頭に `require_once dirname(__FILE__).'/../db_config.local.php';` を1行追加し、
+  PDO接続の第1〜3引数を直書き文字列から `$db_dsn, $db_user, $db_pass` 参照に置換。
+- **観測された差分**: この改修**単独**では出力差分はカテゴリ(b)(行番号シフト)のみに現れる。
+  具体的には `common/sql_POST.php` L40 の `rename()` 失敗Warning(TC-POST-THANK-NEW-02でのみ
+  観測)が **L41 に+1シフト**した。他の警告行はいずれも改修2で本文ごと消去されるため、
+  改修1単独由来の行番号シフトが直接観測できるのはこの1箇所のみ。
+- **挙動保存の根拠**: 追加された行は `require_once` の1行のみで、それ自体は標準出力に何も
+  書き出さない(設定変数の読み込みのみ)。よって以降の全行番号が機械的に+1シフトするだけであり、
+  接続先DSN/ユーザー/パスワードの実値は環境変数化された後も従来と同一の値を指す設計
+  (`db_config.local.php` はgitignore対象、`db_config.local.php.example` に実装のひな形をコミット)。
+  SQL文・バインドパラメータ・クエリ結果には一切影響しないため、DB状態(`.db.txt`)・exitコード
+  (`.exit`)が全19ケースで完全一致していることと合わせて、「接続方法を変えただけで挙動は変えていない」
+  というこの改修の意図どおりであることを確認した。
+- **該当ケース**: TC-POST-THANK-NEW-02(行番号のみ40→41に変更して期待値を確定)。
+
+### 8.2 改修2(commit 18ff215、$src_* の isset初期化 / $json_* の empty()ガード)による差分
+
+- **変更内容**: `common/sql.php` と `php/sql.php` に、各 `$src_*` 変数の未設定時 `Undefined variable`
+  警告を防ぐ `isset()` ベースの初期化と、各 `$json_*` 変数の未設定時警告を防ぐ `empty()` ガードを追加。
+- **観測された差分**: **sql.php由来の`Undefined variable`警告ブロックが完全に消失**した。
+  独立集計で **106個**(golden側の全19ファイル合計、内訳は `$src_prd`/`$src_mak`/`$src_sty`/
+  `$src_cla`/`$src_fru` の未定義警告と、対応する `$json_prd`/`$json_mak`/`$json_sty`/`$json_cla`/
+  `$json_fru` の未定義警告の合算)を確認し、オーケストレーターの機械検証結果(106個)と一致した。
+  警告が挿入されていた箇所は単に消え、`let js_X = 0;` のように前後の空行・改行を含めて
+  1行に収束する形になる(値そのもの`0`や実データJSONの内容は一切変わらない)。
+- **挙動保存の根拠**:
+  1. **`js_prd`/`js_mak`/`js_sty`/`js_cla`/`js_fru` の値は全19ケースで完全に不変**
+     (警告テキストが除去された結果、周辺の空行の入り方が変わるのみで、JSON内容・`0`判定の
+     どちらの分岐を通るかは改修前と完全に同一)。
+  2. **sql.php層以外が発する `Undefined variable`/`Undefined array key`/`Deprecated` 警告
+     (5件: `$product_id`×3箇所, `$keyIndex_mak`×1, `php/evaluation.php`のDeprecated群など)は
+     一切変化していない**(改修2の対象は`common/sql.php`と`php/sql.php`のみであり、各ページ
+     ファイル自身が発する警告は対象外のため)。これは独立検証(`grep`による全体の
+     `Undefined variable`件数: golden 111件 → out 5件、差分106件が過不足なくsql.php由来の
+     ものと一致)で確認済み。
+  3. **DB状態・exitコードは全19ケースで完全一致**(TC-SEL-IDX-01のfatal error/exit=255を含む)。
+     警告メッセージの消失は「出力されるHTML」の一部が変わったことを意味するため
+     `docs/loop-scope.md`の不変条件(「各ページのHTML出力を変えない」)に照らすと**厳密には
+     出力文字列の変更**にあたるが、これは対象コードのPHP8対応(未定義変数警告の除去)という
+     ループの目的そのもの(CLAUDE.md/loop-scope.mdが明示的に許容する「PHP8起因の警告混入」の
+     解消)であり、**実データ・分岐結果・副作用に変化がないことをもって「挙動保存」と判定する**。
+     これは改修前ラウンドの台帳(§4 PHP8リスク まとめ)で「Warning/Deprecationの文言自体も
+     ゴールデンマスターの一部」としつつ「PHP8.5移行時にこれらの警告を握りつぶす/修正するなら、
+     それは別課題または明示的な仕様変更として扱う必要がある」と明記していた想定どおりの変更である。
+- **該当ケース**: TC-SEL-IDX-01, TC-SEL-PRD-01, TC-SEL-MAK-01, TC-SEL-MAKERS-01, TC-SEL-EVAL-01,
+  TC-SEL-LMAK-01, TC-SEL-LSTY-01, TC-SEL-ADDP-01, TC-SEL-POSTADDP-01, TC-SEL-POSTEVAL-01,
+  TC-SEL-POSTPRD-01, TC-SEL-CHECK-NEW-01, TC-SEL-CHECK-UPDATE-01, TC-CORE-01, TC-CORE-02,
+  TC-CORE-03(計16ケース、消失した警告件数はケースごとに§3内の「改修後の再突合せ」欄を参照)。
+
+### 8.3 差分の分類まとめ(独立検証結果)
+
+| カテゴリ | 内容 | 該当ケース数 | 件数 |
+|---|---|---|---|
+| (a) sql.php由来 `Undefined variable` 警告の消失 | 改修2 | 16件 | 106個(独立集計で一致) |
+| (b) sql_POST.php由来警告の行番号シフト(L40→L41) | 改修1 | 1件(TC-POST-THANK-NEW-02) | 1箇所 |
+| 差分なし | — | 2件(TC-POST-THANK-NEW-01, TC-POST-THANK-UPDATE-01) | 0 |
+| **想定外の差分** | — | **0件** | **0** |
+
+19ケース全件で、観測された差分は上記(a)(b)の2種のみで過不足なく説明できることを、
+`tests/golden`から機械的に(a)の警告行と(b)の既知の行番号シフトを取り除いたテキストが
+`tests/out`と完全一致するという独立の再構成検証で確認した(想定外の差分は0件)。
+
+---
+
+## 9. 改修後ラウンド 実行結果まとめ(2026-08-22)
+
+**再現コマンド**:
+```bash
+cd /workspace/tool/beer
+bash tests/runner/make_sandbox.sh   # 改修後コードでsandbox再構築
+bash tests/runner/start_db.sh       # MariaDB起動(コンテナ再起動後は毎回必要)
+bash tests/runner/run_all.sh        # 全19ケース実行 → tests/out/ に出力
+# tests/golden/ (改修前基準) との差分を確認 → カテゴリ(a)(b)のみであることを目視・機械的に確認
+```
+
+### 9.1 結果サマリ表(改修後)
+
+| ケースID | 結果 | 差分カテゴリ |
+|---|---|---|
+| TC-SEL-IDX-01 | PASS(改修後) | (a) 7個消失 |
+| TC-SEL-PRD-01 | PASS(改修後) | (a) 2個消失 |
+| TC-SEL-MAK-01 | PASS(改修後) | (a) 8個消失 |
+| TC-SEL-MAKERS-01 | PASS(改修後) | (a) 8個消失 |
+| TC-SEL-EVAL-01 | PASS(改修後) | (a) 6個消失 |
+| TC-SEL-LMAK-01 | PASS(改修後) | (a) 8個消失 |
+| TC-SEL-LSTY-01 | PASS(改修後) | (a) 6個消失 |
+| TC-SEL-ADDP-01 | PASS(改修後) | (a) 6個消失 |
+| TC-SEL-POSTADDP-01 | PASS(改修後) | (a) 7個消失 |
+| TC-SEL-POSTEVAL-01 | PASS(改修後) | (a) 7個消失 |
+| TC-SEL-POSTPRD-01 | PASS(改修後) | (a) 7個消失 |
+| TC-SEL-CHECK-NEW-01 | PASS(改修後) | (a) 7個消失 |
+| TC-SEL-CHECK-UPDATE-01 | PASS(改修後) | (a) 7個消失 |
+| TC-CORE-01 | PASS(改修後) | (a) 8個消失 |
+| TC-CORE-02 | PASS(改修後) | (a) 7個消失 |
+| TC-CORE-03 | PASS(改修後) | (a) 5個消失 |
+| TC-POST-THANK-NEW-01 | PASS(改修後) | 差分なし |
+| TC-POST-THANK-UPDATE-01 | PASS(改修後) | 差分なし |
+| TC-POST-THANK-NEW-02 | 仕様不一致(改修後もDB副作用はPASS相当) | (b) 行番号シフトのみ |
+
+上表(a)列の件数は `grep`による独立の機械集計値(各ケースの`tests/golden/*.html`から
+`Undefined variable ... /sql.php on line`に一致する行数を数えたもの)であり、目視で書き起こした
+台帳本文中の警告変数名リストとも突き合わせ済み。合計は
+7+2+8+8+6+8+6+6+7+7+7+7+7+8+7+5 = **106個**となり、§8.3・オーケストレーターの機械検証結果
+(106個)と完全に一致することを確認した。
+
+### 9.2 結果集計
+
+- PASS(改修後) 18件 / 仕様不一致 1件(TC-POST-THANK-NEW-02、行番号シフトのみ・事象と原因に
+  変化なし) / FAIL 0件。
+- **想定外の差分: 0件**。オーケストレーターの機械検証(sql.php由来Undefined variable警告106個
+  消失)と完全に一致する独立検証結果を得た。DB状態(`.db.txt`)・exitコード(`.exit`)・
+  params(`.params.json`)は全19ケースで改修前後完全一致。
+- 改修1・改修2とも、§8に記載した根拠により「挙動保存」と判定する。追加の懸念事項は無い。
