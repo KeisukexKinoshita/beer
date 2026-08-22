@@ -5,7 +5,7 @@ set -eu
 cd "$(dirname "$0")/../.."
 
 fail=0
-for g in tests/golden/TC-*.html tests/golden/TC-*.exit tests/golden/TC-*.db.txt; do
+for g in tests/golden/TC-*.html tests/golden/TC-*.exit tests/golden/TC-*.db.txt tests/golden/TC-*.params.json; do
   [ -e "$g" ] || continue
   o="tests/out/$(basename "$g")"
   if [ ! -e "$o" ]; then

@@ -6,7 +6,7 @@ cd "$(dirname "$0")/../.."
 
 rm -rf tests/sandbox
 mkdir -p tests/sandbox
-for d in common css js php post style brewery bk_html; do
+for d in common css js php post style brewery beer bk_html; do
   cp -a "$d" tests/sandbox/
 done
 cp -a index.php style.css chartjs-plugin-datalabels.min.js tests/sandbox/
