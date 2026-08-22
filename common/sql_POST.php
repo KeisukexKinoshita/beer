@@ -1,9 +1,10 @@
 <?php
+require_once dirname(__FILE__).'/../db_config.local.php';
 parse_str($value_http, $value);
 
 if($value['new_update']=='new'){
   //------------------------------SELECT FROM products-----------------------------------------
-  $dbh = new PDO('mysql:dbname=beer;host=beer-rds.cqpmrauqnmy0.ap-northeast-1.rds.amazonaws.com','admin','REDACTED_DB_PASSWORD');
+  $dbh = new PDO($db_dsn, $db_user, $db_pass);
   $query = "SELECT MAX(ProductID) FROM products";
   $res = $dbh->query($query);
   $arr_MAX_ProductID = $res->fetchALL(PDO::FETCH_ASSOC);
@@ -12,7 +13,7 @@ if($value['new_update']=='new'){
   $value['productid']=$NEXT_ProductID; // use for updating rate_user table
 
   // -------------------------------------------SELECT FROM style --------------------------------
-  $dbh = new PDO('mysql:dbname=beer;host=beer-rds.cqpmrauqnmy0.ap-northeast-1.rds.amazonaws.com','admin','REDACTED_DB_PASSWORD');
+  $dbh = new PDO($db_dsn, $db_user, $db_pass);
   $query = "SELECT IBU FROM style WHERE StyleID='".$value['styleid']."'";  
   $res = $dbh->query($query);
   $sty = $res->fetchALL(PDO::FETCH_ASSOC);
@@ -20,7 +21,7 @@ if($value['new_update']=='new'){
 
   $IBU_Style= array_column($sty,"IBU")[0];
   // -------------------------------------------INSERT INTO products --------------------------------
-  $dbh = new PDO('mysql:dbname=beer;host=beer-rds.cqpmrauqnmy0.ap-northeast-1.rds.amazonaws.com','admin','REDACTED_DB_PASSWORD');
+  $dbh = new PDO($db_dsn, $db_user, $db_pass);
   $sql = "INSERT INTO  products VALUES(:ProductID,:MakerID,:ProductName,:StyleID,:Alcohol,:IBU_all,:IBU,:Color,:Clarity,:Fruity,:Favorite,:ProductExplain,:IBU_Style, :Comment)";
   $stmt = $dbh->prepare($sql);
   $params = array(':ProductID' => $NEXT_ProductID, ':MakerID' => $value['makerid'],':ProductName' => $value['productname'],
@@ -28,7 +29,7 @@ if($value['new_update']=='new'){
   $res = $stmt->execute($params);
 
   // -------------------------------------------UPDATE products SET IBU_all --------------------------------
-  $dbh = new PDO('mysql:dbname=beer;host=beer-rds.cqpmrauqnmy0.ap-northeast-1.rds.amazonaws.com','admin','REDACTED_DB_PASSWORD');
+  $dbh = new PDO($db_dsn, $db_user, $db_pass);
   $sql = "UPDATE products SET IBU_all=(select IBU_Style) where  IBU=0.000";
   $stmt = $dbh->prepare($sql);
   $res = $stmt->execute();
@@ -45,7 +46,7 @@ if($value['new_update']=='new'){
 //-------------------------------------------------------------------------------------
 
 //------------------------------SELECT FROM rate_user-----------------------------------------
-$dbh = new PDO('mysql:dbname=beer;host=beer-rds.cqpmrauqnmy0.ap-northeast-1.rds.amazonaws.com','admin','REDACTED_DB_PASSWORD');
+$dbh = new PDO($db_dsn, $db_user, $db_pass);
 $query = "SELECT MAX(Rate_userID) FROM rate_user";
 $res = $dbh->query($query);
 $arr_MAX_Rate_userID = $res->fetchALL(PDO::FETCH_ASSOC);
@@ -54,7 +55,7 @@ $NEXT_Rate_userID =++$MAX_Rate_userID;
 //-------------------------------------------------------------------------------------
 
 // -------------------------------------------INSERT INTO rate_user --------------------------------
-$dbh = new PDO('mysql:dbname=beer;host=beer-rds.cqpmrauqnmy0.ap-northeast-1.rds.amazonaws.com','admin','REDACTED_DB_PASSWORD');
+$dbh = new PDO($db_dsn, $db_user, $db_pass);
 $sql = "INSERT INTO  rate_user VALUES(:Rate_userID,:ProductID,:UserID,:Color_user,:Clarity_user,:Fruity_user,:Favorite_user,:New_Update,:Comment)";
 $stmt = $dbh->prepare($sql);
 $params = array(':Rate_userID' => $NEXT_Rate_userID, ':ProductID' => $value['productid'],':UserID' => $value['userid'],

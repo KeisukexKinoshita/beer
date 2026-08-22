@@ -11,6 +11,9 @@ for d in common css js php post style brewery bk_html; do
 done
 cp -a index.php style.css chartjs-plugin-datalabels.min.js tests/sandbox/
 
+# DB接続設定 (db_config.local.php 方式化後に必要。存在すればコピー)
+[ -f db_config.local.php ] && cp db_config.local.php tests/sandbox/
+
 # img/ は118MBあるためコピーしない。sql_POST の rename() に必要な骨格だけ作る
 mkdir -p tests/sandbox/img/tmp tests/sandbox/img/product
 

@@ -1,6 +1,7 @@
 <?php
+require_once dirname(__FILE__).'/../db_config.local.php';
 // -------------------------------------------Update database --------------------------------
-//$dbh = new PDO('mysql:dbname=beer;host=beer-rds.cqpmrauqnmy0.ap-northeast-1.rds.amazonaws.com','admin','REDACTED_DB_PASSWORD');
+//$dbh = new PDO($db_dsn, $db_user, $db_pass);
 //$sql = "UPDATE taste SET popularity = :popularity WHERE id = :id";
 //$stmt = $dbh->prepare($sql);
 //$params = array(':popularity' => $comment, ':id' => '0000');
@@ -12,7 +13,7 @@ if ($src_prd=='no'){
  // not execute SELECT
 }else{
 
-$dbh = new PDO('mysql:dbname=beer;host=beer-rds.cqpmrauqnmy0.ap-northeast-1.rds.amazonaws.com','admin','REDACTED_DB_PASSWORD');
+$dbh = new PDO($db_dsn, $db_user, $db_pass);
 $query = "SELECT * FROM products WHERE $sql_where";
 $res = $dbh->query($query);
 $prd= $res->fetchALL(PDO::FETCH_ASSOC);
@@ -42,7 +43,7 @@ $prd_IBU_Style= array_column($prd,"IBU_Style");
 if ($src_mak=='no'){
  // not execute SELECT
 }elseif($src_mak=='yes'){
-$dbh = new PDO('mysql:dbname=beer;host=beer-rds.cqpmrauqnmy0.ap-northeast-1.rds.amazonaws.com','admin','REDACTED_DB_PASSWORD');
+$dbh = new PDO($db_dsn, $db_user, $db_pass);
 $query = "SELECT * FROM maker WHERE $sql_where_mak"; // only condition of WHERE is fiffarent from the else. 
 $res = $dbh->query($query);
 $mak = $res->fetchALL(PDO::FETCH_ASSOC);
@@ -53,7 +54,7 @@ $mak_MakerName= array_column($mak,"MakerName");
 $mak_MakerExplain= array_column($mak,"MakerExplain");
 $mak_URL1= array_column($mak,"URL1");
 }else{
-$dbh = new PDO('mysql:dbname=beer;host=beer-rds.cqpmrauqnmy0.ap-northeast-1.rds.amazonaws.com','admin','REDACTED_DB_PASSWORD');
+$dbh = new PDO($db_dsn, $db_user, $db_pass);
 $query = "SELECT * FROM maker WHERE $sql_where";
 $res = $dbh->query($query);
 $mak = $res->fetchALL(PDO::FETCH_ASSOC);
@@ -68,7 +69,7 @@ $mak_URL1= array_column($mak,"URL1");
 
 // -------------------------------------------SELECT FROM style--------------------------------
 if ($src_sty=='yes'){
-$dbh = new PDO('mysql:dbname=beer;host=beer-rds.cqpmrauqnmy0.ap-northeast-1.rds.amazonaws.com','admin','REDACTED_DB_PASSWORD');
+$dbh = new PDO($db_dsn, $db_user, $db_pass);
 $query = "SELECT * FROM style WHERE $sql_where_sty"; // only condition of WHERE is fiffarent from the else. 
 $res = $dbh->query($query);
 $sty = $res->fetchALL(PDO::FETCH_ASSOC);
@@ -84,7 +85,7 @@ $sty_StyleExplain= array_column($sty,"StyleExplain");
 
 // -------------------------------------------SELECT FROM clarity--------------------------------
 if ($src_cla=='yes'){
-$dbh = new PDO('mysql:dbname=beer;host=beer-rds.cqpmrauqnmy0.ap-northeast-1.rds.amazonaws.com','admin','REDACTED_DB_PASSWORD');
+$dbh = new PDO($db_dsn, $db_user, $db_pass);
 $query = "SELECT * FROM clarity WHERE $sql_where_cla"; // only condition of WHERE is fiffarent from the else. 
 $res = $dbh->query($query);
 $cla = $res->fetchALL(PDO::FETCH_ASSOC);
@@ -98,7 +99,7 @@ $cla_ClarityName= array_column($cla,"ClarityName");
 
 // -------------------------------------------SELECT FROM fruity--------------------------------
 if ($src_fru=='yes'){
-$dbh = new PDO('mysql:dbname=beer;host=beer-rds.cqpmrauqnmy0.ap-northeast-1.rds.amazonaws.com','admin','REDACTED_DB_PASSWORD');
+$dbh = new PDO($db_dsn, $db_user, $db_pass);
 $query = "SELECT * FROM fruity WHERE $sql_where_fru"; // only condition of WHERE is fiffarent from the else. 
 $res = $dbh->query($query);
 $fru = $res->fetchALL(PDO::FETCH_ASSOC);

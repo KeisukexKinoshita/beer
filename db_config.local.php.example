@@ -1,0 +1,8 @@
+<?php
+// DB接続設定のテンプレート。
+// 実値は db_config.local.php としてサーバ内でのみ配置する (gitignore済み、コミット禁止)。
+$db_host = 'beer-rds.cqpmrauqnmy0.ap-northeast-1.rds.amazonaws.com';
+$db_name = 'beer';
+$db_user = 'admin';
+$db_pass = 'CHANGE_ME';
+$db_dsn  = "mysql:dbname={$db_name};host={$db_host}";
