@@ -1,5 +1,11 @@
 <?php
 require_once dirname(__FILE__).'/../db_config.local.php';
+// PHP 8 対応: 呼び出し元ページが設定しない分岐制御変数を初期化する (分岐の挙動は不変)
+if (!isset($src_prd)) $src_prd = '';
+if (!isset($src_mak)) $src_mak = '';
+if (!isset($src_sty)) $src_sty = '';
+if (!isset($src_cla)) $src_cla = '';
+if (!isset($src_fru)) $src_fru = '';
 // -------------------------------------------Update database --------------------------------
 //$dbh = new PDO($db_dsn, $db_user, $db_pass);
 //$sql = "UPDATE taste SET popularity = :popularity WHERE id = :id";
@@ -114,7 +120,7 @@ $fru_FruityName= array_column($fru,"FruityName");
 
 <script>
 // product
-let js_prd = <?php if($json_prd){echo $json_prd;}else{echo '0';} ?>;	 
+let js_prd = <?php if(!empty($json_prd)){echo $json_prd;}else{echo '0';} ?>;	 
 var prd_ProductID=[], prd_MakerID = [], prd_ProductName = [], prd_StyleID=[], prd_Alcohol = [], prd_IBU=[], prd_Color=[], prd_Clarity=[], prd_Fruity=[], prd_Favorite=[];
 js_prd.forEach(function(value) {
      prd_ProductID.push(value['ProductID'])
@@ -130,7 +136,7 @@ js_prd.forEach(function(value) {
 });
 
 //maker
-let js_mak = <?php if($json_mak){echo $json_mak;}else{echo '0';} ?>;	 
+let js_mak = <?php if(!empty($json_mak)){echo $json_mak;}else{echo '0';} ?>;	 
 var mak_MakerID=[], mak_MakerName=[];
 js_mak.forEach(function(value) {
      mak_MakerID.push(value['MakerID'])
@@ -138,7 +144,7 @@ js_mak.forEach(function(value) {
 });
 
 //style
-let js_sty = <?php if($json_sty){echo $json_sty;}else{echo '0';} ?>;	 
+let js_sty = <?php if(!empty($json_sty)){echo $json_sty;}else{echo '0';} ?>;	 
 var sty_StyleID=[], sty_FamilyName=[], sty_StyleName=[], sty_StyleIBU=[], sty_StyleExplain=[];
 js_sty.forEach(function(value) {
    sty_StyleID.push(value['StyleID'])
@@ -149,7 +155,7 @@ js_sty.forEach(function(value) {
 });
 
 //clarity
-let js_cla = <?php if($json_cla){echo $json_cla;}else{echo '0';} ?>;	 
+let js_cla = <?php if(!empty($json_cla)){echo $json_cla;}else{echo '0';} ?>;	 
 var cla_ClarityID=[], cla_ClarityValue=[], cla_ClarityName=[];
 js_cla.forEach(function(value) {
    cla_ClarityID.push(value['ClarityID'])
@@ -158,7 +164,7 @@ js_cla.forEach(function(value) {
 });
 
 //fruity
-let js_fru = <?php if($json_fru){echo $json_fru;}else{echo '0';} ?>;	 
+let js_fru = <?php if(!empty($json_fru)){echo $json_fru;}else{echo '0';} ?>;	 
 var fru_FruityID=[], fru_FruityValue=[], fru_FruityName=[];
 js_fru.forEach(function(value) {
    fru_FruityID.push(value['FruityID'])
