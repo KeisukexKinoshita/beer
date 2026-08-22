@@ -6,23 +6,17 @@ if (!isset($src_mak)) $src_mak = '';
 if (!isset($src_sty)) $src_sty = '';
 if (!isset($src_cla)) $src_cla = '';
 if (!isset($src_fru)) $src_fru = '';
-// -------------------------------------------Update database --------------------------------
-//$dbh = new PDO($db_dsn, $db_user, $db_pass);
-//$sql = "UPDATE taste SET popularity = :popularity WHERE id = :id";
-//$stmt = $dbh->prepare($sql);
-//$params = array(':popularity' => $comment, ':id' => '0000');
-//$res = $stmt->execute($params);
-// -------------------------------------------Update database --------------------------------
-//$src_prd='';
+
+$dbh = new PDO($db_dsn, $db_user, $db_pass);
+
 // -------------------------------------------SELECT FROM products--------------------------------
 if ($src_prd=='no'){
  // not execute SELECT
 }else{
 
-$dbh = new PDO($db_dsn, $db_user, $db_pass);
 $query = "SELECT * FROM products WHERE $sql_where";
 $res = $dbh->query($query);
-$prd= $res->fetchALL(PDO::FETCH_ASSOC);
+$prd= $res->fetchAll(PDO::FETCH_ASSOC);
 $json_prd = json_encode($prd);
 
 
@@ -49,10 +43,9 @@ $prd_IBU_Style= array_column($prd,"IBU_Style");
 if ($src_mak=='no'){
  // not execute SELECT
 }elseif($src_mak=='yes'){
-$dbh = new PDO($db_dsn, $db_user, $db_pass);
-$query = "SELECT * FROM maker WHERE $sql_where_mak"; // only condition of WHERE is fiffarent from the else. 
+$query = "SELECT * FROM maker WHERE $sql_where_mak"; // only condition of WHERE is different from the else. 
 $res = $dbh->query($query);
-$mak = $res->fetchALL(PDO::FETCH_ASSOC);
+$mak = $res->fetchAll(PDO::FETCH_ASSOC);
 $json_mak = json_encode($mak);
 
 $mak_MakerID= array_column($mak,"MakerID");
@@ -60,10 +53,9 @@ $mak_MakerName= array_column($mak,"MakerName");
 $mak_MakerExplain= array_column($mak,"MakerExplain");
 $mak_URL1= array_column($mak,"URL1");
 }else{
-$dbh = new PDO($db_dsn, $db_user, $db_pass);
 $query = "SELECT * FROM maker WHERE $sql_where";
 $res = $dbh->query($query);
-$mak = $res->fetchALL(PDO::FETCH_ASSOC);
+$mak = $res->fetchAll(PDO::FETCH_ASSOC);
 $json_mak = json_encode($mak);
 
 $mak_MakerID= array_column($mak,"MakerID");
@@ -75,10 +67,9 @@ $mak_URL1= array_column($mak,"URL1");
 
 // -------------------------------------------SELECT FROM style--------------------------------
 if ($src_sty=='yes'){
-$dbh = new PDO($db_dsn, $db_user, $db_pass);
-$query = "SELECT * FROM style WHERE $sql_where_sty"; // only condition of WHERE is fiffarent from the else. 
+$query = "SELECT * FROM style WHERE $sql_where_sty"; // only condition of WHERE is different from the else. 
 $res = $dbh->query($query);
-$sty = $res->fetchALL(PDO::FETCH_ASSOC);
+$sty = $res->fetchAll(PDO::FETCH_ASSOC);
 $json_sty = json_encode($sty);
 
 $sty_StyleID= array_column($sty,"StyleID");
@@ -91,10 +82,9 @@ $sty_StyleExplain= array_column($sty,"StyleExplain");
 
 // -------------------------------------------SELECT FROM clarity--------------------------------
 if ($src_cla=='yes'){
-$dbh = new PDO($db_dsn, $db_user, $db_pass);
-$query = "SELECT * FROM clarity WHERE $sql_where_cla"; // only condition of WHERE is fiffarent from the else. 
+$query = "SELECT * FROM clarity WHERE $sql_where_cla"; // only condition of WHERE is different from the else. 
 $res = $dbh->query($query);
-$cla = $res->fetchALL(PDO::FETCH_ASSOC);
+$cla = $res->fetchAll(PDO::FETCH_ASSOC);
 $json_cla = json_encode($cla);
 
 $cla_ClarityID= array_column($cla,"ClarityID");
@@ -105,10 +95,9 @@ $cla_ClarityName= array_column($cla,"ClarityName");
 
 // -------------------------------------------SELECT FROM fruity--------------------------------
 if ($src_fru=='yes'){
-$dbh = new PDO($db_dsn, $db_user, $db_pass);
-$query = "SELECT * FROM fruity WHERE $sql_where_fru"; // only condition of WHERE is fiffarent from the else. 
+$query = "SELECT * FROM fruity WHERE $sql_where_fru"; // only condition of WHERE is different from the else. 
 $res = $dbh->query($query);
-$fru = $res->fetchALL(PDO::FETCH_ASSOC);
+$fru = $res->fetchAll(PDO::FETCH_ASSOC);
 $json_fru = json_encode($fru);
 
 $fru_FruityID= array_column($fru,"FruityID");
