@@ -17,7 +17,10 @@
 
 /*     header       */
 header {
-  width:960px;
+  max-width:960px;
+  width:100%;
+  box-sizing:border-box;
+  padding:0 16px;
   margin:30px auto;
   color: black;
   /*border-bottom: solid 1px black;*/
@@ -82,8 +85,29 @@ div.first p{
   background-color:#f2f2f2;
 }
 #main{
-  width:960px;
+  max-width:960px;
+  width:100%;
+  box-sizing:border-box;
+  padding:0 12px;
   margin:0px auto 20px auto;
+}
+
+@media screen and (max-width:480px) {
+  ul.image_list li {
+    margin-right: 0;
+    width: 100%;
+    float: none;
+    height: auto;
+    padding-bottom: 8px;
+  }
+  ul.image_list li:nth-child(3n) {
+    float: none;
+  }
+  ul.image_list li .image_box {
+    width: 100%;
+    height: 200px;
+    margin: 0;
+  }
 }
 
 /*     brewery       */

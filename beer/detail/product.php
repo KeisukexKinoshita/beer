@@ -29,6 +29,12 @@ $keyIndex_sty = array_search($prd_StyleID[$keyIndex_prd],$sty_StyleID);
 $keyIndex_cla = array_search(round($prd_Clarity[$keyIndex_prd]),$cla_ClarityValue);
 
 $keyIndex_fru = array_search(round($prd_Fruity[$keyIndex_prd]),$fru_FruityValue);
+
+// 表示用: DBのDECIMAL値の末尾ゼロを落とす (20.000→20, 7.500→7.5)
+function fmt_num($v) {
+    $t = rtrim(rtrim(number_format((float)$v, 3, '.', ''), '0'), '.');
+    return $t === '' ? '0' : $t;
+}
 ?>
 
 </head>
@@ -83,7 +89,7 @@ $keyIndex_fru = array_search(round($prd_Fruity[$keyIndex_prd]),$fru_FruityValue)
   </ul>
   
   <ul class='image_list_product'>
-     <span>IBU : <?php echo $prd_IBU[$keyIndex_prd]; ?></span>
+     <span>IBU : <?php echo fmt_num($prd_IBU[$keyIndex_prd]); ?></span>
   </ul>
   
   <ul class='image_list_product'>
@@ -92,7 +98,7 @@ $keyIndex_fru = array_search(round($prd_Fruity[$keyIndex_prd]),$fru_FruityValue)
   </ul>
   
   <ul class='image_list_product'>
-     <span>アルコール度 : <?php echo $prd_Alcohol[$keyIndex_prd]; ?></span>
+     <span>アルコール度 : <?php echo fmt_num($prd_Alcohol[$keyIndex_prd]); ?>%</span>
   </ul>
   
   <ul class='image_list_product'>
@@ -105,7 +111,7 @@ $keyIndex_fru = array_search(round($prd_Fruity[$keyIndex_prd]),$fru_FruityValue)
       </script>
       <script src="rate_star.js"></script>
     </div>
-     <span><?php echo $prd_Favorite[$keyIndex_prd]; ?></span>
+     <span><?php echo number_format((float)$prd_Favorite[$keyIndex_prd], 1); ?></span>
   </ul>
   
 </div>   <!-- right -->

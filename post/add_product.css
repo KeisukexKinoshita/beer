@@ -32,11 +32,18 @@ ul.image_list_addpro li {
 }
 
 ul.image_list_addpro select ,ul.image_list_addpro textarea{
-  width: 350px;
-  border-bottom:1px solid #cccccc;
-  border-right:none;
-  border-left:none;
-  border-top:none;
+  width: 100%;
+  max-width: 480px;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid #555;
+  border-radius: 6px;
+  background: #1a1a1a;
+  color: #eee;
+  font-size: 15px;
+}
+ul.image_list_addpro textarea{
+  min-height: 90px;
 }
 select.hidden{
   color: #cccccc;
@@ -116,17 +123,21 @@ div.submit {
 
 div.submit input[type="submit"] {
   display       : inline-block;
-  font-size     : 16pt;       
+  font-size     : 16px;
   font-weight:bold;
-  text-align    : center;     
-  cursor        : pointer;    
-  width: 200px;
-  height:50px;
-  padding       : 8px 0px;  
-  background    : #0196EC;  
-  color         : black;    
-  line-height   : 1em;        
-  transition    : .3s;        
+  text-align    : center;
+  cursor        : pointer;
+  width: 220px;
+  height:52px;
+  padding       : 8px 0px;
+  background    : #0196EC;
+  color         : white;
+  line-height   : 1em;
+  transition    : .3s;
   border        : none;
+  border-radius : 8px;
+}
+div.submit input[type="submit"]:hover {
+  background    : #0181cc;
 }
 

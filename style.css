@@ -4,9 +4,13 @@
   margin:0;
   padding:0;
   vertical-align:bottom;
-  font-family:'メイリオ', 'Meiryo', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Kaku Gothic ProN", "Noto Sans JP", 'メイリオ', 'Meiryo', sans-serif;
   float: none;   /* add   */
   position: static; /* add   */
+}
+
+body{
+  line-height: 1.6;
 }
 
 
@@ -57,8 +61,10 @@ header nav {
 }
 
 div.first{
-  padding-top: 80px; 
+  padding-top: 80px;
   background-image:url(../img/top.jpg);
+  background-size: cover;
+  background-position: center;
   height: 300px;
 
 }
@@ -109,16 +115,18 @@ ul.image_list  {
 }  
 
 ul.image_list li {
-  display: inline-block; 
+  display: inline-block;
   margin-right: 30px;
   margin-bottom:20px;
-  height: 300px;  
+  height: 300px;
   float: left;
   width: 300px;
   text-align:center;
   background:white;
   overflow:hidden;
-}  
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
 ul.image_list li:nth-child(3n) {
   margin-right: 0;
   float:right;
@@ -159,10 +167,18 @@ ul.image_list li .image_box {
   -webkit-text-stroke: 0.3px black; 
   */
 }
-.image_list p.MakerExplain{ 
-  color:black;
+.image_list p.MakerExplain{
+  color:#333;
   text-align:left;
-}                                                           
+  padding: 0 12px 12px;
+  font-size: 14px;
+  line-height: 1.6;
+  /* 固定高カードで文章が行の途中でぶつ切りになるのを防ぐ (4行で省略) */
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 
 div.sec1 p.seemore{
   text-align:center;
@@ -170,10 +186,16 @@ div.sec1 p.seemore{
 }
 div.sec1 button{
   background : #0196EC;
-  padding:20px 60px;
+  padding:16px 48px;
   cursor:pointer;
-  border:none;  
+  border:none;
   color:white;
+  border-radius: 8px;
+  font-size: 15px;
+  transition: background-color 0.2s;
+}
+div.sec1 button:hover{
+  background: #0181cc;
 }
 
 
@@ -201,11 +223,20 @@ span.Type {
 		}
 	header {
 	  width:100%;
-	  margin:30px auto;
+	  margin:20px auto;
 	  color: black;
 	  top: 0;
 	  display: flex;
 	  align-items: center;
+	  padding: 0 16px;
+	  box-sizing: border-box;
+	}
+	#main{
+	  padding: 0 12px;
+	  box-sizing: border-box;
+	}
+	div.first h2{
+	  font-size: 1.35em;
 	}
 
 	.pc-nav {
@@ -321,7 +352,9 @@ span.Type {
 	  width:100%;
   	  float:none;
 	  overflow:hidden;
-	}  
+	  height:auto;
+	  padding-bottom:8px;
+	}
 	ul.image_list li:nth-child(3n) {
   	  float:none;
 	}  
