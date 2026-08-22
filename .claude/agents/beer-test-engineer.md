@@ -30,11 +30,13 @@ Writeで書いてよいのは tests/cases.md (台帳)だけである。
   それらを require する各ページ (index.php, php/product.php, php/evaluation.php,
   php/maker.php, php/thank.php, post/check/thank/thank.php ほか) の検索・登録ロジック。
   bk_html/・php/bk/ (手動バックアップ) は対象外
-- ハーネス: 対象コードを無改変のまま tests/sandbox/ にコピーし、PDO接続を
-  JSONフィクスチャ読込のスタブに差し替える。ランナーは依存ゼロの素のPHPスクリプトで、
-  ページをCLI実行してHTML出力を捕捉する。ケースごとにプロセス分離
+- ハーネス: 対象コードを無改変のまま tests/sandbox/ にコピー。DB境界はローカルMariaDBに
+  `beer` スキーマ + 合成フィクスチャ (tests/fixtures/*.sql) を投入し、/etc/hosts で
+  旧RDSホスト名を 127.0.0.1 に向けて接続コード無改変のまま実行する。
+  ランナーは依存ゼロの素のPHPスクリプトで、ページをCLI実行してHTML出力を捕捉する。
+  ケースごとにプロセス分離し、各ケース前にフィクスチャを再投入する
 - 検証対象の出力: 各ページのHTML出力(埋め込みの js_prd / js_mak / js_sty / js_cla / js_fru
-  JSON変数を含む)。sql_POST系は「発行されるSQL文とバインドパラメータの列」を記録・比較する
+  JSON変数を含む)。sql_POST系(INSERT/UPDATE)は「実行後のテーブル内容」をSELECTして検証する
 
 # 成果物
 
