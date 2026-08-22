@@ -26,18 +26,22 @@ seisan3-next サーバのコンテナで動かせる状態にする。
 - php/sql.php と common/sql.php の分岐(取得カラムの差)を統合しない
 - 検索条件の組み立てロジック($sql_where 等)に触らない
 
-## 別課題として記録するもの (このループでは直さない)
+## 別課題として記録するもの
 
+※「変更禁止事項」の『コロン欠けもそのまま保つ』は、2026-08-22のユーザー指示による
+クリーンアップで方針変更され、表記統一済み(挙動同一はGM実証済み)。
+
+未解決:
 - SQLインジェクション: $sql_where / $maker_id 等がエスケープなしでSQLに連結されている
-- バインドパラメータのコロン欠け(sql_POST.php の 'Alcohol', 'Clarity_user')
-- 廃止済みGoogleアナリティクス(UA-)タグ、AdSenseタグの扱い
-- sql.php / sql_POST.php の重複コピー統合
-- 画像renameの相対パスバグ: sql_POST.php の rename('../img/tmp/...') は呼び出し元の階層に依存し、
-  post/check/thank/thank.php 経由(実運用の投稿導線)では失敗して投稿画像が反映されない
-  (TC-POST-THANK-NEW-02 で特性固定済み)
-- 壊れたページ2件 (fatalで特性固定済み、公開前に削除か修理を判断):
-  - style/detail/makers.php — require('../common/sql.php') の階層違いで常にFatal (TC-SEL-STYDETAILMAKERS-01)
-  - php/Strathcona_Beer_Company.php — 存在しないBREWERY列参照でPDOException (TC-SEL-STRATHCONA-01)
+  (2026-08-22 ユーザー判断で今回は見送り)
+- 廃止済みGoogleアナリティクス(UA-)タグ、AdSenseタグの扱い (同上、見送り)
+- sql.php / sql_POST.php の重複コピー統合 (見送り推奨のまま)
+
+解決済み (2026-08-22、台帳§11参照):
+- ~~バインドパラメータのコロン欠け~~ → クリーンアップで表記統一 (commit 8621067)
+- ~~画像renameの相対パスバグ~~ → ファイル基準絶対パス化で修正 (commit db02f69)
+- ~~壊れたページ2件~~ → リンク元ゼロの孤児と確認し削除 (commit db02f69):
+  style/detail/makers.php, php/Strathcona_Beer_Company.php
 
 ## ハーネス方針
 
