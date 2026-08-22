@@ -36,7 +36,10 @@ if($value['new_update']=='new'){
   $image_name_http = $_POST['image_name'];
   //$image_rename = $NEXT_ProductID.'.'.pathinfo($image_name_http, PATHINFO_EXTENSION);
   $image_rename = $NEXT_ProductID.'.png';
-  rename('../img/tmp/'.$image_name_http, '../img/product/'. $image_rename);
+  // 呼び出し元ページの階層に依存しないよう、このファイル基準の絶対パスで移動する
+  // (旧実装は cwd 依存の '../img/...' で、post/check/thank/ 経由の投稿では常に失敗していた)
+  $img_root = dirname(__FILE__).'/../img';
+  rename($img_root.'/tmp/'.$image_name_http, $img_root.'/product/'.$image_rename);
 }
 
 

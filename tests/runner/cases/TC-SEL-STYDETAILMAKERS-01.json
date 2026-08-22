@@ -1,9 +1,0 @@
-{
-  "id": "TC-SEL-STYDETAILMAKERS-01",
-  "type": "page",
-  "page": "style/detail/makers.php",
-  "params": {
-    "get": {},
-    "post": {}
-  }
-}
