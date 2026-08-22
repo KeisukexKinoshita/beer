@@ -26,41 +26,39 @@
 
 ---
 
-## 0. 前提・仮定(期待値計算の基礎)
+## 0. 前提・仮定(期待値計算の基礎) — 【2026-08-22 実行・ゴールデンマスター確認により確定済み】
 
-以下はコード上明示されていないため、期待値算出のために置く仮定。判断の根拠と共に明記し、
-確度が低いものは個別ケースで「要ゴールデンマスター確認」と明記する。
+以下はコード上明示されていなかったため当初は仮定として置いていたが、`tests/golden/` (無改変コード+
+PHP8.5の実行結果、フィクスチャは `tests/fixtures/fixtures.sql`)を実読して全て確定させた。
+再現コマンド: `bash tests/runner/start_db.sh && bash tests/runner/run_all.sh`(`tests/out/` が
+`tests/golden/` と全19ケースでbyte-identicalになることを確認済み)。
 
-1. **PDOの型**: `common/sql.php`・`php/sql.php` はいずれも `PDO::ATTR_EMULATE_PREPARES` を
-   明示設定していない。pdo_mysql のデフォルトは emulate=true であり、この場合 `fetchAll` は
-   数値カラムも含めて全て PHP 文字列として返る。→ 本台帳の `js_prd`/`js_mak`/`js_sty`/`js_cla`/`js_fru`
-   の期待JSONは **全フィールドを文字列(ダブルクオート付き)** として記載する。
-   **要ゴールデンマスター確認**(環境のPHP/mysqlnd設定次第で変わり得るため)。
-2. **行順序**: 各SELECTに `ORDER BY` が無いため、返却順は保証されない。本台帳ではMariaDBの実務上の
-   挙動(主キー/フィクスチャ投入順)として **フィクスチャをINSERTした順=返却順** と仮定する。
-   **要ゴールデンマスター確認**。
-3. **バインドパラメータのコロン欠け** (`common/sql_POST.php` の `'Alcohol' => ...` と
-   `'Clarity_user' => ...`、`:` 無し): PDOの emulated prepare 実装は、SQL文から抽出した
-   プレースホルダ名と `execute()` に渡す連想配列のキーの双方について、先頭の `:` の有無を
-   正規化して比較するというのが定説(コロン有り/無し両対応)。この前提に立てば、
-   コロン欠けは **実害なく正しく値がバインドされる**(products.Alcohol / rate_user.Clarity_user
-   に投稿値がそのまま入る)と予測する。
-   これが誤りで PDO が厳密一致を要求する実装だった場合は、`:Alcohol` に対応する入力が
-   見つからず `execute()` が(デフォルトの `ERRMODE_SILENT` 下で)`false` を返して **INSERT文自体が
-   実行されない**(戻り値未チェックのため例外は上がらず、その回のINSERTだけが静かに消える)という、
-   影響の大きい代替仮説が成立する。
-   → **要ゴールデンマスター確認(最重要)**。TC-POST-THANK-NEW-01 / TC-POST-THANK-UPDATE-01 の
-   期待値は仮説A(バインド成功)を正としつつ、仮説B(バインド失敗・無INSERT)を代替として併記する。
-4. **`UPDATE products SET IBU_all=(select IBU_Style) where IBU=0.000`**: サブクエリに `FROM` が無い。
-   MySQL/MariaDBでは、この形は外側の `UPDATE` 対象テーブルの同一行の `IBU_Style` を指す相関参照として
-   解決され、実質 `SET IBU_all = IBU_Style`(該当行自身の値を代入)として動作すると解釈する。
-   `WHERE IBU=0.000` は新規挿入行に限定されない **テーブル全体に対するグローバルな条件**である点に
-   注意(意図的にフィクスチャへ既存の `IBU=0.000` 行を混ぜて検証する)。
-   もしMariaDBがこの構文をエラーにする場合は `execute()` が `false` を返すのみで例外は上がらず、
-   `IBU_all` は更新されない。→ **要ゴールデンマスター確認**。
+1. **PDOの型 — 確定**: `tests/fixtures/fixtures.sql` のDDL(INT / DECIMAL / VARCHAR / TEXT)に対し、
+   実測では **INT型カラムのみPHPネイティブint(JSON上は非クオート数値)、それ以外
+   (VARCHAR/DECIMAL/TEXT)は全てPHP文字列(JSON上はダブルクオート付き文字列)** として返る
+   ことを確認した(例: `TC-CORE-03`の`js_cla`=`[{"ClarityID":1,"ClarityValue":1,...}]`(数値)、
+   `TC-SEL-PRD-01`の`js_prd`=`[{"ProductID":101,...,"Alcohol":"5.50",...}]`(ProductIDのみ数値、
+   Alcohol等DECIMAL/VARCHARは文字列)。pdo_mysql(mysqlnd)がDECIMALを精度保持のため文字列で返し、
+   INTはネイティブ型に変換するという一般的な実装挙動と整合する。
+   本台帳の以降の記載はこの規則に従う(INTカラム=ProductID/Rate_userID/ClarityID/ClarityValue/
+   FruityID/FruityValueのみ非クオート、他は全て文字列)。
+2. **行順序 — 確定**: 実測で全ケースとも `js_prd`/`js_mak`/`js_sty`/`js_cla`/`js_fru` は
+   フィクスチャのINSERT順(101,102,103 / mk9001,mk9002,mk9003 / 1,2,3 / …)のとおりに返っている
+   ことを確認した(このMariaDB環境・データ量では投入順=返却順)。
+3. **バインドパラメータのコロン欠け — 確定(仮説A)**: `TC-POST-THANK-NEW-01`のDB実測で
+   `products`にProductID=104行がAlcohol=5.10で正しく追加され、`rate_user`にRate_userID=3行が
+   Clarity_user=3で正しく追加されていることを確認した。**コロン欠け(`'Alcohol'`,
+   `'Clarity_user'`)は実害なく正しくバインドされる**(仮説A確定、仮説Bは棄却)。
+   PDOの emulated prepare が先頭コロンの有無を正規化して照合するという理解で正しかった。
+4. **`UPDATE products SET IBU_all=(select IBU_Style) where IBU=0.000` — 確定**: `TC-POST-THANK-NEW-01`
+   のDB実測で ProductID=102 の `IBU_all` が投入時の `99.99` から **`30.00`**(=自身の`IBU_Style`)に
+   書き換わっていることを確認した。**FROM無し相関サブクエリは同一行の自己代入として実行される**
+   ことが確定した(MariaDBはこの構文をエラーにしない)。`TC-POST-THANK-UPDATE-01`
+   (`new_update=update`)では102行は`99.99`のまま不変であることも確認済み(=このUPDATE文自体は
+   `new`分岐の中でのみ実行される、という理解も正しかった)。
 5. **`array_search` の緩い比較**: PHP8でも `array_search($needle, $haystack)` はデフォルト非strict
    (`==`)。文字列同士の比較になる場面(GETパラメータ由来の文字列 vs フィクスチャの文字列)は
-   通常の文字列一致として扱う。
+   通常の文字列一致として扱う。実測でも矛盾なし。
 
 ---
 
@@ -229,7 +227,17 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
   5. **要ゴールデンマスター確認**: (a) fatal error 発生時の正確なメッセージ文言/フォーマット(PHP 8.5の
      `display_errors` 出力形式)、(b) fatal error 直前までの出力が確実にflushされているか
      (出力バッファリングの有無)。
-- **状態**: 未実行
+- **実測との突合せ**: `tests/golden/TC-SEL-IDX-01.html`(exit=255)で完全一致を確認。
+  fatal error文言は `Warning: require(brewery/detail/explain/.html): Failed to open stream:
+  No such file or directory` に続き `Fatal error: Uncaught Error: Failed opening required
+  'brewery/detail/explain/.html' (include_path='.:/usr/share/pear:/usr/share/php') in
+  .../index.php:120` + スタックトレースという形で出力される。出力バッファリングは無く、
+  fatal直前までの全出力(head内`<script>`、products一覧6件(有効3+空3)、maker一覧の有効3件
+  +4件目の途中(`<p class='MakerExplain'>`の開始まで))がそのまま標準出力にflushされている。
+  `common/sql.php`側のUndefined variable Warningは`$src_prd`/`$src_mak`×2/`$src_cla`/`$src_fru`
+  の計5件、`$json_cla`/`$json_fru`のUndefined variable Warning計2件、合計7件で一致。
+  §5の要確認事項5(fatal errorの正確な形)を確定。
+- **状態**: PASS(GM固定)
 
 #### TC-SEL-PRD-01: `php/product.php`(php/sql.php 経由、全分岐 yes)
 
@@ -251,7 +259,12 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
     FRUITY: `Fruity1.png`+`Not Fruity`、ALCOHOL: `4.80`、POPULARITY星: `reviewNum=3.50`。
   - **PHP8リスク**: 末尾の `$comment = $_GET['comment'];` で GETに `comment` が無いため
     `Undefined array key "comment"` Warning(非致命的、`$comment`はnullのまま未使用)。
-- **状態**: 未実行
+- **実測との突合せ**: `tests/golden/TC-SEL-PRD-01.html`と完全一致。keyIndex計算・
+  STYLE=Pilsner・COLOR=Color2.png・CLARITY=Clarity2.png/Clear・IBU=99.99(前提1の型規則で文字列)・
+  FRUITY=Fruity1.png/Not Fruity・ALCOHOL=4.80・reviewNum=3.50、全て予測どおり。
+  Warningは `$src_prd`(php/sql.php L11・L42の2件、product.phpとmaker取得の両方が`$src_prd`
+  未設定を参照する差分分岐由来)+ `Undefined array key "comment"`(1件)の計3件。
+- **状態**: PASS(GM固定)
 
 #### TC-SEL-MAK-01: `php/maker.php`
 
@@ -270,7 +283,10 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
   - **PHP8リスク**: `$src_sty`/`$src_cla`/`$src_fru` 未設定 → `Undefined variable` Warning ×3、
     `$json_sty`/`$json_cla`/`$json_fru` 未定義参照 → Warning ×3、`$src_prd` 未設定(php/sql.php内2箇所参照)
     → Warning ×2。計8件程度。
-- **状態**: 未実行
+- **実測との突合せ**: `tests/golden/TC-SEL-MAK-01.html`と完全一致。products/maker各1行、
+  sec2ループ1件(P101)、Warning実測は `$src_prd`(L11・L42) x2 + `$src_sty` + `$src_cla` +
+  `$src_fru` + `$json_sty`/`$json_cla`/`$json_fru` x3 = **8件で確定**(予測どおり)。
+- **状態**: PASS(GM固定)
 
 #### TC-SEL-MAKERS-01: `php/makers.php`
 
@@ -283,7 +299,11 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
   - 見出し `Breweries 3件`。
   - ループ `for($i=0;$i<count($mak_MakerID);$i++)`(正順、0〜2): mk9001,mk9002,mk9003 の順で
     3件の `<li>` が出力される(クラッシュなし)。
-- **状態**: 未実行
+- **実測との突合せ**: `tests/golden/TC-SEL-MAKERS-01.html`と概ね一致。「Breweries 3件」+
+  3件のmakerリスト(1,2,3の正順)は予測どおり。**追加の発見**: `php/makers.php`末尾にも
+  `$comment = $_GET['comment'];` があり(未読取)、`Undefined array key "comment"` Warning が
+  1件追加で発生する(当初の期待値には未記載だったため本項で補完。挙動の予測自体に誤りは無い)。
+- **状態**: PASS(GM固定、期待値に`comment`未定義Warningを追記して確定)
 
 #### TC-SEL-EVAL-01: `php/evaluation.php`
 
@@ -304,7 +324,11 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
       of type string is deprecated**。結果自体は空文字列になり、`<p class='p1'>` の中身は空。
     - いずれも非致命的(fatalにはならない)。チェックボックス群(Color/Clarity/Fruity/Favorite/Comment)は
       静的HTMLのため正常に描画される。
-- **状態**: 未実行
+- **実測との突合せ**: `tests/golden/TC-SEL-EVAL-01.html`と一致。**追加の発見**: `Undefined array
+  key ""` Warningの直前に `Deprecated: Using null as an array offset is deprecated, use an
+  empty string instead` (PHP8.1+の仕様)が出力されることを確認(当初の期待値には未記載のため
+  補完)。`nl2br(null)`のDeprecated、`$product_id`未定義Warningも予測どおり発生。
+- **状態**: PASS(GM固定、Deprecated文言を追記して確定)
 
 #### TC-SEL-LMAK-01: `php/list_maker.php`
 
@@ -318,7 +342,9 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
     `$keyIndex`/`$rate` は以降未参照のため実害なし。
   - チェックボックスフォーム: `chk_maker` の value に mk9001/mk9002/mk9003、ラベルに各MakerNameが
     3件分描画される。クラッシュなし。
-- **状態**: 未実行
+- **実測との突合せ**: `tests/golden/TC-SEL-LMAK-01.html`と完全一致(mk9001〜mk9003×MakerName、
+  `Undefined array key "product_id"` Warning 1件)。
+- **状態**: PASS(GM固定)
 
 #### TC-SEL-LSTY-01: `php/list_style.php`
 
@@ -328,7 +354,9 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
   - `js_prd`=全3行、`js_sty`=全3行(maker取得も実行されるが`js_mak`はページで未使用。値は全3行)。
   - **PHP8リスク**: `$_GET['product_id']` 未指定と同様の Warning(list_maker.phpと同型)。
   - チェックボックスフォーム: `chk_style` の value に 1/2/3、ラベルに IPA/Pilsner/Stout が3件分描画。
-- **状態**: 未実行
+- **実測との突合せ**: `tests/golden/TC-SEL-LSTY-01.html`と完全一致(1/2/3×StyleName、
+  `Undefined array key "product_id"` Warning 1件)。
+- **状態**: PASS(GM固定)
 
 #### TC-SEL-ADDP-01: `php/add_product.php`
 
@@ -339,7 +367,10 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
   - `<select name='chk_MakerID'>` の `<option>` に mk9001/mk9002/mk9003 × MakerName、
     `<select name='chk_StyleID'>` に 1/2/3 × StyleName。
   - **PHP8リスク**: `$product_id` 未定義変数 → Warning、hidden `ProductID` の value は空文字列。
-- **状態**: 未実行
+- **実測との突合せ**: `tests/golden/TC-SEL-ADDP-01.html`と完全一致(`<option value=mk9001 >`〜
+  `mk9003`、`value=1`〜`3`、`$product_id`未定義Warning、`$src_prd`x2/`$src_cla`/`$src_fru`/
+  `$json_cla`/`$json_fru`のWarning計6件)。
+- **状態**: PASS(GM固定)
 
 #### TC-SEL-POSTADDP-01: `post/add_product.php`(`common/sql.php` 経由)
 
@@ -352,7 +383,10 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
   `php/sql.php` 版(3フィールド: `sty_StyleID, sty_StyleName, sty_StyleIBU`)との**必須の差分**。
   この差分自体をここで固定する(統合してはいけない、というスコープの不変条件の直接的な検証)。
   `$product_id` 未定義によるWarningも同様に発生。
-- **状態**: 未実行
+- **実測との突合せ**: `tests/golden/TC-SEL-POSTADDP-01.html`と完全一致。style抽出の5フィールド版
+  (`var sty_StyleID=[], sty_FamilyName=[], sty_StyleName=[], sty_StyleIBU=[], sty_StyleExplain=[];`)
+  を実測で確認、`php/sql.php`版(3フィールド、TC-SEL-ADDP-01)との差分をそのまま確定させた。
+- **状態**: PASS(GM固定)
 
 #### TC-SEL-POSTEVAL-01: `post/evaluation.php`(`common/sql.php` 経由)
 
@@ -362,7 +396,9 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
 - **入力**: GET `/post/evaluation.php`(パラメータ無し)
 - **期待値**: `js_prd`/`js_mak`/`js_sty`=全件(5フィールドstyle)、`js_cla`/`js_fru`=`0`。
   `$product_id` 未定義Warning(hidden ProductIDが空)。TC-SEL-POSTADDP-01と同型。
-- **状態**: 未実行
+- **実測との突合せ**: `tests/golden/TC-SEL-POSTEVAL-01.html`と完全一致(5フィールド版styleスクリプト、
+  `$product_id`未定義Warningを含めTC-SEL-POSTADDP-01と同型のWarningパターン)。
+- **状態**: PASS(GM固定)
 
 #### TC-SEL-POSTPRD-01: `php/post_product.php`(**php/sql.php の分岐差分の直接検証**)
 
@@ -384,7 +420,12 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
   - **PHP8リスク**: `$src_sty`/`$src_cla`/`$src_fru` 未設定によるWarning群、`$json_prd`未定義に
     よるWarning(products側は明示的にスキップされているため、`if($src_prd=='no'){ // not execute }`
     のコメントブロックのみで `$json_prd` 自体が代入されない)。
-- **状態**: 未実行
+- **実測との突合せ**: `tests/golden/TC-SEL-POSTPRD-01.html`と完全一致。本台帳で最も重要な
+  分岐差分検証ケースが確定: `js_prd`=`0`、`js_mak`=mk9002(Beta Brewing)の1行のみ、
+  ページ末尾に `print_r($mak_MakerName[0])` の生出力 `Beta Brewing` を確認。
+  `"MakerName like"."'%".$serch."%'"`(空白無し連結)がMariaDBで構文エラーにならないことも
+  実測で確認(§5 要確認事項6を確定)。
+- **状態**: PASS(GM固定)
 
 #### TC-SEL-CHECK-NEW-01: `post/check/check.php`(`New_Update=new`)
 
@@ -419,7 +460,14 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
     `userid=us0001&productid=&makerid=mk9002&productname=Delta+Wheat&styleid=2&alcohol=5.10&ibu=25.00&color=5&clarity=3&fruity=2&favorite=4&new_update=new&productexplain=A+new+wheat+beer.&comment=First+tasting.`
     (`http_build_query`のキー順は`$value`への代入順:
     userid,productid,makerid,productname,styleid,alcohol,ibu,color,clarity,fruity,favorite,new_update,productexplain,comment)
-- **状態**: 未実行
+- **実測との突合せ**: `tests/golden/TC-SEL-CHECK-NEW-01.html`と完全一致。画面内容・`value_http`の
+  文字列(キー順含む)ともに予測どおり。**Warning文言を精緻化**: `$_FILES['upimg']`未設定により
+  `Undefined array key "upimg"`(check.php L25, L26の2箇所)に加えて、それぞれ直後に
+  `Warning: Trying to access array offset on null`(2件)、さらに
+  `Deprecated: move_uploaded_file(): Passing null to parameter #1 ($from) of type string is
+  deprecated`(1件)が発生する。ハーネスが`$_FILES`未対応であることに起因する既知の制約
+  (対象コードのバグではない)として確定。
+- **状態**: PASS(GM固定、Warning文言を確定)
 
 #### TC-SEL-CHECK-UPDATE-01: `post/check/check.php`(`New_Update=update`)
 
@@ -441,7 +489,9 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
   - `value_http`: `userid=us0003&productid=101&makerid=mk9001&color=7&clarity=4&fruity=3&favorite=2&new_update=update&comment=Updated+take.`
     (updateパスでは`productname`/`styleid`/`alcohol`/`ibu`/`productexplain`はそもそも `$value` に
     代入されないため`http_build_query`に現れない)。
-- **状態**: 未実行
+- **実測との突合せ**: `tests/golden/TC-SEL-CHECK-UPDATE-01.html`と完全一致(画面内容・`value_http`
+  とも予測どおり。$_FILES関連の処理が無い分岐のためファイル関連Warningは発生しない)。
+- **状態**: PASS(GM固定)
 
 ### 3.2 `common/sql.php` 死分岐の直接カバレッジ(ハーネス側ラッパー使用)
 
@@ -456,7 +506,11 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
 - **期待値**: `$json_prd`/`$json_mak`/`$json_sty`/`$json_cla`/`$json_fru` すべて未定義
   → `js_prd`〜`js_fru` すべて `0`。SELECTクエリは1本も発行されない。
   **PHP8リスク**: `$src_cla`/`$src_fru` 未定義Warning、`$json_*` 未定義Warning ×5。
-- **状態**: 未実行
+- **実測との突合せ**: `tests/golden/TC-CORE-01.html`と完全一致。`js_prd`/`js_mak`/`js_sty`/`js_cla`/
+  `js_fru`すべて`0`、Warning実測は`$src_sty`+`$src_cla`+`$src_fru`+`$json_prd`/`$json_mak`/
+  `$json_sty`/`$json_cla`/`$json_fru`の計8件(`$src_prd`/`$src_mak`はラッパーで明示セット済みの
+  ためWarningなし、予測どおり)。
+- **状態**: PASS(GM固定)
 
 #### TC-CORE-02: `$src_mak='yes'`
 
@@ -464,7 +518,9 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
 - **入力**: ラッパーが `$src_prd='no'; $src_mak='yes'; $sql_where_mak="MakerID='mk9002'";` をセット。
 - **期待値**: `js_mak` = mk9002の1行のみ(`Beta Brewing`)。`js_prd`=`0`(products skip)。
   `js_sty`/`js_cla`/`js_fru`=`0`(未設定)。
-- **状態**: 未実行
+- **実測との突合せ**: `tests/golden/TC-CORE-02.html`と完全一致。`js_mak`=mk9002(Beta Brewing)の
+  1行のみ、他は`0`。commonのみに存在する`$src_mak=='yes'`分岐(実ページ到達不能)を単体で確認。
+- **状態**: PASS(GM固定)
 
 #### TC-CORE-03: `$src_cla='yes'` かつ `$src_fru='yes'`
 
@@ -474,7 +530,11 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
   (`$src_mak` は未設定 → else 分岐、`$sql_where` も未設定なので合わせて `$sql_where="''=''"`もセットする)。
 - **期待値**: `js_cla`=clarity全4行、`js_fru`=fruity全4行。`js_prd`=`0`、`js_mak`=maker全3行
   (`$sql_where="''=''"`のため)、`js_sty`=`0`(未設定)。
-- **状態**: 未実行
+- **実測との突合せ**: `tests/golden/TC-CORE-03.html`と完全一致。`js_cla`=
+  `[{"ClarityID":1,"ClarityValue":1,...},...]`(前提1のとおりINT列は非クオート数値)、
+  `js_fru`も同様に全4行、`js_mak`=maker全3行、`js_prd`/`js_sty`=`0`。commonのみに存在する
+  `$src_cla`/`$src_fru`='yes'分岐(実ページ到達不能)を単体で確認。
+- **状態**: PASS(GM固定)
 
 ### 3.3 sql_POST系(INSERT/UPDATE の副作用検証)
 
@@ -514,7 +574,20 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
     「Thanks for submitting!」を表示し、**エラーは一切表面化しない**という点が重要。
 - **要ゴールデンマスター確認**: 仮説A/Bどちらが実際の挙動か。products/rate_userを実際にSELECTして
   ProductID=104 / Rate_userID=3 の行の有無で判定できる。
-- **状態**: 未実行
+- **実測との突合せ**: `tests/golden/TC-POST-THANK-NEW-01.db.txt`で **仮説A(コロン欠け実害なし)を
+  確定**。実測結果:
+  - `products`: 104行が `MakerID=mk9002, ProductName=Delta Wheat, StyleID=2, Alcohol=5.10,
+    IBU_all=25.00, IBU=25.00, Color=5, Clarity=3, Fruity=2, Favorite=4.00,
+    ProductExplain=A new wheat beer., IBU_Style=30.00, Comment=First tasting.` で正しく追加
+    (`Alcohol`のコロン欠けも実害なし)。
+  - `products` 102行の `IBU_all` が `99.99` → **`30.00`** に変化(前提4のグローバルUPDATE確定)。
+    101/103/104行のIBU_allは無変化。
+  - `rate_user`: 3行目が `ProductID=104, UserID=us0001, Color_user=5, Clarity_user=3,
+    Fruity_user=2, Favorite_user=4, New_Update=new, Comment=First tasting.` で正しく追加
+    (`Clarity_user`のコロン欠けも実害なし)。
+  - `img/product/104.png` が作成されている(rename成功、Warningなし)。
+  仮説Bは棄却。§0前提3・前提4、§5要確認事項3・4を確定。
+- **状態**: PASS(GM固定)
 
 #### TC-POST-THANK-UPDATE-01: `php/thank.php`(追加評価, `new_update=update`)
 
@@ -537,8 +610,13 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
     Clarity_user=4(コロン欠け、前提3参照), Fruity_user=3, Favorite_user=2, New_Update='update',
     Comment='Updated take.'`
   - rename() は呼ばれない(`new`分岐の外)。
-- **要ゴールデンマスター確認**: TC-POST-THANK-NEW-01と同じコロン欠け仮説A/B。
-- **状態**: 未実行
+- **実測との突合せ**: `tests/golden/TC-POST-THANK-UPDATE-01.db.txt`と完全一致。`products`は
+  101/102/103とも完全に不変(102の`IBU_all`も`99.99`のまま=`new`分岐外ではグローバルUPDATEが
+  一切発火しないことを確認)。`rate_user`に3行目が
+  `ProductID=101, UserID=us0003, Color_user=7, Clarity_user=4(コロン欠けも実害なし), Fruity_user=3,
+  Favorite_user=2, New_Update=update, Comment=Updated take.` で正しく追加。rename()は呼ばれず
+  `img/product/`は空のまま。仮説A(コロン欠け実害なし)を再確認。
+- **状態**: PASS(GM固定)
 
 #### TC-POST-THANK-NEW-02: `post/check/thank/thank.php`(TC-POST-THANK-NEW-01と同一パラメータ)
 
@@ -552,7 +630,29 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
   (例: 「Back to Home」リンクが `../../../index.php` になる、CSSの相対パスが異なる、
   `common/header.php` の絶対相対位置が異なる 等)。DBに関わらない純粋な相対パス差以外の
   差分が出た場合は仕様不一致として報告する。
-- **状態**: 未実行
+- **実測との突合せ(仕様不一致)**: `tests/golden/TC-POST-THANK-NEW-02.db.txt` は
+  TC-POST-THANK-NEW-01 と **DBレベルでは完全に同一**(products 104行、102のIBU_all=30.00、
+  rate_user 3行)であり、`common/sql_POST.php`と`php/sql_POST.php`がbyte-identicalであることの
+  相互確認としては当初予測どおり成立した。
+  しかし **HTML出力面で当初予測(「相対パスの違いのみ」)が誤りだった**ことが判明した:
+  `tests/golden/TC-POST-THANK-NEW-02.html` にのみ
+  `Warning: rename(../img/tmp/upload_test.png,../img/product/104.png): No such file or
+  directory in .../common/sql_POST.php on line 40` が出力される(TC-POST-THANK-NEW-01には無い)。
+  **原因**: `sql_POST.php`の`rename('../img/tmp/'.$image_name_http, '../img/product/'.$image_rename)`
+  は「サイトルートから1階層上」を前提にした固定相対パスであり、実行時カレントディレクトリ
+  (=エントリページの設置ディレクトリ)に依存する。`php/thank.php`(`php/`、サイトルートから
+  1階層)から呼ばれる場合は`../img/tmp/`が正しくサイトルート直下の`img/tmp/`を指すが、
+  `post/check/thank/thank.php`(`post/check/thank/`、3階層)から呼ばれる場合は`../img/tmp/`が
+  `post/check/img/tmp/`を指してしまい存在しない。**これはテスト環境固有の問題ではなく、
+  本番でも`post/check/thank/thank.php`経由(実際のUI導線そのもの)の新規投稿では画像リネームが
+  常に失敗する、という実在のバグである**(DBへのINSERTは成功するため症状は「画像だけ反映されない」
+  という気づきにくい形で現れる)。ゴールデンマスター方針(無改変コードの実挙動を正とする)に従い、
+  この追加Warningを期待値に組み込んで確定する。DB副作用は完全一致のためsql_POST.php自体の同一性は
+  維持されているが、「HTML差分は相対パスのみ」という当初の予測は誤りだったため、本ケースは
+  「期待値と実装のズレ」ではなく「**台帳側の当初予測の誤り**」として仕様不一致に分類し、
+  期待値を上記の実挙動に修正する。オーケストレーターへの報告事項として最終報告に含める。
+- **状態**: 仕様不一致(期待値をGM側に修正・確定。DB副作用はPASS相当、HTML出力に
+  ディレクトリ深さ依存のrename失敗Warningが追加で発生する点を新規に記録)
 
 ---
 
@@ -568,7 +668,8 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
 | `php/add_product.php` / `post/add_product.php` | `$product_id` 未定義のままhidden inputへecho | `Undefined variable` Warning |
 | `php/list_maker.php` / `php/list_style.php` | `$_GET['product_id']` 未指定 | `Undefined array key "product_id"` Warning |
 | `php/product.php` | `$_GET['comment']` 未指定 | `Undefined array key "comment"` Warning |
-| `post/check/check.php` | `$_FILES['upimg']` がハーネス未対応で常に未設定 | `Undefined array key "upimg"` Warning ×2 + `move_uploaded_file()` 失敗Warning(ハーネス制約) |
+| `post/check/check.php` | `$_FILES['upimg']` がハーネス未対応で常に未設定 | `Undefined array key "upimg"` Warning ×2 + `Trying to access array offset on null` ×2 + `move_uploaded_file()` の `Deprecated`(ハーネス制約) |
+| `common/sql_POST.php` の `rename('../img/tmp/'.., '../img/product/'..)` (**PHP8リスクというよりロジックバグ、実測で新規発見**) | 相対パスがサイトルートから1階層上固定。エントリページの設置階層に依存するため、`php/thank.php`(1階層)からは成功するが `post/check/thank/thank.php`(3階層)からは失敗する | `Warning: rename(...): No such file or directory`(非致命的・DBには影響しないが、実運用の投稿画面(`post/check/thank/thank.php`)経由では**新規投稿の画像が常にリネームされない**という実害のあるバグ。TC-POST-THANK-NEW-02で実測確認。別課題として記録推奨) |
 
 いずれも「出力されるHTMLを変えない」というスコープ上の不変条件においては、
 **Warning/Deprecationの文言自体もHTML出力に混入する文字列としてゴールデンマスターの一部**である
@@ -577,32 +678,114 @@ ProductID 102 は意図的に `IBU=0.000` かつ `IBU_all=99.99`(= `IBU_Style`=3
 
 ---
 
-## 5. 要ゴールデンマスター確認 一覧
+## 5. 要ゴールデンマスター確認 一覧 —【全項目 実測により確定済み】
 
-1. **PDOの型変換**(前提1): `fetchAll` した数値カラムが文字列/数値のどちらでJSON化されるか。
-2. **SELECTの行順序**(前提2): `ORDER BY` 無しクエリの返却順がフィクスチャ投入順と一致するか。
-3. **バインドパラメータのコロン欠けの実害**(前提3・最重要): `'Alcohol'`/`'Clarity_user'`
-   (コロン無し)が `:Alcohol`/`:Clarity_user` プレースホルダに正しくバインドされるか、
-   それとも `execute()` が黙って失敗し該当行のINSERTが消えるか。
-   → TC-POST-THANK-NEW-01, TC-POST-THANK-UPDATE-01, TC-POST-THANK-NEW-02 に影響。
-4. **`UPDATE ... SET col=(select col2)`(FROM無し相関サブクエリ)の実行可否**(前提4):
-   MariaDBがこの構文を受理し自己代入として動くか、エラーになるか。
-   → TC-POST-THANK-NEW-01, TC-POST-THANK-NEW-02 に影響。
-5. **TC-SEL-IDX-01**: index.php の maker ループが負インデックスに達した際の fatal error の
-   正確なメッセージ・出力タイミング(バッファリング有無)。
+1. **PDOの型変換**(前提1) — **確定**: INT型カラム(ProductID/Rate_userID/ClarityID/ClarityValue/
+   FruityID/FruityValue)のみPHPネイティブint(JSON非クオート数値)、それ以外
+   (VARCHAR/DECIMAL/TEXT)は全て文字列(JSONダブルクオート付き)。`TC-CORE-03`/`TC-SEL-PRD-01`等で確認。
+2. **SELECTの行順序**(前提2) — **確定**: 全ケースでフィクスチャのINSERT順どおりに返却されることを確認
+   (このMariaDB環境・データ量では投入順=返却順)。
+3. **バインドパラメータのコロン欠けの実害**(前提3・最重要) — **確定(仮説A)**:
+   `'Alcohol'`/`'Clarity_user'`(コロン無し)は `:Alcohol`/`:Clarity_user` プレースホルダに
+   **正しくバインドされる**(実害なし)。`TC-POST-THANK-NEW-01`のDB実測(products 104行の
+   Alcohol=5.10、rate_user 3行目のClarity_user=3)で確定。仮説B(バインド失敗・無INSERT)は棄却。
+4. **`UPDATE ... SET col=(select col2)`(FROM無し相関サブクエリ)の実行可否**(前提4) — **確定**:
+   MariaDBはこの構文を自己代入(`SET IBU_all = IBU_Style`相当)として正しく実行する。
+   `TC-POST-THANK-NEW-01`実測(102の`IBU_all`が`99.99`→`30.00`)で確定。
+5. **TC-SEL-IDX-01**: index.php の maker ループが負インデックスに達した際の fatal error — **確定**:
+   `Warning: require(brewery/detail/explain/.html): Failed to open stream: No such file or
+   directory` に続き `Fatal error: Uncaught Error: Failed opening required
+   'brewery/detail/explain/.html' ...` + スタックトレース。出力バッファリングは無く、fatal直前
+   までの出力(head内script・products一覧・maker一覧有効3件+4件目途中)はそのままflushされる。
 6. **TC-SEL-POSTPRD-01**: `"MakerName like"."'%".$serch."%'"` のように `LIKE` とクオートの間に
-   空白が無い連結がMariaDBで構文エラーにならないことの確認。
+   空白が無い連結 — **確定**: MariaDBで構文エラーにならず正しく `LIKE '%Beta%'` として解釈される
+   (実測でmk9002=Beta Brewingが正しく1件ヒット)。
+
+**実測により新規発見した追加の要確認事項(解消済み)**:
+7. `TC-POST-THANK-NEW-02`実測により、`common/sql_POST.php`の`rename()`が相対パス
+   (`../img/tmp/`)固定であるため、エントリページの設置階層(post/check/thank/ = 3階層)次第で
+   リネームに失敗するという**実運用に影響するバグ**を新規発見(§4参照)。DB副作用には影響しないが、
+   本番の投稿導線(`post/check/thank/thank.php`)経由では新規投稿の画像が反映されない。
 
 ---
 
-## 6. カバレッジ集計
+## 6. カバレッジ集計・実行結果
 
-- 総テストケース数: **17件**(SELECT系11件 + common死分岐直接テスト3件 + sql_POST系3件)
+- 総テストケース数: **19件**(`tests/runner/cases/*.json` 実ファイル数と一致。
+  台帳初版時点の「17件」は集計ミスであり本改訂で訂正)。
+  内訳: SELECT系13件(IDX-01, PRD-01, MAK-01, MAKERS-01, EVAL-01, LMAK-01, LSTY-01, ADDP-01,
+  POSTADDP-01, POSTEVAL-01, POSTPRD-01, CHECK-NEW-01, CHECK-UPDATE-01)+
+  common死分岐直接テスト3件(CORE-01/02/03)+ sql_POST系3件(THANK-NEW-01, THANK-UPDATE-01,
+  THANK-NEW-02)。
 - `common/sql.php`: `$src_prd`(2分岐)/`$src_mak`(3分岐)/`$src_sty`(2分岐)/`$src_cla`(2分岐)/`$src_fru`(2分岐)
   の全11分岐を実ページ4件(TC-SEL-POSTADDP-01, TC-SEL-POSTEVAL-01, TC-SEL-CHECK-NEW-01,
-  TC-SEL-CHECK-UPDATE-01)+ 直接require 3件(TC-CORE-01/02/03)でカバー。
+  TC-SEL-CHECK-UPDATE-01)+ 直接require 3件(TC-CORE-01/02/03)でカバー。全件実行しPASS。
 - `php/sql.php`: 差分2箇所(maker分岐条件・style抽出フィールド数)を含む全分岐を実ページ8件で
   カバー(直接requireは不要)。特に **TC-SEL-POSTPRD-01** が両ファイルの分岐差分そのものを
-  最も直接的に検証するケース。
+  最も直接的に検証するケースであり、実測でも分岐差分どおりの結果を確認(PASS)。
 - `sql_POST.php`(common/php同一): `new`/`update` の2分岐を3ケースでカバー
-  (`new`側2ケースで common版・php版の相互確認込み)。
+  (`new`側2ケースで common版・php版の相互確認込み)。DB副作用は3ケースとも予測どおり
+  (PASS/PASS/仕様不一致=HTML側のrenameパスバグを新規発見)。
+- **結果集計**: PASS(GM固定) 18件 / 仕様不一致 1件(TC-POST-THANK-NEW-02、DB副作用はPASS相当・
+  HTML出力面の当初予測の誤りを修正) / FAIL 0件。
+
+---
+
+## 7. 実行結果まとめ
+
+**再現コマンド**:
+```bash
+cd /workspace/tool/beer
+bash tests/runner/start_db.sh   # MariaDB起動(コンテナ再起動後は毎回必要)
+bash tests/runner/run_all.sh    # 全19ケース実行 → tests/out/ に出力
+diff -rq tests/out tests/golden # 差分ゼロを確認(再現性の確認)
+```
+実行結果: `tests/out/` と `tests/golden/` は全19ケース(html/exit/params.json/db.txt)で
+byte-identical(`diff -rq`差分ゼロ)。再現性を確認済み。
+
+### 7.1 結果サマリ表
+
+| ケースID | 結果 | 一言 |
+|---|---|---|
+| TC-SEL-IDX-01 | PASS(GM固定) | 負インデックス→maker側でFATAL、予測どおり(exit=255) |
+| TC-SEL-PRD-01 | PASS(GM固定) | keyIndex計算・表示値すべて予測どおり |
+| TC-SEL-MAK-01 | PASS(GM固定) | products/maker各1行、Warning8件確定 |
+| TC-SEL-MAKERS-01 | PASS(GM固定、期待値補完) | `comment`未定義Warningを追加確認 |
+| TC-SEL-EVAL-01 | PASS(GM固定、期待値補完) | null配列オフセットのDeprecatedを追加確認 |
+| TC-SEL-LMAK-01 | PASS(GM固定) | 予測どおり |
+| TC-SEL-LSTY-01 | PASS(GM固定) | 予測どおり |
+| TC-SEL-ADDP-01 | PASS(GM固定) | 予測どおり |
+| TC-SEL-POSTADDP-01 | PASS(GM固定) | 5フィールド版style scriptを確認(php/sql.php版との差分確定) |
+| TC-SEL-POSTEVAL-01 | PASS(GM固定) | 予測どおり |
+| TC-SEL-POSTPRD-01 | PASS(GM固定) | 分岐差分ケース、LIKE空白無し構文も問題なし |
+| TC-SEL-CHECK-NEW-01 | PASS(GM固定、Warning文言確定) | value_http完全一致、$_FILES関連Warning詳細化 |
+| TC-SEL-CHECK-UPDATE-01 | PASS(GM固定) | 予測どおり |
+| TC-CORE-01 | PASS(GM固定) | commonの`$src_mak='no'`等の死分岐を確認 |
+| TC-CORE-02 | PASS(GM固定) | commonの`$src_mak='yes'`死分岐を確認 |
+| TC-CORE-03 | PASS(GM固定) | commonの`$src_cla`/`$src_fru`='yes'死分岐を確認 |
+| TC-POST-THANK-NEW-01 | PASS(GM固定) | コロン欠け実害なし・グローバルUPDATE発火、両方確定 |
+| TC-POST-THANK-UPDATE-01 | PASS(GM固定) | products完全不変、rate_userのみ追加 |
+| TC-POST-THANK-NEW-02 | **仕様不一致**(期待値修正) | DB結果は同一だがrename()がディレクトリ深さで失敗する実バグを新規発見 |
+
+### 7.2 仕様不一致の詳細
+
+**TC-POST-THANK-NEW-02**(`post/check/thank/thank.php`、`new_update=new`):
+- **入力**: TC-POST-THANK-NEW-01と同一の `value_http`/`image_name=upload_test.png`。
+- **仕様上の期待値(台帳初版)**: 「`common/sql_POST.php`と`php/sql_POST.php`はbyte-identicalなので、
+  TC-POST-THANK-NEW-01とDBレベルで完全に同一の結果になる。HTML差分は相対パス(index.phpリンク等)
+  のみ許容する」。
+- **実際の値**: DBレベルの結果はTC-POST-THANK-NEW-01と完全一致(products 104行、102のIBU_all=
+  30.00、rate_user 3行)。しかしHTML出力に `Warning: rename(../img/tmp/upload_test.png,
+  ../img/product/104.png): No such file or directory in .../common/sql_POST.php on line 40`
+  が追加で出力される(TC-POST-THANK-NEW-01には無い)。
+- **差の分析**: `sql_POST.php`の`rename('../img/tmp/'.., '../img/product/'..)`は実行時カレント
+  ディレクトリに依存する固定相対パス。`php/thank.php`(サイトルートから1階層)からは
+  `../img/tmp/`が正しくルート直下`img/tmp/`を指すが、`post/check/thank/thank.php`(3階層)からは
+  `post/check/img/tmp/`を指してしまい存在しない。**同一コード(sql_POST.php)が、呼び出し元ページの
+  ディレクトリ階層によって異なる副作用(画像リネームの成否)を持つ**という、テスト設計時には
+  想定していなかった実挙動。台帳の「HTML差分は相対パスのみ」という予測が不正確だったための
+  仕様不一致であり、実装のバグではなく**台帳(期待値)側の誤りとして訂正**した
+  (§0前提・各ケースの実測との突合せ欄に反映済み)。DBへの影響はないため実害は「画像が反映されない」
+  というUI上の不具合にとどまるが、`post/check/thank/thank.php`が実際の投稿導線であることを踏まえると
+  実運用上のバグとして扱う価値があり、オーケストレーターへの申し送り事項とする
+  (loop-scope.mdの「別課題として記録するもの」への追加を提案)。
