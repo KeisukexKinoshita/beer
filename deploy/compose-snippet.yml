@@ -1,0 +1,19 @@
+# beer コンテナ定義 — サーバの /srv/seisan3/deploy/docker-compose.yml の services: に追記する
+# (seisan3-php イメージを再利用: php:8.5-apache + mysqli/pdo_mysql, display_errors=Off)
+# コードは /srv/beer/{prod,dev}/html にバインドマウント (デプロイ=ファイル置換のみ)
+
+  beer-prod:
+    image: seisan3-php
+    container_name: beer-prod
+    volumes:
+      - /srv/beer/prod/html:/var/www/html
+    restart: always
+
+  beer-dev:
+    image: seisan3-php
+    container_name: beer-dev
+    volumes:
+      - /srv/beer/dev/html:/var/www/html
+    restart: always
+
+# 併せて proxy の depends_on に beer-prod / beer-dev を追記する
