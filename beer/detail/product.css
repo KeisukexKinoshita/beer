@@ -52,6 +52,12 @@ ul.image_list_product {
   border-top: solid 1px rgba(255, 255, 255, 0.25) ;
 }
 
+/* 行頭ラベルの幅を揃え、色/透明度/フルーティーさ等のアイコン開始位置を縦一列にする */
+ul.image_list_product > span:first-child{
+  min-width: 9em;
+  flex-shrink: 0;
+}
+
 ul.image_list_product span{
   color: white;
 }
