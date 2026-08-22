@@ -789,6 +789,9 @@ sandbox(`beer/`ディレクトリのコピーが追加済み)上で実行して�
   読み取り専用の実行のみ)。**ただしこれは正式なゴールデンマスター取得ではない**
   (ケースJSON・`tests/golden/`への格納はオーケストレーターの担当)。状態は全件「未実行」のまま
   とし、一次確認で得た値を期待値として記載する。
+  **【2026-08-22 追記】オーケストレーターがケースJSON化・ゴールデンマスター取得を完了
+  (commit 0a2a7f2)。以下9ケースの「実測との突合せ」欄・状態欄は全て確定済み(§9.3参照)。
+  9件全てで一次確認時の期待値と正式なゴールデンマスターが完全一致した(想定外の差分ゼロ)。**
 - 対象ページの中で分岐が生きていることが判明したページ(`beer/detail/product.php`,
   `style/detail/style.php`)は §2.1 の訂正と対応させてある。
 
@@ -831,7 +834,11 @@ sandbox(`beer/`ディレクトリのコピーが追加済み)上で実行して�
     `Undefined array key "comment"` Warning 1件(非致命的、`$comment`は未使用)。
   - 一次確認(`php tests/runner/exec_page.php brewery/makers.php`)で上記を実測し、完全一致を確認
     (exit=0、Warningは`comment`の1件のみ、他のsql.php由来Warningは改修2により発生しない)。
-- **状態**: 未実行
+- **ゴールデンマスターとの突合せ(commit 0a2a7f2)**: `tests/golden/TC-SEL-BRWMAKERS-01.html`と
+  完全一致(`diff`差分ゼロ)。Warningは`brewery/makers.php`76行目の`comment`未定義1件のみ
+  (実測で行番号まで確認)。makerループは逆順3件(mk9003→mk9002→mk9001)+explainダミー
+  インライン挿入まで一次確認どおり。exit=0。
+- **状態**: PASS(GM固定)
 
 #### TC-SEL-BRWMAKER-01: `brewery/detail/maker.php`
 
@@ -853,7 +860,10 @@ sandbox(`beer/`ディレクトリのコピーが追加済み)上で実行して�
   - Warningなし(このページは`$_GET['comment']`を読まず、`$src_sty`/`$src_cla`/`$src_fru`も
     改修2のisset初期化によりWarningを出さない)。
   - 一次確認で上記を実測し完全一致を確認(exit=0、Warning 0件)。
-- **状態**: 未実行
+- **ゴールデンマスターとの突合せ(commit 0a2a7f2)**: `tests/golden/TC-SEL-BRWMAKER-01.html`と
+  完全一致(`diff`差分ゼロ)。h2=Beta Brewing、explainダミーインライン、URL1リンク、sec2ループ
+  1件(P102)、Warning 0件、exit=0。
+- **状態**: PASS(GM固定)
 
 #### TC-SEL-BEERPRODUCTS-01: `beer/products.php`
 
@@ -868,7 +878,9 @@ sandbox(`beer/`ディレクトリのコピーが追加済み)上で実行して�
   - **PHP8リスク**: 末尾の`$comment = $_GET['comment'];`(90行目)で`Undefined array key
     "comment"` Warning 1件。
   - 一次確認で完全一致を確認(exit=0)。
-- **状態**: 未実行
+- **ゴールデンマスターとの突合せ(commit 0a2a7f2)**: `tests/golden/TC-SEL-BEERPRODUCTS-01.html`と
+  完全一致(`diff`差分ゼロ)。Warningは90行目の`comment`未定義1件のみ、逆順3件(103→102→101)、exit=0。
+- **状態**: PASS(GM固定)
 
 #### TC-SEL-BEERDETAIL-01: `beer/detail/product.php`(**§2.1訂正の直接根拠**)
 
@@ -901,7 +913,13 @@ sandbox(`beer/`ディレクトリのコピーが追加済み)上で実行して�
   - 一次確認(`php tests/runner/exec_page.php beer/detail/product.php`、
     `{"get":{"ProductID":"102"}}`)で上記全て実測し完全一致を確認(exit=0、
     `js_cla`/`js_fru`が`0`ではなく4行のJSONであることを直接確認した)。
-- **状態**: 未実行
+- **ゴールデンマスターとの突合せ(commit 0a2a7f2)**: `tests/golden/TC-SEL-BEERDETAIL-01.html`と
+  完全一致(`diff`差分ゼロ)。**`js_cla`/`js_fru`がclarity/fruity全4行のJSONであることを
+  正式なゴールデンマスターでも確認**(§2.1訂正の根拠が正式に裏付けられた)。表示値
+  (STYLE=Pilsner、COLOR=Color2.png、CLARITY=Clarity2.png/Clear、IBU=99.99、
+  FRUITY=Fruity1.png/Not Fruity、ALCOHOL=4.80、点数=3.50)・Warning(`comment`未定義1件、
+  129行目)とも一致。exit=0。
+- **状態**: PASS(GM固定)
 
 #### TC-SEL-STYSTYLES-01: `style/styles.php`
 
@@ -914,7 +932,10 @@ sandbox(`beer/`ディレクトリのコピーが追加済み)上で実行して�
     1(IPA)の3件の`<li>`。`<h2>`見出しは`Styles 3件`。クラッシュしない。
   - **PHP8リスク**: `$comment`未定義Warning 1件(92行目)。
   - 一次確認で完全一致を確認(exit=0)。
-- **状態**: 未実行
+- **ゴールデンマスターとの突合せ(commit 0a2a7f2)**: `tests/golden/TC-SEL-STYSTYLES-01.html`と
+  完全一致(`diff`差分ゼロ)。Warningは92行目の`comment`未定義1件のみ、逆順3件
+  (StyleID=3→2→1)、exit=0。
+- **状態**: PASS(GM固定)
 
 #### TC-SEL-STYDETAILMAKERS-01: `style/detail/makers.php`(**壊れたページ、fatal特性固定**)
 
@@ -942,7 +963,13 @@ sandbox(`beer/`ディレクトリのコピーが追加済み)上で実行して�
   - この不具合は**本番でも`style/detail/makers.php`にアクセスすると常にFatal errorになる**
     ことを意味する(実運用上の問題として、loop-scope.mdの「別課題として記録するもの」への
     追加候補としてオーケストレーターへ申し送る)。
-- **状態**: 未実行
+- **ゴールデンマスターとの突合せ(commit 0a2a7f2)**: `tests/golden/TC-SEL-STYDETAILMAKERS-01.html`
+  と完全一致(`diff`差分ゼロ)。予測どおり`<head>`前半(`<link rel="stylesheet"
+  href="../style.css">`まで)だけを出力して`require(../common/sql.php): Failed to open stream:
+  No such file or directory`のWarning、続けて`Fatal error: Uncaught Error: Failed opening
+  required '../common/sql.php'`(12行目)+スタックトレースで打ち切り。exit=255
+  (オーケストレーター提示のexitコードとも一致)。
+- **状態**: PASS(GM固定)
 
 #### TC-SEL-STYDETAIL-01: `style/detail/style.php`(**§2.1訂正の直接根拠**)
 
@@ -967,7 +994,11 @@ sandbox(`beer/`ディレクトリのコピーが追加済み)上で実行して�
     P102(Beta Light Pilsner)の`<li>`1件、リンク先`../../beer/detail/product.php?ProductID=102`。
   - Warningなし(`$_GET['comment']`読み取りが無いページ、改修2によりsql.php由来Warningも0件)。
   - 一次確認で上記を実測し完全一致を確認(exit=0、`js_mak`が`0`であることを直接確認した)。
-- **状態**: 未実行
+- **ゴールデンマスターとの突合せ(commit 0a2a7f2)**: `tests/golden/TC-SEL-STYDETAIL-01.html`と
+  完全一致(`diff`差分ゼロ)。**`js_mak`が`0`(SELECT自体スキップ)であることを正式な
+  ゴールデンマスターでも確認**(§2.1訂正の`$src_mak='no'`が生きているという主張の直接裏付け)。
+  h2=Pilsner、p2=style explain、sec2ループ1件(P102)、Warning 0件、exit=0。
+- **状態**: PASS(GM固定)
 
 #### TC-SEL-PHPCHECK-NEW-01: `php/check.php`(`New_Update=new`)(**common版との分岐差分の直接対比**)
 
@@ -1002,7 +1033,13 @@ sandbox(`beer/`ディレクトリのコピーが追加済み)上で実行して�
     に変わる)。
   - 一次確認で上記全てを実測し完全一致を確認(exit=0、可視内容・`value_http`は
     TC-SEL-CHECK-NEW-01と同一、`<script>`ブロックのみ3フィールド版であることを確認)。
-- **状態**: 未実行
+- **ゴールデンマスターとの突合せ(commit 0a2a7f2)**: `tests/golden/TC-SEL-PHPCHECK-NEW-01.html`と
+  完全一致(`diff`差分ゼロ)。`value_http`は`tests/golden/TC-SEL-CHECK-NEW-01.html`のものと
+  1バイトも違わず同一であることを`diff`で確認。可視内容(Brewery/BeerName/Alcohol/IBU/
+  Color/Clarity/Fruity/Comment/Photo)も同一。`<script>`ブロックはphp/sql.php版の3フィールド
+  (`var sty_StyleID=[], sty_StyleName=[], sty_StyleIBU=[];`)。$_FILES関連Warning5件
+  (25/26行目、`php/check.php`自身のファイル名で)もTC-SEL-CHECK-NEW-01と同一パターン。exit=0。
+- **状態**: PASS(GM固定)
 
 #### TC-SEL-STRATHCONA-01: `php/Strathcona_Beer_Company.php`(**壊れたページ、fatal特性固定**)
 
@@ -1034,7 +1071,14 @@ sandbox(`beer/`ディレクトリのコピーが追加済み)上で実行して�
     になる**ことを意味する(元々コメントアウトされていない生きたページとして残っているが、
     実質「壊れて使えないページ」である。loop-scope.mdの「別課題として記録するもの」への
     追加候補としてオーケストレーターへ申し送る)。
-- **状態**: 未実行
+- **ゴールデンマスターとの突合せ(commit 0a2a7f2)**: `tests/golden/TC-SEL-STRATHCONA-01.html`と
+  完全一致(`diff`差分ゼロ)。**§0前提6で予測した`PDOException`(orchestratorの当初想定=
+  fetchAll()でのTypeErrorではない)が正式なゴールデンマスターでも確認された**:
+  `Fatal error: Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column
+  'BREWERY' in 'WHERE' in .../php/sql.php:23`、スタックトレース1行目が
+  `#0 .../php/sql.php(23): PDO->query()`であることも一致。出力は`<div class='chart'>`の
+  開始タグまでで打ち切り。exit=255(オーケストレーター提示のexitコードとも一致)。
+- **状態**: PASS(GM固定)
 
 ---
 
@@ -1111,16 +1155,18 @@ sandbox(`beer/`ディレクトリのコピーが追加済み)上で実行して�
 - **結果集計**: PASS(GM固定) 18件 / 仕様不一致 1件(TC-POST-THANK-NEW-02、DB副作用はPASS相当・
   HTML出力面の当初予測の誤りを修正) / FAIL 0件。
 - **【2026-08-22追記】検証者(B)指摘1により9件を追加設計**(§2.4・§3.4参照)。
-  総テストケース数は **28件**(実行・確定済み19件 + 新規設計9件・状態は未実行)になった。
-  新規9件のうち `brewery/makers.php`・`beer/products.php`・`style/styles.php` の3件は
-  既存分岐(`$src_sty`スキップ、`$src_mak`else 等)を別ページから再確認するもの、
-  `brewery/detail/maker.php` は `php/maker.php`(TC-SEL-MAK-01)のcommon版、
-  `beer/detail/product.php`・`style/detail/style.php` の2件は §2.1 で「死分岐」としていた
-  `$src_cla`/`$src_fru='yes'` および `$src_mak='no'` が実は生きていたことを示す訂正の根拠、
-  `php/check.php` は `post/check/check.php` との共有ロジックの`php/sql.php`版対比、
-  `style/detail/makers.php`・`php/Strathcona_Beer_Company.php` の2件は独立した
-  「壊れたページ」の特性固定(前者はディレクトリ階層に対する相対パス誤り、後者は
+  総テストケース数は **28件**になった。新規9件のうち `brewery/makers.php`・
+  `beer/products.php`・`style/styles.php` の3件は既存分岐(`$src_sty`スキップ、`$src_mak`else 等)
+  を別ページから再確認するもの、`brewery/detail/maker.php` は `php/maker.php`
+  (TC-SEL-MAK-01)のcommon版、`beer/detail/product.php`・`style/detail/style.php` の2件は
+  §2.1 で「死分岐」としていた `$src_cla`/`$src_fru='yes'` および `$src_mak='no'` が実は
+  生きていたことを示す訂正の根拠、`php/check.php` は `post/check/check.php` との共有ロジックの
+  `php/sql.php`版対比、`style/detail/makers.php`・`php/Strathcona_Beer_Company.php` の2件は
+  独立した「壊れたページ」の特性固定(前者はディレクトリ階層に対する相対パス誤り、後者は
   存在しない列へのSQL参照によるPDOException)。
+  **【2026-08-22 さらに追記】オーケストレーターがケースJSON化・ゴールデンマスター取得を完了
+  (commit 0a2a7f2)。9件全件を正式なゴールデンマスターと突合せ、全件PASS(GM固定)。
+  一次確認時の期待値との差分は0件(想定外の差分なし)。詳細は§9.3。**
 
 ---
 
@@ -1326,6 +1372,49 @@ bash tests/runner/run_all.sh        # 全19ケース実行 → tests/out/ に出
   params(`.params.json`)は全19ケースで改修前後完全一致。
 - 改修1・改修2とも、§8に記載した根拠により「挙動保存」と判定する。追加の懸念事項は無い。
 
+### 9.3 最終ラウンド: 新規9ケースのゴールデンマスター突合せ(2026-08-22、commit 0a2a7f2)
+
+**再現コマンド**:
+```bash
+cd /workspace/tool/beer
+bash tests/runner/start_db.sh   # MariaDB起動(コンテナ再起動後は毎回必要)
+bash tests/runner/run_all.sh    # 全28ケース実行 → tests/out/ に出力
+diff -rq tests/out tests/golden # 差分ゼロを確認(全87ファイル: html/exit/params.json + sql_POST系のdb.txt)
+```
+実行結果: `tests/out/` と `tests/golden/` は **全28ケース・全87ファイルでbyte-identical**
+(`diff -rq`差分ゼロ)。既存19ケースも回帰なし(オーケストレーターの報告どおり)。
+
+**新規9ケースの結果表**(§3.4の期待値との突合せ。全件、警告の文言・行番号・exitコードまで
+一致を確認した):
+
+| ケースID | 結果 | 突合せの要点 |
+|---|---|---|
+| TC-SEL-BRWMAKERS-01 | PASS(GM固定) | `comment`未定義Warning1件(L76)のみ、exit=0。一致 |
+| TC-SEL-BRWMAKER-01 | PASS(GM固定) | Warning0件、exit=0。一致 |
+| TC-SEL-BEERPRODUCTS-01 | PASS(GM固定) | `comment`未定義Warning1件(L90)のみ、exit=0。一致 |
+| TC-SEL-BEERDETAIL-01 | PASS(GM固定) | `js_cla`/`js_fru`が4行のJSON(`0`ではない)であることを正式に確認。§2.1訂正の裏付け完了 |
+| TC-SEL-STYSTYLES-01 | PASS(GM固定) | `comment`未定義Warning1件(L92)のみ、exit=0。一致 |
+| TC-SEL-STYDETAILMAKERS-01 | PASS(GM固定) | `require()`失敗Fatal(L12)、exit=255。メッセージ文言まで一致 |
+| TC-SEL-STYDETAIL-01 | PASS(GM固定) | `js_mak`が`0`であることを正式に確認。§2.1訂正の裏付け完了 |
+| TC-SEL-PHPCHECK-NEW-01 | PASS(GM固定) | `value_http`がTC-SEL-CHECK-NEW-01と`diff`差分ゼロで同一。styleスクリプト3フィールド版を確認 |
+| TC-SEL-STRATHCONA-01 | PASS(GM固定) | **`PDOException`(§0前提6の予測どおり)を正式に確認**。`php/sql.php:23`、exit=255 |
+
+**期待値とのズレ: 0件**。設計時の一次確認(`tests/runner/exec_page.php`による読み取り専用実行)で
+得た期待値が、オーケストレーターによる正式なケースJSON化・ゴールデンマスター取得後も
+1バイトの差分もなく再現された。特に以下2点は§0/§2.1で行った訂正・予測の正しさを正式な
+ゴールデンマスターで裏付けるものである:
+- `beer/detail/product.php`・`style/detail/style.php` により、`common/sql.php`の
+  `$src_cla`/`$src_fru='yes'`・`$src_mak='no'`が実ページから到達可能な生きた分岐であること
+  (§2.1訂正)。
+- `php/Strathcona_Beer_Company.php` により、この環境のPDOデフォルト`ATTR_ERRMODE`が
+  `EXCEPTION`であること、およびオーケストレーターの当初予測(`query()`が`false`を返し
+  `fetchAll()`でTypeErrorになる)が誤りで、実際は`query()`自体が`PDOException`を送出すること
+  (§0前提6)。
+
+**最終結果集計(28ケース)**: PASS(GM固定/改修後) **27件** / 仕様不一致 **1件**
+(TC-POST-THANK-NEW-02、DB副作用は完全一致・HTML出力のrename失敗Warningの行番号シフトのみ、
+事象と原因に変化なし) / FAIL **0件**。
+
 ---
 
 ## 10. 検証者(B)指摘1への対応まとめ(2026-08-22)
@@ -1345,8 +1434,10 @@ bash tests/runner/run_all.sh        # 全19ケース実行 → tests/out/ に出
 | TC-SEL-STRATHCONA-01 | `php/Strathcona_Beer_Company.php` | GETパラメータ無し | **壊れたページ**。存在しない`BREWERY`列への参照でPDOException、exit=255。**orchestratorの想定(query()がfalseに→fetchAllでFatal)は誤りで、実際はquery()自体がPDOExceptionを送出することを実測で確認・訂正** |
 
 全9件、`tests/runner/exec_page.php`(オーケストレーターの既存ハーネス)を用いた一次確認で
-期待値どおりの出力(メッセージ文言・行番号・exitコードまで)を得た。状態は台帳の規律どおり
-「未実行」のまま(正式なゴールデンマスター取得・ケースJSON化はオーケストレーターの担当)。
+期待値どおりの出力(メッセージ文言・行番号・exitコードまで)を得た。
+**【2026-08-22 最終確定】オーケストレーターがケースJSON化・ゴールデンマスター取得を完了
+(commit 0a2a7f2)。正式な`tests/golden/`との突合せでも9件全てPASS(GM固定)、期待値との
+ズレは0件だった(詳細は§9.3)。**
 
 ### 10.2 台帳訂正箇所
 
@@ -1362,19 +1453,21 @@ bash tests/runner/run_all.sh        # 全19ケース実行 → tests/out/ に出
    棄却済み「仮説B」)にあった「デフォルトのERRMODE_SILENT下で...」という説明が不正確だった点を
    記録(結論自体=仮説A確定は変わらない)。
 4. **§2.4・§3.4を新設**: 9ページの構造整理表と9件のケース本体。
-5. **§6・末尾に追記**: 総テストケース数を19件→28件(新規9件は未実行)に更新。
+5. **§6・末尾に追記**: 総テストケース数を19件→28件に更新。§9.3で新規9件のゴールデンマスター
+   突合せ結果(全件PASS)を確定。
 
 ### 10.3 私(テストエンジニア)が用意すべきもの/オーケストレーターへの依頼事項
 
-- **オーケストレーターに依頼するもの**:
-  1. `tests/runner/cases/TC-SEL-BRWMAKERS-01.json` 等、新規9件分のケースJSON作成
-     (`type: "page"`、`page`は各ページの相対パス、`params`は本セクション10.1・§3.4の入力どおり。
-     `TC-SEL-STYDETAILMAKERS-01`・`TC-SEL-STRATHCONA-01`はDBダンプ不要、GETのみ)。
-  2. 上記9件の `tests/golden/` への正式なゴールデンマスター格納(`bash
-     tests/runner/run_all.sh` 相当の実行を追加ケース分についても行う)。
-  3. `style/detail/makers.php` と `php/Strathcona_Beer_Company.php` の2つの「壊れたページ」を
-     `docs/loop-scope.md`の「別課題として記録するもの」に追加するかどうかの判断
-     (このループでは直さない前提だが、少なくとも台帳上は特性として記録済み)。
+- **オーケストレーターに依頼したもの(完了済み、2026-08-22 commit 0a2a7f2)**:
+  1. ~~`tests/runner/cases/TC-SEL-BRWMAKERS-01.json` 等、新規9件分のケースJSON作成~~
+     → **完了**。全9件のケースJSONが作成され、`bash tests/runner/run_all.sh`で全28ケースが
+     実行可能になっている。
+  2. ~~上記9件の `tests/golden/` への正式なゴールデンマスター格納~~ → **完了**。§9.3のとおり
+     全9件を突合せ、期待値とのズレ0件でPASS(GM固定)確定。
+  3. **未対応・引き続き依頼事項**: `style/detail/makers.php` と
+     `php/Strathcona_Beer_Company.php` の2つの「壊れたページ」を`docs/loop-scope.md`の
+     「別課題として記録するもの」に追加するかどうかの判断(このループでは直さない前提だが、
+     少なくとも台帳上は特性として記録済み)。
 - **sandbox・フィクスチャの追加対応は不要と判断**: 確認時点で `tests/runner/make_sandbox.sh` は
   既に `beer` ディレクトリを含んでおり(オーケストレーターの当初メッセージでは「未コピー」との
   ことだったが設計時点で既に反映されていた)、`style/detail/`・`brewery/detail/explain/`の
