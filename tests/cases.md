@@ -926,8 +926,9 @@ sandbox(`beer/`ディレクトリのコピーが追加済み)上で実行して�
     (フィクスチャ初期値、thank.php未経由)、フルティーさ=Fruity1.png+`Not Fruity`、
     `アルコール度 : 4.80`、点数=`3.50`。評価リンクは
     `../../post/evaluation.php?product_id=102`。
+    **【2026-08-22 §12のUI修正で表示形式が変更。最新の期待値は§12参照】**
   - **PHP8リスク**: 末尾の`$comment = $_GET['comment'];`(129行目)で`Undefined array key
-    "comment"` Warning 1件。
+    "comment"` Warning 1件。**【§12のUI修正でfmt_num関数が追加され135行目にシフト。§12参照】**
   - 一次確認(`php tests/runner/exec_page.php beer/detail/product.php`、
     `{"get":{"ProductID":"102"}}`)で上記全て実測し完全一致を確認(exit=0、
     `js_cla`/`js_fru`が`0`ではなく4行のJSONであることを直接確認した)。
@@ -937,7 +938,17 @@ sandbox(`beer/`ディレクトリのコピーが追加済み)上で実行して�
   (STYLE=Pilsner、COLOR=Color2.png、CLARITY=Clarity2.png/Clear、IBU=99.99、
   FRUITY=Fruity1.png/Not Fruity、ALCOHOL=4.80、点数=3.50)・Warning(`comment`未定義1件、
   129行目)とも一致。exit=0。
-- **状態**: PASS(GM固定)
+- **【2026-08-22 UI修正(commit d018518)後の再突合せ、§12参照】**: `fmt_num()`関数の追加により
+  IBU/アルコール度の末尾ゼロ除去・アルコール度への`%`付与・点数の小数1桁表示への表示変更が
+  加わった。本ケースのフィクスチャ値(ProductID=102)では **IBU=`99.99`は末尾に`0`が無いため
+  表示上は変化なし**(コード自体は`fmt_num()`経由に変わったが今回の値ではたまたま出力が
+  同じになる)、**アルコール度は`4.80`→`4.8%`**、**点数は`3.50`→`3.5`**に変わった。加えて
+  `fmt_num()`関数定義(6行)が追加されたことで末尾の`comment`未定義Warningが129行目→
+  **135行目**にシフトした。`bash tests/runner/run_all.sh`実行で`tests/golden`との差分は
+  本ケースの`.html`のみ(上記3箇所+行番号シフト)であることを確認、他25ケースは差分ゼロ。
+  詳細・期待値の更新は§12を参照。
+- **状態**: PASS(GM固定。表示整形の期待値は§12反映後の内容に更新。オーケストレーターが
+  goldenを再ベースライン予定)
 
 #### TC-SEL-STYSTYLES-01: `style/styles.php`
 
@@ -1614,3 +1625,97 @@ errorになるだけの孤児ページ」であり、§10.3で台帳から申し
 - `bash tests/runner/run_all.sh` は26ケースを実行し(`tests/runner/cases/*.json`が26ファイル)、
   独立確認の結果、想定外の差分は**0件**(TC-POST-THANK-NEW-02の差分は修正1で意図されたとおりの
   変化であり、想定内)。
+
+---
+
+## 12. UI修正の記録(2026-08-22、commit d018518)
+
+ユーザー指示によるUI修正(ほぼCSSのみ)のうち、PHP出力に影響するのは
+`beer/detail/product.php` の数値表示整形3箇所のみ。現物(`beer/detail/product.php`)を確認して
+裏付けた。
+
+### 12.1 変更内容
+
+`beer/detail/product.php` の21行目直後(旧: `require`直後に空行のみ)に、33〜38行目として
+以下の関数が追加された:
+```php
+// 表示用: DBのDECIMAL値の末尾ゼロを落とす (20.000→20, 7.500→7.5)
+function fmt_num($v) {
+    $t = rtrim(rtrim(number_format((float)$v, 3, '.', ''), '0'), '.');
+    return $t === '' ? '0' : $t;
+}
+```
+(小数第3位までフォーマットしてから末尾の`0`と`.`を`rtrim`で除去する、末尾ゼロ除去関数。
+全て除去されて空文字列になった場合=元の値が`0`だった場合のみ`'0'`を返すガードがある)
+
+この関数を使う形に書き換わったのは以下3箇所(いずれも同一行内の書き換えで行数増減なし):
+1. **IBU表示**(92行目): `<?php echo $prd_IBU[$keyIndex_prd]; ?>` →
+   `<?php echo fmt_num($prd_IBU[$keyIndex_prd]); ?>`
+2. **アルコール度表示**(101行目): `<?php echo $prd_Alcohol[$keyIndex_prd]; ?>` →
+   `<?php echo fmt_num($prd_Alcohol[$keyIndex_prd]); ?>%`(**`%`が新たに付与**)
+3. **点数表示**(114行目、星の下のテキスト): `<?php echo $prd_Favorite[$keyIndex_prd]; ?>` →
+   `<?php echo number_format((float)$prd_Favorite[$keyIndex_prd], 1); ?>`(こちらは`fmt_num`では
+   なく`number_format(...,1)`で**小数第1位に固定**する別ロジック。末尾ゼロ除去ではなく
+   桁数固定である点に注意——`3.5`のような値は変わらないが、仮に`4`のような整数値が来ても
+   `4.0`と表示される、`fmt_num`とは丸め方針が異なる)
+
+正味の変更行数は「関数定義ブロック6行の追加」のみで、既存3箇所の表示コードはいずれも
+同一行内での書き換え(行数不変)。よって**この関数定義より後にある行の警告メッセージは
+全て+6行シフトする**(該当するのは末尾の`$comment = $_GET['comment'];`の警告のみ、
+129行目→135行目)。
+
+### 12.2 独立確認結果
+
+`bash tests/runner/make_sandbox.sh && bash tests/runner/run_all.sh` を実行し、`tests/golden/`
+(この時点でのオーケストレーター提供版、UI修正前の内容のまま)との差分を確認した。
+
+- **差分は`TC-SEL-BEERDETAIL-01.html`の1ケースのみ**(他25ケースは`diff`差分ゼロ)。
+  これはこの関数が`beer/detail/product.php`にのみ追加され、他の対象ページ・共有SQL層
+  (`common/sql.php`等)には一切変更が無いことと整合する。
+- 当該ケースの差分は正確に3行:
+  ```
+  161c161
+  <      <span>アルコール度 : 4.80</span>
+  ---
+  >      <span>アルコール度 : 4.8%</span>
+  174c174
+  <      <span>3.50</span>
+  ---
+  >      <span>3.5</span>
+  194c194
+  < Warning: Undefined array key "comment" in .../beer/detail/product.php on line 129
+  ---
+  > Warning: Undefined array key "comment" in .../beer/detail/product.php on line 135
+  ```
+  exitコード(0)は不変。
+- **IBU表示に見た目上の差分が出なかった理由**: 本ケースのフィクスチャは`ProductID=102`
+  (Beta Light Pilsner)を参照し、そのIBU(`IBU_all`列)はフィクスチャ初期値`99.99`である。
+  `fmt_num(99.99)`は`number_format(99.99,3,'.','')`="99.990"→末尾`0`除去で"99.99"→
+  末尾`.`は無いのでそのまま"99.99"となり、**旧表示(素の`echo`で"99.99")と偶然一致する**
+  (末尾に落とすべき`0`が元々存在しない値だったため)。IBU表示のコード自体は
+  `fmt_num()`経由に変わっており、末尾に`0`を含む値(例: `42.00`→`42`、`30.000`→`30`)を
+  持つ商品では表示が変わるはずである。本ケースのフィクスチャ(§1)にはIBU=`42.00`
+  (P101)・IBU=`35.00`(P103)の商品も存在するが、本ケースの入力は`ProductID=102`固定のため
+  それらは検証対象に入っていない。**将来的にIBUの末尾ゼロ除去そのものを直接検証したい場合は、
+  `ProductID=101`(IBU=42.00→期待値`42`)または`ProductID=103`(IBU=35.00→期待値`35`)で
+  別ケースを追加するのが望ましいが、本ラウンドはオーケストレーターの依頼範囲
+  (既存ケースの差分確認+期待値更新)に留め、新規ケースの追加は行わない**。
+
+### 12.3 期待値の更新(TC-SEL-BEERDETAIL-01)
+
+- 旧期待値: `アルコール度 : 4.80`、点数=`3.50`、`comment`未定義Warningは129行目。
+- **新期待値(本ラウンドで確定)**: `アルコール度 : 4.8%`、点数=`3.5`、`comment`未定義Warningは
+  **135行目**。IBU表示は`99.99`のまま変化なし(コードはfmt_num経由に変わったが本ケースの値では
+  出力が同じ)。他の表示値(STYLE/COLOR/CLARITY/FRUITY/ブリュワリー等)・`js_prd`等のJSON内容・
+  exitコードは全て不変。
+- 状態は**PASSを維持**(意図されたUI変更どおりの差分であり、挙動不整合ではない)。
+  オーケストレーターが`tests/golden/TC-SEL-BEERDETAIL-01.*`を新表示で再ベースラインする予定。
+
+### 12.4 結果集計への影響
+
+- 総ケース数は26件のまま変化なし(新規ケースの追加・削除は無し)。
+- TC-SEL-BEERDETAIL-01以外の25件は本ラウンドの影響を受けず、引き続き
+  PASS(GM固定)24件+PASS(修正済み)1件(TC-POST-THANK-NEW-02)。
+- TC-SEL-BEERDETAIL-01を含めた最終結果: PASS **26件** / 仕様不一致 **0件** / FAIL **0件**
+  (§11.4から仕様不一致0件は変わらず、TC-SEL-BEERDETAIL-01の期待値更新は「表示整形が意図通りに
+  変わった」ことの確認であり、不一致には分類しない)。
