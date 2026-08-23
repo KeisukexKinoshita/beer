@@ -190,7 +190,7 @@ canvas.radar{width:100%;aspect-ratio:1/1;display:block}
 .dt-img img{width:70%;height:auto;filter:drop-shadow(0 24px 40px rgba(0,0,0,.5))}
 .dt-img .halo{position:absolute;width:60%;aspect-ratio:1;border-radius:50%;
   background:radial-gradient(circle,var(--vio),transparent 66%);opacity:.35;filter:blur(14px)}
-.dt-back{font-size:13px;color:var(--muted);display:inline-flex;gap:8px;margin-bottom:10px}
+.dt-back{font-size:13px;color:var(--muted);display:flex;width:fit-content;gap:8px;margin-bottom:14px}
 .dt-back:hover{color:var(--teal)}
 .dt-title{font-family:var(--f-disp);font-weight:800;font-size:clamp(30px,4.4vw,48px);line-height:1.1}
 .dt-desc{color:var(--muted);margin-top:16px;font-size:15px;line-height:1.95;max-width:52ch}
