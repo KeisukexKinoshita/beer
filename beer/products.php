@@ -15,7 +15,7 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
   <div class="sec-h">Beer一覧 <span style="color:var(--muted);font-weight:400;font-size:.6em">全<?= $total ?>件</span></div>
 
   <!-- 味覚銀河: 全ビールの3D分布 -->
-  <div class="galaxy-shell" style="aspect-ratio:16/9;margin-top:24px">
+  <div class="galaxy-shell galaxy-wide" style="margin-top:24px">
     <canvas id="gx"></canvas>
     <div class="galaxy-tag">Flavour Galaxy · 味覚銀河</div>
     <div class="galaxy-hint">ドラッグで回転 · 星をクリックで詳細へ</div>

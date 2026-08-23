@@ -144,6 +144,8 @@ section.blk{padding:66px 0;border-top:1px solid var(--line)}
 .galaxy-shell{position:relative;border:1px solid var(--line2);border-radius:20px;overflow:hidden;
   background:radial-gradient(120% 100% at 50% 0%,#1a1145,#0b0820 78%);aspect-ratio:1/1;
   box-shadow:0 0 60px rgba(160,107,255,.25),inset 0 0 80px rgba(0,0,0,.5)}
+.galaxy-wide{aspect-ratio:16/9}
+@media(max-width:700px){.galaxy-wide{aspect-ratio:1/1}}
 .galaxy-shell canvas{position:absolute;inset:0;width:100%;height:100%;cursor:grab}
 .galaxy-shell canvas:active{cursor:grabbing}
 canvas.radar{width:100%;aspect-ratio:1/1;display:block}
