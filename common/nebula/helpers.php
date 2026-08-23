@@ -127,6 +127,24 @@ function beers_by_maker($mid) {
     return $st->fetchAll();
 }
 
+/** 1スタイル(Type) */
+function style_by_id($sid) {
+    $st = db()->prepare("SELECT * FROM style WHERE StyleID = ?");
+    $st->execute([$sid]);
+    return $st->fetch() ?: null;
+}
+
+/** 指定スタイルのビール */
+function beers_by_style($sid) {
+    $st = db()->prepare(
+        "SELECT p.*, s.StyleName, s.FamilyName, m.MakerName, m.country_code FROM products p
+         LEFT JOIN style s ON s.StyleID = p.StyleID
+         LEFT JOIN maker m ON m.MakerID = p.MakerID
+         WHERE p.StyleID = ? ORDER BY p.Favorite DESC");
+    $st->execute([$sid]);
+    return $st->fetchAll();
+}
+
 /** 銀河/一覧JS用に軽量化した配列 */
 function beers_for_js($beers) {
     $out = [];
