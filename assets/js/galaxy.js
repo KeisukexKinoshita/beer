@@ -17,7 +17,7 @@ function initGalaxy(opt){
   var pts=data.map(function(b){return {b:b,x:nm(b.a,A),y:-nm(b.i,I),z:nm(b.f,F)};});
   var off={}; Object.keys(GALAXY_COL).forEach(function(k){off[k]=false;});
   var W,H,ry=0.6,rx=-0.35,tRy=0.6,tRx=-0.35,drag=false,px,py,auto=true,hov=null,ord=[];
-  var SCALE=0.30; // 立方体フレームとラベルが収まるよう少し引く
+  var SCALE=0.25; // 立方体フレームとラベルが枠に収まるよう引く(正方形canvasでも溢れない)
   function rs(){var r=c.getBoundingClientRect();W=c.width=r.width*DPR;H=c.height=r.height*DPR;}
   rs();addEventListener('resize',rs);
   function proj(p){
@@ -59,9 +59,11 @@ function initGalaxy(opt){
       x.fillStyle=ax.col;x.beginPath();x.moveTo(en.sx,en.sy);
       x.lineTo(en.sx-ah*Math.cos(an-0.4),en.sy-ah*Math.sin(an-0.4));
       x.lineTo(en.sx-ah*Math.cos(an+0.4),en.sy-ah*Math.sin(an+0.4));x.closePath();x.fill();
-      // ラベル(軸名 + レンジ)。矢印の先に配置
+      // ラベル(軸名 + レンジ)。矢印の先に配置し、枠内にクランプ
       x.globalAlpha=1;x.textAlign='center';x.textBaseline='middle';
-      var lx=en.sx+(en.sx-o.sx)*0.09,ly=en.sy+(en.sy-o.sy)*0.09;
+      var pad=52*DPR;
+      var lx=en.sx+(en.sx-o.sx)*0.07,ly=en.sy+(en.sy-o.sy)*0.07;
+      lx=Math.max(pad,Math.min(W-pad,lx));ly=Math.max(28*DPR,Math.min(H-22*DPR,ly));
       x.font='700 '+(12.5*DPR)+'px "M PLUS 1","Noto Sans JP",sans-serif';
       x.fillStyle=ax.col;x.fillText(ax.name,lx,ly);
       x.font=(10*DPR)+'px "M PLUS 1","Noto Sans JP",sans-serif';x.fillStyle='rgba(200,190,235,.65)';
