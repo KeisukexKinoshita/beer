@@ -63,7 +63,7 @@ function initGalaxy(opt){
       x.globalAlpha=1;x.textAlign='center';x.textBaseline='middle';
       var pad=52*DPR;
       var lx=en.sx+(en.sx-o.sx)*0.07,ly=en.sy+(en.sy-o.sy)*0.07;
-      lx=Math.max(pad,Math.min(W-pad,lx));ly=Math.max(28*DPR,Math.min(H-22*DPR,ly));
+      lx=Math.max(pad,Math.min(W-pad,lx));ly=Math.max(52*DPR,Math.min(H-40*DPR,ly)); // 上部のタグ/下部の凡例バンドを避ける
       x.font='700 '+(12.5*DPR)+'px "M PLUS 1","Noto Sans JP",sans-serif';
       x.fillStyle=ax.col;x.fillText(ax.name,lx,ly);
       x.font=(10*DPR)+'px "M PLUS 1","Noto Sans JP",sans-serif';x.fillStyle='rgba(200,190,235,.65)';
