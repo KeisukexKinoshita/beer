@@ -1,141 +1,100 @@
-<!DOCTYPE html>
-<html lang="ja">
- <head>
-<meta charset="utf-8">
-<meta name='description' content="This site shows some craft beer">
-<meta name='keywords' content="craft beer,beer,クラフトビール、ビール、IPA">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Darth Beer.com</title>
-<link rel="stylesheet" href="../../style.css">
-<link rel="stylesheet" href="product.css">
 <?php
-$sql_where = "''=''";
-$sql_where_sty = "''=''";
-$src_sty = "yes";
-$sql_where_cla = "''=''";
-$sql_where_fru = "''=''";
-$src_cla = "yes";
-$src_fru = "yes";
-require('../../common/sql.php');
+require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/helpers.php';
+$pid  = $_GET['ProductID'] ?? '';
+$beer = beer_by_id($pid);
 
-$product_id = $_GET['ProductID'];
-$keyIndex_prd = array_search($product_id,$prd_ProductID);
-
-//$maker_id = $_GET['MakerID'];
-$keyIndex_mak = array_search($prd_MakerID[$keyIndex_prd],$mak_MakerID);
-
-$keyIndex_sty = array_search($prd_StyleID[$keyIndex_prd],$sty_StyleID);
-
-$keyIndex_cla = array_search(round($prd_Clarity[$keyIndex_prd]),$cla_ClarityValue);
-
-$keyIndex_fru = array_search(round($prd_Fruity[$keyIndex_prd]),$fru_FruityValue);
-
-// 表示用: DBのDECIMAL値の末尾ゼロを落とす (20.000→20, 7.500→7.5)
-function fmt_num($v) {
-    $t = rtrim(rtrim(number_format((float)$v, 3, '.', ''), '0'), '.');
-    return $t === '' ? '0' : $t;
+if (!$beer) {
+    $title = 'お探しのビールが見つかりません';
+    require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
+    echo '<body>';
+    require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/header.php';
+    echo '<div class="wrap" style="padding:80px 0"><div class="eyebrow">404</div>'
+       . '<div class="sec-h">ビールが見つかりませんでした</div>'
+       . '<p style="color:var(--muted);margin-top:14px">指定された銘柄は存在しないようです。'
+       . '<a href="/beer/products.php" style="color:var(--teal)">Beer一覧へ戻る</a></p></div>';
+    require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/footer.php';
+    exit;
 }
+
+$g = style_group($beer['FamilyName'] ?? '', $beer['StyleName'] ?? '');
+list($gcol, $glabel) = group_meta($g);
+
+$title = $beer['ProductName'];
+$descText = trim((string)$beer['ProductExplain']);
+$desc = $descText !== '' ? mb_substr($descText, 0, 110) : ($beer['ProductName'] . ' — ' . ($beer['StyleName'] ?: 'クラフトビール'));
+$pageJs = ['/assets/js/radar.js'];
+
+// レーダー用の正規化値 [IBU, アルコール, フルーティー, 色, 評価]
+$rv = [
+  min(1, (float)$beer['IBU_all'] / 74.6),
+  min(1, (float)$beer['Alcohol'] / 11),
+  min(1, (float)$beer['Fruity'] / 4),
+  min(1, (float)$beer['Color'] / 10),
+  min(1, (float)$beer['Favorite'] / 5),
+];
+require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
 ?>
-
-</head>
-
 <body>
-<div id='wrap'>
+<?php require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/header.php'; ?>
 
-<header>
-<?php require(dirname(__FILE__).'/../../common/header.php'); ?>
-</header>
-
-<!--
-<div class='first'>
-<h2>
-</h2>
-<p>
-</p>
-</div>
--->
-
-<div id='main_wrap_product'>
-<div id='main'>
-<div class='sec1'>
-
-<div class='left'>
-    <img src="../../img/product/<?php echo $prd_ProductID[$keyIndex_prd]; ?>.png" alt="<?php echo $prd_ProductName[$keyIndex_prd]; ?>" title="<?php echo $prd_ProductName[$keyIndex_prd]; ?>" class='img_beer'>
-</div>
-
-<div class='right'>
-  <h1> <?php echo $prd_ProductName[$keyIndex_prd]; ?> </h1>
-   <p class='outline' style="color:white" >
-     <?php echo nl2br($prd_ProductExplain[$keyIndex_prd]) ?> 
-   </p>
-  
-  <ul class='image_list_product'>
-     <span>ブリュワリー : </span><a href="../../brewery/detail/maker.php?MakerID=<?php echo $mak_MakerID[$keyIndex_mak]; ?>"><?php echo $mak_MakerName[$keyIndex_mak]; ?></a>
-  </ul>
-
-  <ul class='image_list_product'>
-     <!-- <span>スタイル : </span><--<a href="../../style/detail/style.php?StyleID=<?php echo $sty_StyleID[$keyIndex_sty]; ?>"><?php echo $sty_StyleName[$keyIndex_sty]; ?></a> -->
-     <span>スタイル : <?php echo $sty_StyleName[$keyIndex_sty]; ?></span>
-  </ul>
-  
-  <ul class='image_list_product'>
-     <span>色 : </span>
-     <label class='img'><img class='thumbnail' src='../../img/color/Color<?php echo round($prd_Color[$keyIndex_prd],0) ?>.png' alt='test' /></label>
-  </ul>
-  
-  <ul class='image_list_product'>
-     <span>透明度 : </span>
-     <label class='img'><img class='thumbnail' src='../../img/clarity/Clarity<?php echo round($prd_Clarity[$keyIndex_prd],0) ?>.png' alt='test' /><p><?php echo $cla_ClarityName[$keyIndex_cla]; ?></p></label>
-  </ul>
-  
-  <ul class='image_list_product'>
-     <span>IBU : <?php echo fmt_num($prd_IBU[$keyIndex_prd]); ?></span>
-  </ul>
-  
-  <ul class='image_list_product'>
-     <span>フルティーさ : </span>
-     <label class='img'><img class='thumbnail' src='../../img/fruity/Fruity<?php echo round($prd_Fruity[$keyIndex_prd],0) ?>.png' alt='test' /><p><?php echo $fru_FruityName[$keyIndex_fru]; ?></p></label>
-  </ul>
-  
-  <ul class='image_list_product'>
-     <span>アルコール度 : <?php echo fmt_num($prd_Alcohol[$keyIndex_prd]); ?>%</span>
-  </ul>
-  
-  <ul class='image_list_product'>
-     <span>点数 : </span>
-    <div class="reviewStar">
-      <p class="reviewStar_grey">★★★★★</p>
-      <p id="reviewStar_color" class="reviewStar_color">★★★★★</p>
-      <script>
-        var reviewNum = <?php echo $prd_Favorite[$keyIndex_prd] ;?>;
-      </script>
-      <script src="rate_star.js"></script>
+<div class="wrap">
+  <div class="detail-hero">
+    <div class="dt-img">
+      <div class="halo" style="background:radial-gradient(circle,<?= $gcol ?>,transparent 66%)"></div>
+      <img src="/img/product/<?= e($beer['ProductID']) ?>.png"
+           alt="<?= e($beer['ProductName']) ?>（<?= e($beer['MakerName']) ?>）のボトル画像"
+           onerror="this.style.display='none'">
     </div>
-     <span><?php echo number_format((float)$prd_Favorite[$keyIndex_prd], 1); ?></span>
-  </ul>
-  
-</div>   <!-- right -->
-
-<div class='center'>
-    <div class="evaluation">
-   <h3>
-      <?php echo '<a href="../../post/evaluation.php?product_id=' . $product_id . '">'.'このビールを評価する'.'</a>'?>
-   </h3>
+    <div>
+      <a class="dt-back" href="/beer/products.php">← Beer一覧へ</a>
+      <div class="eyebrow"><?= e($beer['StyleName'] ?: 'Craft Beer') ?> · <?= e($beer['MakerName']) ?></div>
+      <h1 class="dt-title"><?= e($beer['ProductName']) ?></h1>
+      <?php if ($descText !== ''): ?>
+        <p class="dt-desc"><?= nl2br(e($descText)) ?></p>
+      <?php endif; ?>
+      <div class="spec">
+        <div class="r">
+          <div class="k">ブリュワリー</div>
+          <div class="v"><span class="flag"><?= flag($beer['country_code']) ?></span>
+            <a href="/brewery/detail/maker.php?MakerID=<?= e($beer['MakerID']) ?>" style="color:var(--teal)"><?= e($beer['MakerName']) ?></a></div>
+        </div>
+        <div class="r"><div class="k">スタイル</div><div class="v"><?= e($beer['StyleName'] ?: '—') ?></div></div>
+        <div class="r"><div class="k">アルコール度</div>
+          <div class="v"><?= fmt_num($beer['Alcohol']) ?>%<span class="bar"><i style="width:<?= min(100, (float)$beer['Alcohol']/11*100) ?>%"></i></span></div></div>
+        <div class="r"><div class="k">IBU（苦味）</div>
+          <div class="v"><?= fmt_num($beer['IBU_all']) ?><span class="bar"><i style="width:<?= min(100, (float)$beer['IBU_all']/74.6*100) ?>%"></i></span></div></div>
+        <div class="r"><div class="k">フルーティーさ</div>
+          <div class="v"><?= fmt_num($beer['Fruity']) ?> / 4<span class="bar"><i style="width:<?= min(100, (float)$beer['Fruity']/4*100) ?>%"></i></span></div></div>
+        <div class="r"><div class="k">評価</div>
+          <div class="v"><?= stars_html($beer['Favorite']) ?> <?= number_format((float)$beer['Favorite'],1) ?></div></div>
+      </div>
     </div>
+  </div>
+
+  <div class="dt-lower">
+    <div class="panel">
+      <h3>味プロファイル</h3>
+      <div class="sub">この銘柄の5指標バランス（レーダー）</div>
+      <canvas class="radar" id="radar"></canvas>
+    </div>
+    <div class="panel">
+      <h3>製造地</h3>
+      <div class="sub">ブリュワリー所在地 — <?= e(country_name($beer['country_code'])) ?></div>
+      <div class="map">
+        <div class="grid"></div>
+        <div class="pin" style="left:60%;top:46%"></div>
+        <div class="lbl" style="left:60%;top:46%"><?= e($beer['MakerName']) ?></div>
+        <div class="note">※ 実装ではLeafletで実地図に緯度経度をプロット（フェーズ2）</div>
+      </div>
+    </div>
+  </div>
 </div>
 
-</div> <!--  id=main  -->
-</div> <!--  id=main_wrap  -->
-</div> <!--  id=wrap  -->
-</body>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  drawRadar('#radar', <?= json_encode($rv) ?>);
+});
+addEventListener('resize', function(){ drawRadar('#radar', <?= json_encode($rv) ?>); });
+</script>
 
-
-
-<?php
-$comment = $_GET['comment'];
-?>
-
-
-
-</html>
-
+<?php require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/footer.php'; ?>

@@ -1,96 +1,87 @@
-<!DOCTYPE html>
-<html lang="ja">
- <head>
-<meta charset="utf-8">
-<meta name='description' content="クラフトビールの一覧">
-<meta name='keywords' content="craft beer,beer,クラフトビール、ビール、IPA">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> 
-<script src="../js/jPages-master/js/jPages.js"></script>
-<title>Darth Beer.com</title>
-<link rel="stylesheet" href="../style.css">
-<link rel="stylesheet" href="../common/pages.css">
 <?php
-$sql_where = "''=''";
-require('../common/sql.php');
+require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/helpers.php';
+$beers   = all_beers();
+$total   = count($beers);
+$title   = 'Beer一覧';
+$desc    = "登録されている{$total}銘柄のクラフトビールを、味わいの銀河とカードで探せます。スタイルで絞り込み、度数・IBU・評価で並び替え。";
+$pageJs  = ['/assets/js/galaxy.js', '/assets/js/beerlist.js'];
+require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
 ?>
-
-</head>
-
 <body>
-<div id='wrap'>
+<?php require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/header.php'; ?>
 
-<header>
-<?php require(dirname(__FILE__).'/../common/header.php'); ?>
-</header>
+<div class="wrap" style="padding-top:40px">
+  <div class="eyebrow">All Beers</div>
+  <div class="sec-h">Beer一覧 <span style="color:var(--muted);font-weight:400;font-size:.6em">全<?= $total ?>件</span></div>
 
-<!--
-<div class='first'>
-<h2>
-</h2>
-<p>
-</p>
+  <!-- 味覚銀河: 全ビールの3D分布 -->
+  <div class="galaxy-shell" style="aspect-ratio:16/9;margin-top:24px">
+    <canvas id="gx"></canvas>
+    <div class="galaxy-tag">Flavour Galaxy · 味覚銀河</div>
+    <div class="galaxy-hint">ドラッグで回転 · 星をクリックで詳細へ</div>
+    <div class="legend" id="lg"></div>
+    <div class="tt" id="tt"></div>
+  </div>
+
+  <!-- フィルタ -->
+  <div class="filterbar">
+    <div class="f-chips">
+      <button class="f-chip on" data-group="all">すべて</button>
+      <button class="f-chip" data-group="ipa">IPA系</button>
+      <button class="f-chip" data-group="stout">Stout / 黒</button>
+      <button class="f-chip" data-group="sour">Sour</button>
+      <button class="f-chip" data-group="pale">Pale / Amber</button>
+      <button class="f-chip" data-group="other">Lager / その他</button>
+    </div>
+    <div class="f-right">
+      <span class="f-count-wrap"><b id="f-count"><?= $total ?></b> 件</span>
+      <input class="f-search" id="f-search" type="search" placeholder="銘柄・ブリュワリーで検索" aria-label="ビールを検索">
+      <select class="f-sort" id="f-sort" aria-label="並び替え">
+        <option value="newest">新着順</option>
+        <option value="rating">評価が高い順</option>
+        <option value="ibu">IBUが高い順</option>
+        <option value="alcohol">度数が高い順</option>
+        <option value="name">名前順</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- カードグリッド -->
+  <div class="grid-b" id="beer-grid" style="margin-top:22px;margin-bottom:70px">
+    <?php $order = $total; foreach ($beers as $b):
+      $g  = style_group($b['FamilyName'] ?? '', $b['StyleName'] ?? '');
+      list($gcol, $glabel) = group_meta($g);
+      $pid = $b['ProductID'];
+    ?>
+    <a class="bcard" href="/beer/detail/product.php?ProductID=<?= e($pid) ?>"
+       data-group="<?= $g ?>" data-name="<?= e($b['ProductName']) ?>" data-maker="<?= e($b['MakerName']) ?>"
+       data-style="<?= e($b['StyleName']) ?>" data-rating="<?= e($b['Favorite']) ?>" data-ibu="<?= e($b['IBU_all']) ?>"
+       data-alcohol="<?= e($b['Alcohol']) ?>" data-order="<?= $order-- ?>">
+      <div class="thumb">
+        <div class="halo" style="position:absolute;width:60%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,<?= $gcol ?>55,transparent 66%);filter:blur(8px)"></div>
+        <img src="/img/product/<?= e($pid) ?>.png" alt="<?= e($b['ProductName']) ?> のボトル画像" loading="lazy"
+             onerror="this.style.opacity=0">
+      </div>
+      <div class="body">
+        <div class="stylechip"><?= e($glabel) ?></div>
+        <h4><?= e($b['ProductName']) ?></h4>
+        <div class="mk"><?= flag($b['country_code']) ?> <?= e($b['MakerName']) ?></div>
+        <div class="meta">
+          <span><?= fmt_num($b['Alcohol']) ?>% · IBU<?= fmt_num($b['IBU_all']) ?></span>
+          <?= stars_html($b['Favorite']) ?>
+        </div>
+      </div>
+    </a>
+    <?php endforeach; ?>
+  </div>
 </div>
--->
 
-<div id='main_wrap'>
-<div id='main'>
-<div class='sec1'>
-<h2 class='Brewery'>ビール <?php echo count($prd_ProductID) ?>件</h2>
-
-<ul class="image_list" id="JPages"> 
-<?php
-for($i = count($prd_ProductID) -1 ; $i >-1; $i--){
-   echo '<li>';
-   echo '<div class="image_box">';
-   echo '<a href="detail/product.php?ProductID=';
-   echo $prd_ProductID[$i] ;
-   echo '">';
-   echo '<img class="thumbnail" src="../img/product/';
-   echo $prd_ProductID[$i];
-   echo '.png" alt="';
-   echo $prd_ProductName[$i];
-   echo '" title="';
-   echo $prd_ProductName[$i];
-   echo '">';
-   echo '</div>';
-   echo '<h3 class="MakerName">';
-   echo $prd_ProductName[$i] ;
-   echo ' </h3>' ;
-   echo '</a> ';
-   echo ' <p class="MakerExplain">' ;
-   echo $prd_ProductExplain[$i] ;
-   echo ' </p>' ;
-   echo '</li>';
-}
-?>
-</ul>
-
-<div class="customBtns">
-    <span class="arrowPrev"></span>
-    <span class="arrowNext"></span>
-    <div class="holder"></div>
-</div>
+<script>window.BEERS = <?= json_encode(beers_for_js($beers), JSON_UNESCAPED_UNICODE) ?>;</script>
 <script>
-var class_color='disabled_checkbox_color'
+document.addEventListener('DOMContentLoaded', function(){
+  initGalaxy({canvas:'#gx', tooltip:'#tt', legend:'#lg', data:window.BEERS,
+    onPick:function(b){location.href='/beer/detail/product.php?ProductID='+encodeURIComponent(b.id);}});
+});
 </script>
-<script src="../common/pages.js"></script>
 
-
-</div>  <!-- sec1 -->
-
-</div> <!--  id=main  -->
-</div> <!--  id=main_wrap  -->
-</div> <!--  id=wrap  -->
-</body>
-
-
-
-<?php
-$comment = $_GET['comment'];
-?>
-
-
-
-
-</html>
+<?php require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/footer.php'; ?>

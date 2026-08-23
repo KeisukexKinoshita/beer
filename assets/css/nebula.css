@@ -153,16 +153,99 @@ canvas.radar{width:100%;aspect-ratio:1/1;display:block}
 /* ---- 11. フッター ---- */
 .site-footer{border-top:1px solid var(--line);padding:42px 0;color:var(--faint);font-size:12.5px}
 
+/* ---- 11b. ヒーロー ---- */
+.hero{padding:70px 0 34px}
+.hero-grid{display:grid;grid-template-columns:1.02fr 1fr;gap:46px;align-items:center}
+.hero h1{font-family:var(--f-disp);font-weight:800;font-size:clamp(38px,6vw,66px);line-height:1.12;
+  letter-spacing:.005em;text-wrap:balance}
+.hero .lead{margin-top:22px;color:var(--muted);font-size:16px;max-width:45ch;line-height:1.95}
+.cta{margin-top:30px;display:flex;gap:14px;flex-wrap:wrap}
+.stat-row{display:flex;gap:38px;flex-wrap:wrap;margin-top:30px}
+.stat b{font-family:var(--f-disp);font-weight:800;font-size:32px;font-variant-numeric:tabular-nums}
+.stat span{display:block;font-size:12px;color:var(--muted)}
+.subhead .fl{font-size:17px}
+
+/* ---- 11c. 銀河 内部UI ---- */
+.galaxy-tag{position:absolute;left:18px;top:16px;font-family:var(--f-disp);font-size:11px;
+  letter-spacing:.22em;text-transform:uppercase;color:var(--teal);z-index:3;font-weight:700}
+.galaxy-hint{position:absolute;right:18px;top:16px;font-size:11px;color:var(--faint);z-index:3}
+.legend{position:absolute;left:18px;bottom:16px;display:flex;flex-wrap:wrap;gap:6px 12px;z-index:3;max-width:72%}
+.legend span{font-size:11px;color:var(--muted);display:inline-flex;align-items:center;gap:6px;cursor:pointer;
+  padding:2px 5px;border-radius:6px;transition:.15s;user-select:none}
+.legend span:hover{color:var(--ink);background:rgba(255,255,255,.06)}
+.legend i{width:9px;height:9px;border-radius:50%;box-shadow:0 0 10px currentColor}
+.legend span.off{opacity:.32}
+.tt{position:absolute;z-index:6;pointer-events:none;background:rgba(23,18,58,.96);border:1px solid var(--line2);
+  border-radius:11px;padding:10px 13px;font-size:12px;min-width:155px;transform:translate(-50%,-118%);
+  opacity:0;transition:opacity .12s;backdrop-filter:blur(6px);box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.tt b{font-weight:700;font-size:13.5px;font-family:var(--f-disp)}
+.tt .st{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  background:linear-gradient(100deg,var(--mag),var(--teal));-webkit-background-clip:text;background-clip:text;color:transparent}
+.tt .row{display:flex;justify-content:space-between;color:var(--muted);margin-top:3px;gap:14px;font-variant-numeric:tabular-nums}
+
+/* ---- 11d. Beer詳細レイアウト ---- */
+.detail-hero{display:grid;grid-template-columns:.85fr 1.15fr;gap:48px;padding:44px 0 20px;align-items:start}
+.dt-img{border:1px solid var(--line2);border-radius:20px;aspect-ratio:4/5;position:relative;overflow:hidden;
+  background:radial-gradient(70% 60% at 50% 35%,#241a5a,#0d0926);display:flex;align-items:center;justify-content:center}
+.dt-img img{width:70%;height:auto;filter:drop-shadow(0 24px 40px rgba(0,0,0,.5))}
+.dt-img .halo{position:absolute;width:60%;aspect-ratio:1;border-radius:50%;
+  background:radial-gradient(circle,var(--vio),transparent 66%);opacity:.35;filter:blur(14px)}
+.dt-back{font-size:13px;color:var(--muted);display:inline-flex;gap:8px;margin-bottom:10px}
+.dt-back:hover{color:var(--teal)}
+.dt-title{font-family:var(--f-disp);font-weight:800;font-size:clamp(30px,4.4vw,48px);line-height:1.1}
+.dt-desc{color:var(--muted);margin-top:16px;font-size:15px;line-height:1.95;max-width:52ch}
+.spec{margin-top:26px}
+.dt-lower{display:grid;grid-template-columns:1fr 1fr;gap:22px;padding:36px 0 72px}
+
+/* ---- 11e. 地図(枠。Phase2でLeaflet) ---- */
+.map .grid{position:absolute;inset:0;background-image:linear-gradient(var(--line) 1px,transparent 1px),
+  linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:34px 34px;opacity:.6}
+.map .pin{position:absolute;width:14px;height:14px;transform:translate(-50%,-50%)}
+.map .pin::before{content:"";position:absolute;inset:0;border-radius:50%;background:var(--mag);
+  box-shadow:0 0 0 6px rgba(255,92,168,.22),0 0 18px var(--mag)}
+.map .pin::after{content:"";position:absolute;left:50%;top:50%;width:44px;height:44px;border:1px solid var(--mag);
+  border-radius:50%;transform:translate(-50%,-50%);animation:ping 2.4s ease-out infinite;opacity:0}
+@keyframes ping{0%{transform:translate(-50%,-50%) scale(.4);opacity:.7}100%{transform:translate(-50%,-50%) scale(1.6);opacity:0}}
+.map .lbl{position:absolute;transform:translate(18px,-6px);font-size:12px;color:var(--ink);
+  background:rgba(23,18,58,.9);border:1px solid var(--line2);padding:4px 9px;border-radius:8px;font-family:var(--f-disp)}
+.map .note{position:absolute;left:12px;bottom:10px;font-size:10.5px;color:var(--faint)}
+
+/* ---- 11f. フィルタバー(Beer一覧) ---- */
+.filterbar{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:center;margin-top:22px;
+  padding:16px;border:1px solid var(--line);border-radius:var(--radius);background:rgba(23,18,58,.4)}
+.f-chips{display:flex;flex-wrap:wrap;gap:8px}
+.f-chip{font-size:12.5px;padding:7px 14px;border-radius:999px;border:1px solid var(--line2);
+  background:transparent;color:var(--muted);cursor:pointer;font-family:var(--f-body);transition:.18s}
+.f-chip:hover{color:var(--ink);border-color:var(--vio)}
+.f-chip.on{background:linear-gradient(100deg,var(--mag),var(--vio));color:#fff;border-color:transparent}
+.f-right{margin-left:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.f-search,.f-sort{background:#120e2c;border:1px solid var(--line2);color:var(--ink);border-radius:9px;
+  padding:9px 12px;font-size:13.5px;font-family:var(--f-body)}
+.f-search{min-width:180px}
+.f-search::placeholder{color:var(--faint)}
+.f-count-wrap{color:var(--muted);font-size:13px}
+.f-count-wrap b{color:var(--ink);font-variant-numeric:tabular-nums}
+
+/* ---- 11g. Beerカードに国旗フッター ---- */
+.bcard .mk{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--faint)}
+
 /* ---- 12. レスポンシブ (モバイルファースト前提のブレークポイント) ---- */
 @media(max-width:900px){
   .grid-b{grid-template-columns:repeat(2,1fr)}
   .grid-br{grid-template-columns:repeat(2,1fr)}
-  .nav .links{display:none}
+  .nav .links{gap:16px}
+  .hero-grid{grid-template-columns:1fr;gap:30px}
+  .hero{padding:40px 0 10px}
+  .detail-hero{grid-template-columns:1fr;gap:26px;padding:32px 0 10px}
+  .dt-lower{grid-template-columns:1fr}
   .trow{grid-template-columns:44px 1fr auto;gap:12px}
   .trow .cap{display:none}
+  .f-right{margin-left:0;width:100%}
 }
 @media(max-width:560px){
   .grid-b{grid-template-columns:1fr 1fr}
   .grid-br{grid-template-columns:1fr}
+  .galaxy-hint{display:none}
+  .f-search{flex:1;min-width:0}
 }
 @media(prefers-reduced-motion:reduce){*{animation:none!important}}

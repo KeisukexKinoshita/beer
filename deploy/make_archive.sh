@@ -10,7 +10,7 @@ OUT="${1:-/tmp/claude-0/beer-deploy.tar.gz}"
 mkdir -p "$(dirname "$OUT")"
 git archive --format=tar.gz --prefix=html/ -o "$OUT" HEAD \
   index.php style.css chartjs-plugin-datalabels.min.js googlebb691fb861bc6308.html \
-  common css js php post style brewery beer img
+  common css js php post style brewery beer img assets
 # 注意: js/bk_js と php/bk は上記ディレクトリに含まれてしまうため、必要なら
 # 展開後に削除するのではなく、ここで除外したtarを作り直す (現状は原本尊重でそのまま)
 echo "archive: $OUT ($(du -h "$OUT" | cut -f1))"

@@ -1,82 +1,41 @@
-<!DOCTYPE html>
-<html lang="ja">
- <head>
-<meta charset="utf-8">
-<meta name='description' content="ブリュワリーの一覧">
-<meta name='keywords' content="craft beer,beer,クラフトビール、ビール、IPA">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Darth Beer.com</title>
-<link rel="stylesheet" href="../style.css">
 <?php
-$sql_where = "''=''";
-require('../common/sql.php');
+require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/helpers.php';
+$makers = all_makers();
+$total  = count($makers);
+$title  = 'Brewery一覧';
+$desc   = "掲載中の{$total}のクラフトブリュワリー。日本と海外の造り手を、宇宙の星団のように紹介します。";
+require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
 ?>
-
-</head>
-
 <body>
-<div id='wrap'>
+<?php require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/header.php'; ?>
 
-<header>
-<?php require(dirname(__FILE__).'/../common/header.php'); ?>
-</header>
+<div class="wrap" style="padding-top:40px;padding-bottom:70px">
+  <div class="eyebrow">All Breweries</div>
+  <div class="sec-h">Brewery一覧 <span style="color:var(--muted);font-weight:400;font-size:.6em">全<?= $total ?>件</span></div>
 
-<!--
-<div class='first'>
-<h2>
-</h2>
-<p>
-</p>
-</div>
--->
+  <?php
+    $jp = array_filter($makers, fn($m) => ($m['country_code'] ?? 'JP') === 'JP');
+    $ov = array_filter($makers, fn($m) => ($m['country_code'] ?? 'JP') !== 'JP');
+    $render = function($list) {
+      foreach ($list as $m):
+        $mn = $m['MakerName']; $init = mb_substr(preg_replace('/\s.*$/', '', $mn), 0, 1);
+    ?>
+      <a class="brcard" href="/brewery/detail/maker.php?MakerID=<?= e($m['MakerID']) ?>">
+        <div class="logo"><?= e($init) ?></div>
+        <h4><?= flag($m['country_code']) ?> <?= e($mn) ?></h4>
+        <p><?= e(mb_strimwidth(trim((string)$m['MakerExplain']), 0, 70, '…')) ?></p>
+        <div class="loc"><?= e(country_name($m['country_code'])) ?> · 取扱 <?= (int)$m['beer_count'] ?>件</div>
+      </a>
+    <?php endforeach; };
+  ?>
 
-<div id='main_wrap'>
-<div id='main'>
-<div class='sec1'>
-<h2 class='Brewery'>Breweries <?php echo count($mak_MakerID) ?>件</h2>
+  <div class="subhead"><span class="fl">🇯🇵</span>日本</div>
+  <div class="grid-br"><?php $render($jp); ?></div>
 
-<ul class="image_list"> 
-<?php
-for($i = count($mak_MakerID) -1; $i >-1; $i--){
-   echo '<li>';
-   echo '<div class="image_box">';
-   echo '<a href="detail/maker.php?MakerID=';
-   echo $mak_MakerID[$i] ;
-   echo '">';
-   echo '<img class="thumbnail" src="../img/maker/';
-   echo $mak_MakerID[$i];
-   echo '.png" alt="';
-   echo $mak_MakerName[$i];
-   echo '" title="';
-   echo $mak_MakerName[$i];
-   echo '">';
-   echo '</div>';
-   echo '<h3 class="MakerName">';
-   echo $mak_MakerName[$i] ;
-   echo ' </h3>' ;
-   echo '</a> ';
-   echo ' <p class="MakerExplain">' ;
-   require('detail/explain/'.$mak_MakerID[$i].'.html'); 
-   echo ' </p>' ;
-   echo '</li>';
-}
-?>
-</ul>
-
+  <?php if ($ov): ?>
+  <div class="subhead" style="margin-top:40px"><span class="fl">🌍</span>海外</div>
+  <div class="grid-br"><?php $render($ov); ?></div>
+  <?php endif; ?>
 </div>
 
-</div> <!--  id=main  -->
-</div> <!--  id=main_wrap  -->
-</div> <!--  id=wrap  -->
-</body>
-
-
-
-<?php
-$comment = $_GET['comment'];
-?>
-
-
-
-
-</html>
+<?php require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/footer.php'; ?>

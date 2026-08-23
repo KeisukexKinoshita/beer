@@ -1,107 +1,89 @@
-<!DOCTYPE html>
-<html lang="ja">
- <head>
-<meta charset="utf-8">
-<meta name='description' content="This site shows some craft beer">
-<meta name='keywords' content="craft beer,beer,クラフトビール、ビール、IPA">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Darth Beer.com</title>
-<link rel="stylesheet" href="../../style.css">
-<link rel="stylesheet" href="maker.css">
 <?php
-$maker_id = $_GET['MakerID'];
-$sql_where = "MakerID="."'".$maker_id."'";
-require('../../common/sql.php');
-$keyIndex_mak = array_search($maker_id,$mak_MakerID);
+require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/helpers.php';
+$mid   = $_GET['MakerID'] ?? '';
+$maker = maker_by_id($mid);
+
+if (!$maker) {
+    $title = 'お探しのブリュワリーが見つかりません';
+    require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
+    echo '<body>';
+    require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/header.php';
+    echo '<div class="wrap" style="padding:80px 0"><div class="eyebrow">404</div>'
+       . '<div class="sec-h">ブリュワリーが見つかりませんでした</div>'
+       . '<p style="color:var(--muted);margin-top:14px"><a href="/brewery/makers.php" style="color:var(--teal)">Brewery一覧へ戻る</a></p></div>';
+    require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/footer.php';
+    exit;
+}
+
+$beers = beers_by_maker($mid);
+$mn    = $maker['MakerName'];
+$init  = mb_substr(preg_replace('/\s.*$/', '', $mn), 0, 1);
+$title = $mn;
+$desc  = mb_strimwidth(trim((string)$maker['MakerExplain']) ?: ($mn . ' のクラフトビール'), 0, 110, '…');
+require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
 ?>
-
-</head>
-
 <body>
+<?php require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/header.php'; ?>
 
-<header>
-<?php require(dirname(__FILE__).'/../../common/header.php'); ?>
-</header>
+<div class="wrap">
+  <div class="detail-hero" style="grid-template-columns:.7fr 1.3fr">
+    <div class="dt-img" style="aspect-ratio:1;border-radius:20px">
+      <?php if (!empty($maker['logo_path'])): ?>
+        <img src="<?= e($maker['logo_path']) ?>" alt="<?= e($mn) ?> のロゴ">
+      <?php else: ?>
+        <div class="logo" style="width:96px;height:96px;border-radius:24px;font-size:40px"><?= e($init) ?></div>
+        <div class="note" style="position:absolute;bottom:10px;left:0;right:0;text-align:center;font-size:10.5px;color:var(--faint)">ロゴ素材は後日設定（表示枠のみ）</div>
+      <?php endif; ?>
+    </div>
+    <div>
+      <a class="dt-back" href="/brewery/makers.php">← Brewery一覧へ</a>
+      <div class="eyebrow"><?= e(country_name($maker['country_code'])) ?> のブリュワリー</div>
+      <h1 class="dt-title"><?= flag($maker['country_code']) ?> <?= e($mn) ?></h1>
+      <?php if (trim((string)$maker['MakerExplain']) !== ''): ?>
+        <p class="dt-desc"><?= nl2br(e(trim((string)$maker['MakerExplain']))) ?></p>
+      <?php endif; ?>
+      <?php if (!empty($maker['URL1'])): ?>
+        <p style="margin-top:16px;font-size:13.5px">公式サイト：
+          <a href="<?= e($maker['URL1']) ?>" target="_blank" rel="noopener" style="color:var(--teal);word-break:break-all"><?= e($maker['URL1']) ?></a></p>
+      <?php endif; ?>
+    </div>
+  </div>
 
-<!--
-<div class='first'>
-<h2>
-</h2>
-<p>
-</p>
+  <div style="padding:16px 0 8px">
+    <div class="panel" style="max-width:520px">
+      <h3>製造地</h3>
+      <div class="sub"><?= e(country_name($maker['country_code'])) ?></div>
+      <div class="map" style="aspect-ratio:16/8">
+        <div class="grid"></div>
+        <div class="pin" style="left:58%;top:48%"></div>
+        <div class="lbl" style="left:58%;top:48%"><?= e($mn) ?></div>
+        <div class="note">※ 実装ではLeafletで実地図に緯度経度をプロット（フェーズ2）</div>
+      </div>
+    </div>
+  </div>
+
+  <section class="blk" style="border-top:1px solid var(--line);margin-top:20px">
+    <div class="eyebrow">Beers</div>
+    <div class="sec-h" style="margin-bottom:6px"><?= e($mn) ?> のビール <span style="color:var(--muted);font-weight:400;font-size:.6em">全<?= count($beers) ?>件</span></div>
+    <div class="grid-b" style="margin-top:24px;margin-bottom:30px">
+      <?php foreach ($beers as $b):
+        $g = style_group($b['FamilyName'] ?? '', $b['StyleName'] ?? '');
+        list($gcol, $glabel) = group_meta($g);
+      ?>
+      <a class="bcard" href="/beer/detail/product.php?ProductID=<?= e($b['ProductID']) ?>">
+        <div class="thumb">
+          <div class="halo" style="position:absolute;width:60%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,<?= $gcol ?>55,transparent 66%);filter:blur(8px)"></div>
+          <img src="/img/product/<?= e($b['ProductID']) ?>.png" alt="<?= e($b['ProductName']) ?> のボトル画像" loading="lazy" onerror="this.style.opacity=0">
+        </div>
+        <div class="body">
+          <div class="stylechip"><?= e($glabel) ?></div>
+          <h4><?= e($b['ProductName']) ?></h4>
+          <div class="meta"><span><?= fmt_num($b['Alcohol']) ?>% · IBU<?= fmt_num($b['IBU_all']) ?></span><?= stars_html($b['Favorite']) ?></div>
+        </div>
+      </a>
+      <?php endforeach; ?>
+    </div>
+  </section>
 </div>
--->
 
-<div id='main_wrap_maker'>
-<div id='main'>
-
-<div class='sec1_maker'>
-
- <h2><?php echo nl2br($mak_MakerName[$keyIndex_mak]) ?></h2>
- <p class='p2'>
-   <?php require('./explain/'.$maker_id.'.html'); ?>
- </p>
- <p class='p3'>
-   公式ページ: <a href="<?php echo $mak_URL1[$keyIndex_mak] ?>"><?php echo $mak_URL1[$keyIndex_mak] ?></a> 
- </p>
-
-<div class='chart'>
-    <meta name="viewport" content="width=device-width,initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.2.0/chart.min.js"
-      integrity="sha512-VMsZqo0ar06BMtg0tPsdgRADvl0kDHpTbugCBBrL55KmucH6hP9zWdLIWY//OTfMnzz6xWQRxQqsUFefwHuHyg=="
-      crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.0/dist/chart.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-    
-    <div class="wrap-chart" > 
-        <canvas id="mychart"></canvas> 
-      <script type="text/javascript">
-      </script>
-      <script type="text/javascript" src="bubble.js"></script>
-    </div> 
-</div>   <!-- chart -->
-</div>   <!-- sec1 -->
-
-<div class='sec2'>
- <h3><?php echo nl2br($mak_MakerName[$keyIndex_mak]) ?>のビール一覧</h3> 
-    <ul class="image_list"> 
-    <?php
-    for($i = 0 ; $i < count($prd_ProductID); $i++){
-       echo '<li>';
-       echo '<div class="image_box">';
-       echo '<a href="../../beer/detail/product.php?ProductID=';
-       echo $prd_ProductID[$i] ;
-       echo '">';
-       echo '<img class="thumbnail" src="../../img/product/';
-       echo $prd_ProductID[$i];
-       echo '.png" alt="';
-       echo $prd_ProductName[$i];
-       echo '" title="';
-       echo $prd_ProductName[$i];
-       echo '">';
-       echo '<h3 class="ProductName">';
-       echo $prd_ProductName[$i] ;
-       echo ' </h3>' ;
-       echo '</a> ';
-       echo ' <p class="ProductExplain">' ; 
-       echo $prd_ProductExplain[$i];
-       echo '</p>';
-       /*
-       echo ' <p class="Favorite">' ; 
-       echo $prd_Favorite[$i];
-       echo '</p>';
-       */
-       echo '</div>';
-       echo '</li>';
-    }
-    ?>
-    </ul>
-</div>  <!-- sec2 -->
-
-</div> <!--  id=main  -->
-</div> <!--  id=main_wrap  -->
-</body>
-
-</html>
-
+<?php require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/footer.php'; ?>
