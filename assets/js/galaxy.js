@@ -59,14 +59,13 @@ function initGalaxy(opt){
       x.fillStyle=ax.col;x.beginPath();x.moveTo(en.sx,en.sy);
       x.lineTo(en.sx-ah*Math.cos(an-0.4),en.sy-ah*Math.sin(an-0.4));
       x.lineTo(en.sx-ah*Math.cos(an+0.4),en.sy-ah*Math.sin(an+0.4));x.closePath();x.fill();
-      // ラベル(軸名) + 目盛(max/min)
-      x.globalAlpha=1;x.font='700 '+(12*DPR)+'px "M PLUS 1","Noto Sans JP",sans-serif';
-      x.textAlign='center';x.textBaseline='middle';
-      var lx=en.sx+(en.sx-o.sx)*0.12,ly=en.sy+(en.sy-o.sy)*0.12;
+      // ラベル(軸名 + レンジ)。矢印の先に配置
+      x.globalAlpha=1;x.textAlign='center';x.textBaseline='middle';
+      var lx=en.sx+(en.sx-o.sx)*0.09,ly=en.sy+(en.sy-o.sy)*0.09;
+      x.font='700 '+(12.5*DPR)+'px "M PLUS 1","Noto Sans JP",sans-serif';
       x.fillStyle=ax.col;x.fillText(ax.name,lx,ly);
-      x.font=(10*DPR)+'px "M PLUS 1","Noto Sans JP",sans-serif';x.fillStyle='rgba(230,225,255,.7)';
-      x.fillText(ax.max,en.sx+(en.sx-o.sx)*0.03,en.sy+(en.sy-o.sy)*0.03+13*DPR);
-      x.fillStyle='rgba(170,150,240,.6)';x.fillText(ax.min,o.sx-6*DPR,o.sy+12*DPR);
+      x.font=(10*DPR)+'px "M PLUS 1","Noto Sans JP",sans-serif';x.fillStyle='rgba(200,190,235,.65)';
+      x.fillText(ax.min+' → '+ax.max,lx,ly+14*DPR);
     }
     x.globalAlpha=1;
   }
@@ -85,7 +84,7 @@ function initGalaxy(opt){
       x.globalAlpha=hov===null?.95:(hov===o.idx?1:.4);
       x.fillStyle=gg;x.beginPath();x.arc(pr.sx,pr.sy,rad*3.4,0,7);x.fill();
       // 芯 + 床への投影線(グラフ感): 点から底面(y=1)へ細い線
-      x.globalAlpha=hov===null?.5:(hov===o.idx?.8:.2);
+      x.globalAlpha=hov===null?.38:(hov===o.idx?.85:.15);
       var foot=P(o.p.x,1,o.p.z);
       x.strokeStyle=col;x.lineWidth=DPR;x.beginPath();x.moveTo(pr.sx,pr.sy);x.lineTo(foot.sx,foot.sy);x.stroke();
       x.globalAlpha=1;x.fillStyle='#fff';x.beginPath();x.arc(pr.sx,pr.sy,rad*.5,0,7);x.fill();
