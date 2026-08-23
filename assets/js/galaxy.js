@@ -17,29 +17,79 @@ function initGalaxy(opt){
   var pts=data.map(function(b){return {b:b,x:nm(b.a,A),y:-nm(b.i,I),z:nm(b.f,F)};});
   var off={}; Object.keys(GALAXY_COL).forEach(function(k){off[k]=false;});
   var W,H,ry=0.6,rx=-0.35,tRy=0.6,tRx=-0.35,drag=false,px,py,auto=true,hov=null,ord=[];
+  var SCALE=0.30; // 立方体フレームとラベルが収まるよう少し引く
   function rs(){var r=c.getBoundingClientRect();W=c.width=r.width*DPR;H=c.height=r.height*DPR;}
   rs();addEventListener('resize',rs);
   function proj(p){
     var cy=Math.cos(ry),sy=Math.sin(ry),cx=Math.cos(rx),sx=Math.sin(rx);
     var X=p.x*cy-p.z*sy,Z=p.x*sy+p.z*cy,Y=p.y*cx-Z*sx;Z=p.y*sx+Z*cx;
     var d=3.2,sc=d/(d+Z),s=Math.min(W,H);
-    return{sx:W/2+X*s*.34*sc,sy:H/2+Y*s*.34*sc,sc:sc,Z:Z};
+    return{sx:W/2+X*s*SCALE*sc,sy:H/2+Y*s*SCALE*sc,sc:sc,Z:Z};
+  }
+  function P(x1,y1,z1){return proj({x:x1,y:y1,z:z1});}
+  // 軸定義: 原点コーナー(-1,1,-1)=全て最小 から各軸方向へ。ラベルは各軸のブランドカラー。
+  var O=[-1,1,-1];
+  var AXES=[
+    {to:[ 1,1,-1],col:'#ffcf6b',name:'アルコール度',max:'11%',min:'0.7%'},
+    {to:[-1,-1,-1],col:'#ff5ca8',name:'IBU（苦味）',max:'75',min:'11'},
+    {to:[-1,1, 1],col:'#4be0c8',name:'フルーティー',max:'4',min:'1'}
+  ];
+  function drawFrame(){
+    // 立方体ワイヤーフレーム (12辺) — 淡く
+    var c8=[[-1,-1,-1],[1,-1,-1],[1,1,-1],[-1,1,-1],[-1,-1,1],[1,-1,1],[1,1,1],[-1,1,1]];
+    var edges=[[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
+    var pj=c8.map(function(v){return P(v[0],v[1],v[2]);});
+    x.lineWidth=DPR;x.strokeStyle='rgba(170,150,240,.14)';
+    x.beginPath();
+    for(var e=0;e<edges.length;e++){var a=pj[edges[e][0]],b=pj[edges[e][1]];x.moveTo(a.sx,a.sy);x.lineTo(b.sx,b.sy);}
+    x.stroke();
+    // 床グリッド (底面 y=1) — さらに淡く
+    x.strokeStyle='rgba(170,150,240,.09)';x.beginPath();
+    var t,g1,g2;
+    for(t=-1;t<=1.001;t+=2/4){g1=P(t,1,-1);g2=P(t,1,1);x.moveTo(g1.sx,g1.sy);x.lineTo(g2.sx,g2.sy);
+      g1=P(-1,1,t);g2=P(1,1,t);x.moveTo(g1.sx,g1.sy);x.lineTo(g2.sx,g2.sy);}
+    x.stroke();
+    // 3軸 (色つき・矢印・ラベル・目盛)
+    var o=P(O[0],O[1],O[2]);
+    for(var ai=0;ai<AXES.length;ai++){var ax=AXES[ai],en=P(ax.to[0],ax.to[1],ax.to[2]);
+      x.strokeStyle=ax.col;x.globalAlpha=.85;x.lineWidth=1.6*DPR;
+      x.beginPath();x.moveTo(o.sx,o.sy);x.lineTo(en.sx,en.sy);x.stroke();
+      // 矢印
+      var an=Math.atan2(en.sy-o.sy,en.sx-o.sx),ah=7*DPR;
+      x.fillStyle=ax.col;x.beginPath();x.moveTo(en.sx,en.sy);
+      x.lineTo(en.sx-ah*Math.cos(an-0.4),en.sy-ah*Math.sin(an-0.4));
+      x.lineTo(en.sx-ah*Math.cos(an+0.4),en.sy-ah*Math.sin(an+0.4));x.closePath();x.fill();
+      // ラベル(軸名) + 目盛(max/min)
+      x.globalAlpha=1;x.font='700 '+(12*DPR)+'px "M PLUS 1","Noto Sans JP",sans-serif';
+      x.textAlign='center';x.textBaseline='middle';
+      var lx=en.sx+(en.sx-o.sx)*0.12,ly=en.sy+(en.sy-o.sy)*0.12;
+      x.fillStyle=ax.col;x.fillText(ax.name,lx,ly);
+      x.font=(10*DPR)+'px "M PLUS 1","Noto Sans JP",sans-serif';x.fillStyle='rgba(230,225,255,.7)';
+      x.fillText(ax.max,en.sx+(en.sx-o.sx)*0.03,en.sy+(en.sy-o.sy)*0.03+13*DPR);
+      x.fillStyle='rgba(170,150,240,.6)';x.fillText(ax.min,o.sx-6*DPR,o.sy+12*DPR);
+    }
+    x.globalAlpha=1;
   }
   function draw(){
     x.clearRect(0,0,W,H);var s=Math.min(W,H);
     ord=pts.map(function(p,idx){return {p:p,idx:idx,pr:proj(p)};}).sort(function(a,b){return a.pr.Z-b.pr.Z;});
     var g=x.createRadialGradient(W/2,H/2,0,W/2,H/2,s*.55);
-    g.addColorStop(0,'rgba(160,107,255,.16)');g.addColorStop(.5,'rgba(255,92,168,.06)');g.addColorStop(1,'rgba(0,0,0,0)');
+    g.addColorStop(0,'rgba(160,107,255,.13)');g.addColorStop(.5,'rgba(255,92,168,.05)');g.addColorStop(1,'rgba(0,0,0,0)');
     x.fillStyle=g;x.fillRect(0,0,W,H);
+    drawFrame();
     for(var k=0;k<ord.length;k++){var o=ord[k],b=o.p.b;if(off[b.g])continue;
       var col=GALAXY_COL[b.g]||'#fff',pr=o.pr;
-      var rad=(3.4+b.r*1.7)*pr.sc*DPR*(hov===o.idx?1.5:1);
-      var gg=x.createRadialGradient(pr.sx,pr.sy,0,pr.sx,pr.sy,rad*3.6);
+      var rad=(3.2+b.r*1.5)*pr.sc*DPR*(hov===o.idx?1.5:1);
+      var gg=x.createRadialGradient(pr.sx,pr.sy,0,pr.sx,pr.sy,rad*3.4);
       gg.addColorStop(0,col);gg.addColorStop(.35,col+'bb');gg.addColorStop(1,col+'00');
-      x.globalAlpha=hov===null?.92:(hov===o.idx?1:.45);
-      x.fillStyle=gg;x.beginPath();x.arc(pr.sx,pr.sy,rad*3.6,0,7);x.fill();
+      x.globalAlpha=hov===null?.95:(hov===o.idx?1:.4);
+      x.fillStyle=gg;x.beginPath();x.arc(pr.sx,pr.sy,rad*3.4,0,7);x.fill();
+      // 芯 + 床への投影線(グラフ感): 点から底面(y=1)へ細い線
+      x.globalAlpha=hov===null?.5:(hov===o.idx?.8:.2);
+      var foot=P(o.p.x,1,o.p.z);
+      x.strokeStyle=col;x.lineWidth=DPR;x.beginPath();x.moveTo(pr.sx,pr.sy);x.lineTo(foot.sx,foot.sy);x.stroke();
       x.globalAlpha=1;x.fillStyle='#fff';x.beginPath();x.arc(pr.sx,pr.sy,rad*.5,0,7);x.fill();
-      o._sx=pr.sx;o._sy=pr.sy;o._r=rad*3.6;
+      o._sx=pr.sx;o._sy=pr.sy;o._r=rad*3.4;
     }
   }
   function tick(){if(auto&&!drag&&!rm)tRy+=0.0016;ry+=(tRy-ry)*.08;rx+=(tRx-rx)*.08;draw();requestAnimationFrame(tick);}
