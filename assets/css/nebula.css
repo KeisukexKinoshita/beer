@@ -59,7 +59,7 @@ main{position:relative;z-index:1}
   background:linear-gradient(180deg,rgba(11,8,32,.9),rgba(11,8,32,.5));border-bottom:1px solid var(--line)}
 .nav{display:flex;align-items:center;gap:28px;height:68px}
 .brand{font-family:var(--f-disp);font-weight:800;font-size:21px;letter-spacing:.02em;
-  display:flex;align-items:center;gap:11px}
+  display:flex;align-items:center;gap:11px;white-space:nowrap;flex-shrink:0}
 .brand .dot{width:11px;height:11px;border-radius:50%;
   background:conic-gradient(from 0deg,var(--mag),var(--vio),var(--teal),var(--mag));box-shadow:0 0 16px var(--vio)}
 .nav .links{margin-left:auto;display:flex;gap:26px;font-size:14px;color:var(--muted);font-weight:500}
@@ -233,7 +233,8 @@ canvas.radar{width:100%;aspect-ratio:1/1;display:block}
 @media(max-width:900px){
   .grid-b{grid-template-columns:repeat(2,1fr)}
   .grid-br{grid-template-columns:repeat(2,1fr)}
-  .nav .links{gap:16px}
+  .nav{gap:14px}
+  .nav .links{gap:16px;font-size:13px}
   .hero-grid{grid-template-columns:1fr;gap:30px}
   .hero{padding:40px 0 10px}
   .detail-hero{grid-template-columns:1fr;gap:26px;padding:32px 0 10px}
@@ -247,5 +248,9 @@ canvas.radar{width:100%;aspect-ratio:1/1;display:block}
   .grid-br{grid-template-columns:1fr}
   .galaxy-hint{display:none}
   .f-search{flex:1;min-width:0}
+  .brand{font-size:18px;gap:8px}
+  .brand .tld{display:none}
+  .nav{height:56px;gap:10px}
+  .nav .links{gap:12px;font-size:12.5px}
 }
 @media(prefers-reduced-motion:reduce){*{animation:none!important}}

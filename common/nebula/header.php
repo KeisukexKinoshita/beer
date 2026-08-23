@@ -4,7 +4,7 @@
 <header class="site-header">
   <div class="wrap nav">
     <a class="brand" href="/index.php">
-      <span class="dot"></span>Darth Beer<span style="color:var(--muted);font-weight:400;font-size:14px">.com</span>
+      <span class="dot"></span>Darth Beer<span class="tld" style="color:var(--muted);font-weight:400;font-size:14px">.com</span>
     </a>
     <nav class="links">
       <a href="/beer/products.php">Beer</a>
