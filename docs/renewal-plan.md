@@ -7,10 +7,22 @@
 フェーズ0(デザイン案 + 技術スタック/デプロイ提案)の**承認を得るまで実装コードを書かない**。
 各フェーズ完了時に動作確認手順を提示する。
 
-- フェーズ0: デザイン案提示 + 技術/デプロイ提案 → 承認 ← **いまここ**
-- フェーズ1: 一覧刷新 + 個別Beerページ(グラフ・国旗) + §7の細部修正
-- フェーズ2: トップ刷新(3D分布マップ) + Typeページ新設 + 地図
+- フェーズ0: デザイン案提示 + 技術/デプロイ提案 → **完了(B案Nebula確定)**
+- フェーズ1: 一覧刷新 + 個別Beerページ(グラフ・国旗) + §7の細部修正 → **実装完了・dev反映済み(ユーザー確認待ち)**
+- フェーズ2: トップ刷新(3D分布マップ本格作り込み) + Typeページ新設 + 地図(Leaflet) + brewery一覧の細部
 - (完了後) 運用データパイプライン(§6、今回スコープ外)
+
+## フェーズ1 実装メモ (2026-08-23 dev反映)
+
+- 共通: common/nebula/{helpers,head,header,footer}.php、assets/js/{nebula-bg,galaxy,radar,beerlist}.js、assets/css/nebula.css
+- index.php: 新ヘッダー+ヒーロー銀河+最新Beer(日/海外)+人気Brewery(日/海外)。※3D本格化とTypeはフェーズ2
+- beer/products.php: 味覚銀河(16:9)+カード+スタイル絞込/並替/検索。全文表示を廃止
+- beer/detail/product.php: 画像|概要→スペック(国旗・ブリュワリーリンク)→レーダー+製造地枠。動的title/meta
+- brewery/makers.php: 日本/海外カード。 brewery/detail/maker.php: ロゴ枠+製造地枠+取扱ビール一覧
+- §7: title/meta動的化・alt適正化・星評価aria-label・ロゴリンク/index.php・loading=lazy
+- DB: 001マイグレーション(maker.country_code等 / style.catchcopy)をbeer_devに適用済み
+- 注意: 旧characterizationテスト(tests/)はmainの旧コード用。renewalの新ページには適用しない(挙動を意図的に刷新)
+- フェーズ2でやる残: 3D top本格化 / Typeマスタ拡充(catchcopy)+Typeページ・Type一覧 / Leaflet地図(要lat/lng投入) / ロゴ素材
 
 ## 決定事項 (2026-08-23)
 
