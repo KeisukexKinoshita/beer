@@ -20,5 +20,6 @@
     if (el.dataset.label) m.bindPopup(el.dataset.label);
     // クリックで地図操作を有効化(誤操作防止で初期はホイール無効)
     el.addEventListener('click', function(){ map.scrollWheelZoom.enable(); });
+    setTimeout(function(){ map.invalidateSize(); }, 200);
   });
 })();
