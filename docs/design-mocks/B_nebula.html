@@ -1,0 +1,390 @@
+<title>Nebula 案</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+1:wght@400;500;700;800&family=Noto+Sans+JP:wght@300;400;500;700&display=swap">
+<style>
+:root{
+  --bg:#0b0820; --bg2:#0f0b28; --panel:#17123a; --panel2:#1d1748;
+  --ink:#f3ecff; --muted:#ac9fd6; --faint:#6f639b;
+  --line:rgba(170,150,240,.16); --line2:rgba(170,150,240,.30);
+  --mag:#ff5ca8; --vio:#a06bff; --teal:#4be0c8; --amber:#ffcf6b;
+  --ipa:#5fd0ff; --stout:#b98cff; --sour:#ff6fb0; --pale:#ffd06b; --other:#5cf0c2;
+  --maxw:1180px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);
+  font-family:"Noto Sans JP",-apple-system,sans-serif;font-weight:400;line-height:1.8;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden}
+.disp{font-family:"M PLUS 1",sans-serif}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+a{color:inherit;text-decoration:none}img{max-width:100%;display:block}
+::selection{background:rgba(160,107,255,.35)}
+.grad{background:linear-gradient(100deg,var(--mag),var(--vio) 45%,var(--teal));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+
+#stars{position:fixed;inset:0;z-index:0;pointer-events:none}
+.neb{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(60% 50% at 78% 8%,rgba(255,92,168,.16),transparent 60%),
+             radial-gradient(55% 55% at 12% 30%,rgba(160,107,255,.16),transparent 62%),
+             radial-gradient(60% 60% at 60% 100%,rgba(75,224,200,.12),transparent 60%)}
+main{position:relative;z-index:1}
+
+header{position:sticky;top:0;z-index:20;backdrop-filter:blur(12px);
+  background:linear-gradient(180deg,rgba(11,8,32,.9),rgba(11,8,32,.5));border-bottom:1px solid var(--line)}
+.nav{display:flex;align-items:center;gap:28px;height:68px}
+.brand{font-family:"M PLUS 1";font-weight:800;font-size:21px;letter-spacing:.02em;display:flex;align-items:center;gap:11px}
+.brand .dot{width:11px;height:11px;border-radius:50%;
+  background:conic-gradient(from 0deg,var(--mag),var(--vio),var(--teal),var(--mag));
+  box-shadow:0 0 16px var(--vio)}
+.nav .links{margin-left:auto;display:flex;gap:26px;font-size:14px;color:var(--muted);font-weight:500}
+.nav .links a:hover{color:var(--ink)}
+.viewtoggle{display:flex;background:rgba(160,107,255,.08);border:1px solid var(--line2);border-radius:999px;overflow:hidden}
+.viewtoggle button{background:transparent;border:0;color:var(--muted);font:inherit;font-family:"M PLUS 1";
+  font-size:13px;font-weight:500;padding:8px 16px;cursor:pointer;transition:.2s}
+.viewtoggle button.on{background:linear-gradient(100deg,var(--mag),var(--vio));color:#fff;
+  box-shadow:0 0 20px rgba(160,107,255,.5)}
+
+.eyebrow{font-family:"M PLUS 1";font-size:12px;letter-spacing:.28em;text-transform:uppercase;font-weight:700;
+  color:var(--teal);display:inline-flex;align-items:center;gap:11px}
+.eyebrow::before{content:"";width:7px;height:7px;background:var(--mag);transform:rotate(45deg);
+  box-shadow:0 0 8px var(--mag);flex-shrink:0}
+.sec-h{font-family:"M PLUS 1";font-weight:800;font-size:clamp(25px,3.6vw,36px);margin-top:12px;text-wrap:balance;letter-spacing:.01em}
+.sec-top{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.more{font-family:"M PLUS 1";font-size:13px;color:var(--muted);font-weight:500;display:inline-flex;gap:7px;align-items:center;transition:.2s}
+.more:hover{color:var(--teal)}
+
+.hero{padding:74px 0 34px}
+.hero-grid{display:grid;grid-template-columns:1.02fr 1fr;gap:46px;align-items:center}
+.hero h1{font-family:"M PLUS 1";font-weight:800;font-size:clamp(40px,6.2vw,72px);line-height:1.1;letter-spacing:.005em;text-wrap:balance}
+.hero .lead{margin-top:24px;color:var(--muted);font-size:16px;max-width:45ch;line-height:1.95}
+.hero .cta{margin-top:32px;display:flex;gap:14px;flex-wrap:wrap}
+.btn{font:inherit;font-family:"M PLUS 1";font-weight:700;font-size:14px;padding:14px 26px;border-radius:12px;
+  cursor:pointer;border:1px solid transparent;transition:.22s;display:inline-flex;align-items:center;gap:9px}
+.btn.pri{background:linear-gradient(100deg,var(--mag),var(--vio));color:#fff;box-shadow:0 8px 30px rgba(160,107,255,.35)}
+.btn.pri:hover{transform:translateY(-2px);box-shadow:0 14px 42px rgba(255,92,168,.4)}
+.btn.ghost{border-color:var(--line2);color:var(--ink);background:rgba(160,107,255,.05)}
+.btn.ghost:hover{border-color:var(--teal);color:var(--teal)}
+.stat-row{display:flex;gap:38px;flex-wrap:wrap;margin-top:30px}
+.stat b{font-family:"M PLUS 1";font-weight:800;font-size:32px;font-variant-numeric:tabular-nums}
+.stat span{display:block;font-size:12px;color:var(--muted)}
+
+.galaxy-shell{position:relative;border:1px solid var(--line2);border-radius:20px;overflow:hidden;
+  background:radial-gradient(120% 100% at 50% 0%,#1a1145,#0b0820 78%);aspect-ratio:1/1;
+  box-shadow:0 0 60px rgba(160,107,255,.25),inset 0 0 80px rgba(0,0,0,.5)}
+canvas.galaxy{position:absolute;inset:0;width:100%;height:100%;cursor:grab}
+canvas.galaxy:active{cursor:grabbing}
+.galaxy-tag{position:absolute;left:18px;top:16px;font-family:"M PLUS 1";font-size:11px;letter-spacing:.24em;
+  text-transform:uppercase;color:var(--teal);z-index:3;font-weight:700}
+.galaxy-hint{position:absolute;right:18px;top:16px;font-size:11px;color:var(--faint);z-index:3}
+@media(max-width:560px){.galaxy-hint{display:none}}
+.legend{position:absolute;left:18px;bottom:16px;display:flex;flex-wrap:wrap;gap:6px 12px;z-index:3;max-width:70%}
+.legend span{font-size:11px;color:var(--muted);display:inline-flex;align-items:center;gap:6px;cursor:pointer;
+  padding:2px 5px;border-radius:6px;transition:.15s;user-select:none}
+.legend span:hover{color:var(--ink);background:rgba(255,255,255,.06)}
+.legend i{width:9px;height:9px;border-radius:50%;box-shadow:0 0 10px currentColor}
+.legend span.off{opacity:.32}
+.tt{position:absolute;z-index:6;pointer-events:none;background:rgba(23,18,58,.96);
+  border:1px solid var(--line2);border-radius:11px;padding:10px 13px;font-size:12px;min-width:155px;
+  transform:translate(-50%,-118%);opacity:0;transition:opacity .12s;backdrop-filter:blur(6px);
+  box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.tt b{font-weight:700;font-size:13.5px;font-family:"M PLUS 1"}
+.tt .st{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  background:linear-gradient(100deg,var(--mag),var(--teal));-webkit-background-clip:text;background-clip:text;color:transparent}
+.tt .row{display:flex;justify-content:space-between;color:var(--muted);margin-top:3px;gap:14px;font-variant-numeric:tabular-nums}
+
+section.blk{padding:66px 0;border-top:1px solid var(--line)}
+.grid-b{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:28px}
+.subhead{display:flex;align-items:center;gap:10px;margin:34px 0 4px;font-family:"M PLUS 1";font-size:15px;color:var(--ink);font-weight:700}
+.subhead .fl{font-size:17px}
+.bcard{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--panel);transition:.25s;display:flex;flex-direction:column}
+.bcard:hover{transform:translateY(-5px);border-color:var(--vio);box-shadow:0 18px 48px rgba(160,107,255,.28)}
+.bcard .thumb{aspect-ratio:4/3;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;
+  background:radial-gradient(60% 70% at 50% 40%,#231858,#0e0a26)}
+.bcard .thumb .can{width:52%;aspect-ratio:1/2.6;border-radius:8px 8px 5px 5px;box-shadow:0 12px 30px rgba(0,0,0,.5)}
+.bcard .thumb .halo{position:absolute;width:130px;height:130px;border-radius:50%;
+  background:radial-gradient(circle,var(--gc),transparent 66%);filter:blur(8px);opacity:.7}
+.bcard .body{padding:15px 16px 17px;display:flex;flex-direction:column;gap:7px;flex:1}
+.bcard .stylechip{font-family:"M PLUS 1";font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;
+  background:linear-gradient(100deg,var(--mag),var(--teal));-webkit-background-clip:text;background-clip:text;color:transparent}
+.bcard h4{font-family:"M PLUS 1";font-size:16px;font-weight:700;line-height:1.35}
+.bcard .meta{margin-top:auto;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);
+  font-variant-numeric:tabular-nums;padding-top:9px;border-top:1px solid var(--line)}
+.rate{color:var(--amber);letter-spacing:1px;font-size:12px}
+
+.grid-br{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:20px}
+.brcard{border:1px solid var(--line);border-radius:16px;background:var(--panel);padding:22px;
+  display:flex;flex-direction:column;gap:13px;transition:.25s}
+.brcard:hover{border-color:var(--teal);background:var(--panel2)}
+.brcard .logo{width:48px;height:48px;border-radius:14px;font-family:"M PLUS 1";font-weight:800;font-size:19px;
+  display:flex;align-items:center;justify-content:center;color:#fff;
+  background:linear-gradient(135deg,rgba(255,92,168,.4),rgba(160,107,255,.4));border:1px solid var(--line2)}
+.brcard h4{font-family:"M PLUS 1";font-size:16.5px;font-weight:700}
+.brcard p{font-size:13px;color:var(--muted);line-height:1.75}
+.brcard .loc{font-size:11.5px;color:var(--faint);margin-top:auto}
+
+.types{margin-top:26px}
+.trow{display:grid;grid-template-columns:54px 1.4fr 2fr auto;gap:20px;align-items:center;padding:19px 8px;
+  border-bottom:1px solid var(--line);transition:.2s;cursor:pointer;border-radius:12px}
+.trow:hover{background:linear-gradient(100deg,rgba(255,92,168,.07),rgba(75,224,200,.05));padding-left:16px}
+.trow .n{font-family:"M PLUS 1";font-weight:800;font-size:20px;font-variant-numeric:tabular-nums;
+  background:linear-gradient(100deg,var(--mag),var(--vio));-webkit-background-clip:text;background-clip:text;color:transparent}
+.trow .tn{font-family:"M PLUS 1";font-size:18px;font-weight:700}
+.trow .cap{color:var(--muted);font-size:13.5px}
+.trow .ct{font-size:12px;color:var(--teal);text-align:right;font-weight:500}
+
+#view-detail{display:none}
+.detail-hero{display:grid;grid-template-columns:.85fr 1.15fr;gap:48px;padding:54px 0 20px;align-items:start}
+.dt-img{border:1px solid var(--line2);border-radius:20px;aspect-ratio:4/5;position:relative;overflow:hidden;
+  background:radial-gradient(70% 60% at 50% 35%,#241a5a,#0d0926);display:flex;align-items:center;justify-content:center}
+.dt-img .can{width:44%;aspect-ratio:1/2.6;border-radius:9px 9px 6px 6px;
+  background:linear-gradient(160deg,#faf7ff,#ddd4ee);box-shadow:0 24px 56px rgba(0,0,0,.55)}
+.dt-img .halo{position:absolute;width:250px;height:250px;border-radius:50%;
+  background:radial-gradient(circle,var(--vio),transparent 66%);opacity:.4;filter:blur(14px)}
+.dt-back{font-size:13px;color:var(--muted);display:inline-flex;gap:8px;margin-bottom:10px;cursor:pointer}
+.dt-back:hover{color:var(--teal)}
+.dt-title{font-family:"M PLUS 1";font-weight:800;font-size:clamp(32px,4.4vw,50px);line-height:1.1}
+.dt-desc{color:var(--muted);margin-top:16px;font-size:15px;line-height:1.95;max-width:52ch}
+.spec{margin-top:28px}
+.spec .r{display:flex;align-items:center;gap:16px;padding:14px 2px;border-bottom:1px solid var(--line)}
+.spec .r .k{width:132px;color:var(--faint);font-size:12.5px;flex-shrink:0;font-family:"M PLUS 1"}
+.spec .r .v{font-size:15px;font-weight:500;display:flex;align-items:center;gap:9px;font-variant-numeric:tabular-nums}
+.spec .flag{font-size:18px}
+.bar{flex:1;height:6px;border-radius:4px;background:rgba(255,255,255,.07);position:relative;overflow:hidden;max-width:230px}
+.bar i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,var(--vio),var(--mag));border-radius:4px}
+.dt-lower{display:grid;grid-template-columns:1fr 1fr;gap:22px;padding:38px 0 72px}
+.panel{border:1px solid var(--line);border-radius:20px;background:var(--panel);padding:24px}
+.panel h3{font-family:"M PLUS 1";font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);font-weight:700;margin-bottom:6px}
+.panel .sub{font-size:12px;color:var(--faint);margin-bottom:14px}
+canvas.radar{width:100%;aspect-ratio:1/1;display:block}
+.map{position:relative;aspect-ratio:16/11;border-radius:14px;overflow:hidden;border:1px solid var(--line);
+  background:linear-gradient(160deg,#160f3a,#0d0926)}
+.map .grid{position:absolute;inset:0;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:34px 34px;opacity:.6}
+.map .pin{position:absolute;left:60%;top:44%;width:14px;height:14px}
+.map .pin::before{content:"";position:absolute;inset:0;border-radius:50%;background:var(--mag);
+  box-shadow:0 0 0 6px rgba(255,92,168,.22),0 0 18px var(--mag)}
+.map .pin::after{content:"";position:absolute;left:50%;top:50%;width:44px;height:44px;border:1px solid var(--mag);
+  border-radius:50%;transform:translate(-50%,-50%);animation:ping 2.4s ease-out infinite;opacity:0}
+@keyframes ping{0%{transform:translate(-50%,-50%) scale(.4);opacity:.7}100%{transform:translate(-50%,-50%) scale(1.6);opacity:0}}
+.map .lbl{position:absolute;left:60%;top:44%;transform:translate(18px,-6px);font-size:12px;color:var(--ink);
+  background:rgba(23,18,58,.9);border:1px solid var(--line2);padding:4px 9px;border-radius:8px;font-family:"M PLUS 1"}
+.map .note{position:absolute;left:12px;bottom:10px;font-size:10.5px;color:var(--faint)}
+
+footer{border-top:1px solid var(--line);padding:42px 0;color:var(--faint);font-size:12.5px}
+.foot{display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px;align-items:center}
+.pitch{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:30;background:rgba(23,18,58,.92);
+  border:1px solid var(--line2);border-radius:999px;padding:8px 8px 8px 18px;display:flex;align-items:center;gap:14px;
+  font-size:12.5px;color:var(--muted);backdrop-filter:blur(8px);box-shadow:0 10px 40px rgba(0,0,0,.5)}
+.pitch b{color:var(--ink);font-weight:700;font-family:"M PLUS 1"}
+.pitch .x{color:var(--faint);cursor:pointer;padding:4px 8px}
+
+@media(max-width:900px){
+  .hero-grid{grid-template-columns:1fr;gap:30px}.hero{padding:40px 0 10px}
+  .detail-hero{grid-template-columns:1fr;gap:26px;padding:34px 0 10px}.dt-lower{grid-template-columns:1fr}
+  .grid-b{grid-template-columns:repeat(2,1fr)}.grid-br{grid-template-columns:repeat(2,1fr)}
+  .nav .links{display:none}.trow{grid-template-columns:44px 1fr auto;gap:12px}.trow .cap{display:none}
+}
+@media(max-width:560px){.grid-b{grid-template-columns:1fr 1fr}.grid-br{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+
+<canvas id="stars"></canvas>
+<div class="neb"></div>
+
+<header><div class="wrap nav">
+  <div class="brand"><span class="dot"></span>Darth Beer<span style="color:var(--muted);font-weight:400;font-size:14px">.com</span></div>
+  <div class="links"><a onclick="show('top')">Beer</a><a onclick="show('top')">Brewery</a><a onclick="show('top')">Type</a></div>
+  <div class="viewtoggle"><button id="tb-top" class="on" onclick="show('top')">トップ</button><button id="tb-detail" onclick="show('detail')">Beer詳細</button></div>
+</div></header>
+
+<main>
+<div id="view-top">
+ <div class="wrap hero"><div class="hero-grid">
+   <div>
+     <div class="eyebrow">B案 — Nebula</div>
+     <h1>宇宙は、<span class="grad">味わいでできている</span>。</h1>
+     <p class="lead">度数もIBUも、フルーティーさも。すべての感覚を色と光にして、38の銘柄が星雲のように渦を巻く。惹かれた星をタップすれば、そこに新しい一杯が待っている。</p>
+     <div class="cta"><button class="btn pri" onclick="show('detail')">銀河に潜る →</button>
+       <button class="btn ghost" onclick="document.getElementById('latest').scrollIntoView()">最新のBeer</button></div>
+     <div class="stat-row">
+       <div class="stat"><b class="grad">38</b><span>登録ビール</span></div>
+       <div class="stat"><b class="grad">19</b><span>ブリュワリー</span></div>
+       <div class="stat"><b class="grad">15</b><span>スタイル</span></div>
+     </div>
+   </div>
+   <div class="galaxy-shell">
+     <canvas class="galaxy" id="gx1"></canvas>
+     <div class="galaxy-tag">Flavour Nebula · 味覚星雲</div>
+     <div class="galaxy-hint">ドラッグで回転 · ホバーで銘柄</div>
+     <div class="legend" id="lg1"></div><div class="tt" id="tt1"></div>
+   </div>
+ </div></div>
+
+ <section class="blk"><div class="wrap">
+   <div class="sec-top"><div><div class="eyebrow">Latest Beer</div><div class="sec-h" id="latest">最新のBeer</div></div><a class="more" onclick="show('top')">すべて見る →</a></div>
+   <div class="subhead"><span class="fl">🇯🇵</span>日本</div><div class="grid-b" id="jp-beers"></div>
+   <div class="subhead"><span class="fl">🌍</span>海外</div><div class="grid-b" id="ov-beers"></div>
+ </div></section>
+
+ <section class="blk"><div class="wrap">
+   <div class="sec-top"><div><div class="eyebrow">Popular Brewery</div><div class="sec-h">人気のBrewery</div></div><a class="more" onclick="show('top')">すべて見る →</a></div>
+   <div class="subhead"><span class="fl">🇯🇵</span>日本</div><div class="grid-br" id="jp-br"></div>
+   <div class="subhead"><span class="fl">🌍</span>海外</div><div class="grid-br" id="ov-br"></div>
+ </div></section>
+
+ <section class="blk"><div class="wrap">
+   <div class="sec-top"><div><div class="eyebrow">Popular Type</div><div class="sec-h">人気のType</div></div><a class="more" onclick="show('top')">すべて見る →</a></div>
+   <div class="types" id="types"></div>
+ </div></section>
+</div>
+
+<div id="view-detail"><div class="wrap">
+  <div class="detail-hero">
+   <div class="dt-img"><div class="halo"></div><div class="can"></div></div>
+   <div>
+     <div class="dt-back" onclick="show('top')">← Beer一覧へ</div>
+     <div class="eyebrow">DDH IPA · UCHU BREWING</div>
+     <h1 class="dt-title">MARS</h1>
+     <p class="dt-desc">五次元フルーツを探す若者に人気の「うちゅうDO」を極める猛者たちのための五次元DOJO。柑橘とトロピカルが弾ける、宇宙的なダブルドライホップIPA。</p>
+     <div class="spec">
+       <div class="r"><div class="k">ブリュワリー</div><div class="v"><span class="flag">🇯🇵</span> UCHU BREWING</div></div>
+       <div class="r"><div class="k">スタイル</div><div class="v">DDH IPA</div></div>
+       <div class="r"><div class="k">アルコール度</div><div class="v">7.0%<span class="bar"><i style="width:63%"></i></span></div></div>
+       <div class="r"><div class="k">IBU</div><div class="v">20<span class="bar"><i style="width:27%"></i></span></div></div>
+       <div class="r"><div class="k">フルーティーさ</div><div class="v">2 / 4<span class="bar"><i style="width:50%"></i></span></div></div>
+       <div class="r"><div class="k">評価</div><div class="v"><span class="rate">★★★★☆</span> 4.0</div></div>
+     </div>
+   </div>
+  </div>
+  <div class="dt-lower">
+    <div class="panel"><h3>味プロファイル</h3><div class="sub">この銘柄の5指標バランス</div><canvas class="radar" id="radar1"></canvas></div>
+    <div class="panel"><h3>製造地</h3><div class="sub">ブリュワリー所在地 — 山梨県 北杜市</div>
+      <div class="map"><div class="grid"></div><div class="pin"></div><div class="lbl">UCHU BREWING</div><div class="note">※ 実装ではLeafletで実地図を表示</div></div>
+    </div>
+  </div>
+</div></div>
+</main>
+
+<footer><div class="wrap foot"><div class="brand" style="font-size:16px"><span class="dot"></span>Darth Beer.com</div>
+  <div>B案 Nebula — 星雲のような色彩 / エモーショナル · デザインモック</div></div></footer>
+<div class="pitch"><span><b>B案 · Nebula</b> — 情動・没入。トップとBeer詳細を切替表示中</span><span class="x" onclick="this.parentElement.remove()">×</span></div>
+
+<script>
+const G=[
+ {n:"MARS",s:"IPA",a:7.0,i:20,f:2,r:4.0,o:"jp"},{n:"KABUKI",s:"Sour",a:7.5,i:15,f:4,r:3.0,o:"jp"},
+ {n:"紅赤 Beniaka",s:"Pale",a:5.5,i:30,f:2,r:4.2,o:"jp"},{n:"漆黒 Shikkoku",s:"Stout",a:5.0,i:35,f:1,r:3.8,o:"jp"},
+ {n:"白 Shiro",s:"Pale",a:5.0,i:12,f:3,r:3.5,o:"jp"},{n:"伽羅 Kyara",s:"Pale",a:6.5,i:25,f:3,r:4.1,o:"jp"},
+ {n:"正気のサタン",s:"Other",a:0.7,i:18,f:3,r:3.9,o:"jp"},{n:"僕ビール君ビール",s:"Pale",a:5.0,i:22,f:3,r:3.7,o:"jp"},
+ {n:"裏通りのドンダバダ",s:"IPA",a:4.5,i:30,f:3,r:4.0,o:"jp"},{n:"東京ブラック",s:"Stout",a:5.0,i:28,f:1,r:4.3,o:"jp"},
+ {n:"Neko Nihiki",s:"IPA",a:6.0,i:45,f:3,r:4.4,o:"ov"},{n:"つまぶるIPA",s:"IPA",a:5.5,i:40,f:2,r:3.6,o:"jp"},
+ {n:"雷電カンヌキIPA",s:"IPA",a:6.5,i:55,f:3,r:4.2,o:"jp"},{n:"ホワイトエール",s:"Pale",a:5.0,i:12,f:3,r:3.8,o:"jp"},
+ {n:"ゆずふわIPA",s:"IPA",a:5.0,i:30,f:4,r:3.5,o:"jp"},{n:"ジューシーIPA",s:"IPA",a:6.0,i:40,f:4,r:4.5,o:"ov"},
+ {n:"ガツンとIPA",s:"IPA",a:6.5,i:60,f:2,r:4.3,o:"ov"},{n:"STONE HAZY IPA",s:"IPA",a:7.7,i:50,f:4,r:4.6,o:"ov"},
+ {n:"ヘイジーIPA",s:"IPA",a:6.0,i:35,f:4,r:4.1,o:"jp"},{n:"TrES-2b North",s:"Stout",a:11.0,i:65,f:1,r:4.7,o:"ov"},
+ {n:"Contract Burn",s:"IPA",a:10.5,i:74.6,f:3,r:4.4,o:"ov"},{n:"Starwatcher",s:"IPA",a:6.8,i:62,f:2,r:4.2,o:"ov"},
+ {n:"LAYER CAKE",s:"Stout",a:8.0,i:30,f:2,r:4.5,o:"ov"}];
+const COL={IPA:"#5fd0ff",Stout:"#b98cff",Sour:"#ff6fb0",Pale:"#ffd06b",Other:"#5cf0c2"};
+const SL={IPA:"IPA系",Stout:"Stout / 黒",Sour:"Sour",Pale:"Pale / Amber",Other:"Low-alc他"};
+
+(function(){const c=document.getElementById('stars'),x=c.getContext('2d');let w,h,st=[];
+ function rs(){w=c.width=innerWidth;h=c.height=innerHeight;st=[];const n=Math.min(240,w*h/8500);
+  for(let i=0;i<n;i++)st.push({x:Math.random()*w,y:Math.random()*h,z:Math.random(),ph:Math.random()*6.28});}
+ rs();addEventListener('resize',rs);let t=0;const rm=matchMedia('(prefers-reduced-motion:reduce)').matches;
+ const cols=['#cfe6ff','#ffb3d9','#c9b0ff'];
+ (function lp(){t+=.02;x.clearRect(0,0,w,h);for(const s of st){const tw=rm?.7:.5+.5*Math.sin(t+s.ph);
+   x.globalAlpha=(.2+s.z*.6)*tw;x.fillStyle=cols[(s.ph*3|0)%3];x.fillRect(s.x,s.y,s.z*1.8+.3,s.z*1.8+.3);}
+   x.globalAlpha=1;if(!rm)requestAnimationFrame(lp);})();})();
+
+function galaxy(canvasId,ttId,lgId,palette){
+ const c=document.getElementById(canvasId),x=c.getContext('2d'),tt=document.getElementById(ttId);
+ let W,H,DPR=Math.min(2,devicePixelRatio||1);
+ const A=[0.7,11],I=[11,74.6],F=[1,4];
+ function nm(v,r){return (v-r[0])/(r[1]-r[0])*2-1;}
+ const pts=G.map(b=>({b,x:nm(b.a,A),y:-nm(b.i,I),z:nm(b.f,F)}));
+ const off={};Object.keys(COL).forEach(k=>off[k]=false);
+ let ry=0.6,rx=-0.35,tRy=0.6,tRx=-0.35,drag=false,px,py,auto=true;
+ const rm=matchMedia('(prefers-reduced-motion:reduce)').matches;
+ function rs(){const r=c.getBoundingClientRect();W=c.width=r.width*DPR;H=c.height=r.height*DPR;}rs();addEventListener('resize',rs);
+ function proj(p){const cy=Math.cos(ry),sy=Math.sin(ry),cx=Math.cos(rx),sx=Math.sin(rx);
+   let X=p.x*cy-p.z*sy,Z=p.x*sy+p.z*cy,Y=p.y*cx-Z*sx;Z=p.y*sx+Z*cx;
+   const d=3.2,sc=d/(d+Z),s=Math.min(W,H);return{sx:W/2+X*s*.34*sc,sy:H/2+Y*s*.34*sc,sc,Z};}
+ let hov=null;
+ function draw(){x.clearRect(0,0,W,H);const s=Math.min(W,H);
+   const order=pts.map((p,idx)=>({p,idx,pr:proj(p)})).sort((a,b)=>a.pr.Z-b.pr.Z);
+   const g=x.createRadialGradient(W/2,H/2,0,W/2,H/2,s*.55);
+   g.addColorStop(0,'rgba(160,107,255,.16)');g.addColorStop(.5,'rgba(255,92,168,.06)');g.addColorStop(1,'rgba(0,0,0,0)');
+   x.fillStyle=g;x.fillRect(0,0,W,H);
+   for(const o of order){const b=o.p.b;if(off[b.s])continue;const pr=o.pr,col=palette[b.s]||'#fff';
+     const rad=(3.4+b.r*1.7)*pr.sc*DPR*(hov===o.idx?1.5:1);
+     const gg=x.createRadialGradient(pr.sx,pr.sy,0,pr.sx,pr.sy,rad*3.6);
+     gg.addColorStop(0,col);gg.addColorStop(.35,col+'bb');gg.addColorStop(1,col+'00');
+     x.globalAlpha=hov===null?.92:(hov===o.idx?1:.45);x.fillStyle=gg;x.beginPath();x.arc(pr.sx,pr.sy,rad*3.6,0,7);x.fill();
+     x.globalAlpha=1;x.fillStyle='#fff';x.beginPath();x.arc(pr.sx,pr.sy,rad*.5,0,7);x.fill();
+     o._sx=pr.sx;o._sy=pr.sy;o._r=rad*3.6;}
+   window._ord=order;}
+ function tick(){if(auto&&!drag&&!rm)tRy+=0.0016;ry+=(tRy-ry)*.08;rx+=(tRx-rx)*.08;draw();requestAnimationFrame(tick);}tick();
+ function pick(mx,my){let best=null,bd=99999;for(const o of(window._ord||[])){if(off[o.p.b.s])continue;
+   const dx=mx-o._sx,dy=my-o._sy,d=dx*dx+dy*dy;if(d<Math.max(o._r*o._r,(16*DPR)*(16*DPR))&&d<bd){bd=d;best=o;}}return best;}
+ c.addEventListener('mousedown',e=>{drag=true;px=e.clientX;py=e.clientY;auto=false;});
+ addEventListener('mouseup',()=>drag=false);
+ addEventListener('mousemove',e=>{if(drag){tRy+=(e.clientX-px)*.008;tRx+=(e.clientY-py)*.008;px=e.clientX;py=e.clientY;tRx=Math.max(-1.2,Math.min(1.2,tRx));}});
+ c.addEventListener('mousemove',e=>{const r=c.getBoundingClientRect();const mx=(e.clientX-r.left)*DPR,my=(e.clientY-r.top)*DPR;const o=pick(mx,my);
+   if(o){hov=o.idx;const b=o.p.b;tt.innerHTML='<b>'+b.n+'</b> <div class="st">'+SL[b.s]+'</div>'+
+     '<div class="row"><span>ALC</span><span>'+b.a.toFixed(1)+'%</span></div><div class="row"><span>IBU</span><span>'+b.i+'</span></div>'+
+     '<div class="row"><span>FRUITY</span><span>'+b.f+'/4</span></div><div class="row"><span>★</span><span>'+b.r.toFixed(1)+'</span></div>';
+     tt.style.left=(o._sx/DPR)+'px';tt.style.top=(o._sy/DPR)+'px';tt.style.opacity=1;c.style.cursor='pointer';}
+   else{hov=null;tt.style.opacity=0;c.style.cursor=drag?'grabbing':'grab';}});
+ c.addEventListener('mouseleave',()=>{hov=null;tt.style.opacity=0;});
+ c.addEventListener('touchstart',e=>{drag=true;auto=false;px=e.touches[0].clientX;py=e.touches[0].clientY;},{passive:true});
+ c.addEventListener('touchmove',e=>{if(drag){tRy+=(e.touches[0].clientX-px)*.008;tRx+=(e.touches[0].clientY-py)*.008;px=e.touches[0].clientX;py=e.touches[0].clientY;tRx=Math.max(-1.2,Math.min(1.2,tRx));}},{passive:true});
+ c.addEventListener('touchend',()=>drag=false);
+ const lg=document.getElementById(lgId);Object.keys(COL).forEach(k=>{const sp=document.createElement('span');
+   sp.innerHTML='<i style="background:'+COL[k]+';color:'+COL[k]+'"></i>'+SL[k];sp.onclick=()=>{off[k]=!off[k];sp.classList.toggle('off',off[k]);};lg.appendChild(sp);});}
+galaxy('gx1','tt1','lg1',COL);
+
+function radar(id,vals){const c=document.getElementById(id),x=c.getContext('2d');const DPR=Math.min(2,devicePixelRatio||1);
+ const r=c.getBoundingClientRect();c.width=r.width*DPR;c.height=r.height*DPR;
+ const labels=["IBU","アルコール","フルーティー","色","評価"],W=c.width,H=c.height,cx=W/2,cy=H/2,R=Math.min(W,H)*.34,N=5;x.clearRect(0,0,W,H);
+ for(let g=1;g<=4;g++){x.beginPath();for(let i=0;i<=N;i++){const an=-Math.PI/2+i/N*6.283,rr=R*g/4,px=cx+Math.cos(an)*rr,py=cy+Math.sin(an)*rr;i?x.lineTo(px,py):x.moveTo(px,py);}x.closePath();x.strokeStyle='rgba(170,150,240,.16)';x.stroke();}
+ for(let i=0;i<N;i++){const an=-Math.PI/2+i/N*6.283;x.beginPath();x.moveTo(cx,cy);x.lineTo(cx+Math.cos(an)*R,cy+Math.sin(an)*R);x.strokeStyle='rgba(170,150,240,.12)';x.stroke();
+   x.fillStyle='#ac9fd6';x.font=(11*DPR)+'px "Noto Sans JP"';x.textAlign='center';x.fillText(labels[i],cx+Math.cos(an)*(R+16*DPR),cy+Math.sin(an)*(R+16*DPR)+4);}
+ const grd=x.createLinearGradient(cx-R,cy-R,cx+R,cy+R);grd.addColorStop(0,'rgba(255,92,168,.28)');grd.addColorStop(1,'rgba(75,224,200,.28)');
+ x.beginPath();vals.forEach((v,i)=>{const an=-Math.PI/2+i/N*6.283,rr=R*v,px=cx+Math.cos(an)*rr,py=cy+Math.sin(an)*rr;i?x.lineTo(px,py):x.moveTo(px,py);});x.closePath();x.fillStyle=grd;x.fill();
+ x.strokeStyle='#a06bff';x.lineWidth=2*DPR;x.stroke();
+ vals.forEach((v,i)=>{const an=-Math.PI/2+i/N*6.283,rr=R*v;x.beginPath();x.arc(cx+Math.cos(an)*rr,cy+Math.sin(an)*rr,3*DPR,0,7);x.fillStyle='#fff';x.fill();});}
+setTimeout(()=>radar('radar1',[0.27,0.63,0.5,0.3,0.8]),60);
+
+function canCol(s){return COL[s]||'#fff';}
+function stars(r){const f=Math.round(r);return '★★★★★'.slice(0,f)+'☆☆☆☆☆'.slice(0,5-f);}
+function beerCard(b){return '<div class="bcard" onclick="show(\'detail\')"><div class="thumb">'+
+  '<div class="halo" style="--gc:'+canCol(b.s)+'44"></div><div class="can" style="background:linear-gradient(160deg,'+canCol(b.s)+'66,#0e0a26)"></div></div>'+
+  '<div class="body"><div class="stylechip">'+SL[b.s]+'</div><h4>'+b.n+'</h4>'+
+  '<div class="meta"><span>'+b.a.toFixed(1)+'% · IBU'+b.i+'</span><span class="rate">'+stars(b.r)+'</span></div></div></div>';}
+document.getElementById('jp-beers').innerHTML=G.filter(b=>b.o==='jp').slice(0,4).map(beerCard).join('');
+document.getElementById('ov-beers').innerHTML=G.filter(b=>b.o==='ov').slice(0,4).map(beerCard).join('');
+
+const BR=[
+ {n:"UCHU BREWING",init:"宇",loc:"山梨県 北杜市",d:"宇宙をテーマにしたラベルと、突き抜けたホップ感で唯一無二の存在。",o:"jp"},
+ {n:"West Coast Brewing",init:"W",loc:"静岡県 沼津市",d:"西海岸スタイルを日本で追求。フラッグシップIPAが看板。",o:"jp"},
+ {n:"志賀高原ビール",init:"志",loc:"長野県 山ノ内町",d:"自社栽培ホップを使う実力派。硬派な苦味に定評。",o:"jp"},
+ {n:"うちゅうブルーイング",init:"う",loc:"山梨県",d:"ヘイジーとサワーの表現力で全国区の人気。",o:"jp"},
+ {n:"Strathcona Beer Co.",init:"S",loc:"Canada · Vancouver",d:"NYのデザイナーが手掛ける、目を引くパッケージが特徴。",o:"ov"},
+ {n:"STONE Brewing",init:"◆",loc:"USA · California",d:"ホップの暴力とも言われる西海岸IPAの代名詞。",o:"ov"},
+ {n:"Other Half",init:"½",loc:"USA · New York",d:"NEIPAシーンを牽引。ジューシーで濁った一杯。",o:"ov"},
+ {n:"Brewski",init:"B",loc:"Sweden",d:"デザートのようなペイストリーサワーで世界を驚かせる。",o:"ov"}];
+function brCard(b){return '<div class="brcard"><div class="logo">'+b.init+'</div><h4>'+b.n+'</h4><p>'+b.d+'</p><div class="loc">📍 '+b.loc+'</div></div>';}
+document.getElementById('jp-br').innerHTML=BR.filter(b=>b.o==='jp').slice(0,4).map(brCard).join('');
+document.getElementById('ov-br').innerHTML=BR.filter(b=>b.o==='ov').slice(0,4).map(brCard).join('');
+
+const TY=[{n:"Hazy IPA",cap:"濁りと果実味の主役級。",c:12,tag:"フルーティー"},{n:"West Coast IPA",cap:"松脂と柑橘、ガツンと苦い。",c:8,tag:"ビター"},
+ {n:"Imperial Stout",cap:"漆黒・高アルコール・余韻長め。",c:5,tag:"どっしり"},{n:"Smoothie Sour",cap:"スムージーのように甘酸っぱい。",c:4,tag:"デザート"},
+ {n:"Pale Ale",cap:"毎日飲めるバランス型。",c:9,tag:"定番"}];
+document.getElementById('types').innerHTML=TY.map((t,i)=>'<div class="trow" onclick="show(\'top\')"><div class="n">'+String(i+1).padStart(2,'0')+'</div><div class="tn">'+t.n+'</div><div class="cap">'+t.cap+'</div><div class="ct">'+t.tag+' · '+t.c+'件</div></div>').join('');
+
+function show(v){document.getElementById('view-top').style.display=v==='top'?'block':'none';
+ document.getElementById('view-detail').style.display=v==='detail'?'block':'none';
+ document.getElementById('tb-top').classList.toggle('on',v==='top');document.getElementById('tb-detail').classList.toggle('on',v==='detail');
+ scrollTo({top:0,behavior:'smooth'});if(v==='detail')setTimeout(()=>radar('radar1',[0.27,0.63,0.5,0.3,0.8]),50);}
+</script>

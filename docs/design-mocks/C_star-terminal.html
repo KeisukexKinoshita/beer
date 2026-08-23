@@ -1,0 +1,386 @@
+<title>Star Terminal 案</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+:root{
+  --bg:#05080a; --bg2:#080d0c; --panel:#0a110e; --panel2:#0d1712;
+  --ink:#d6f5e2; --muted:#6f9a84; --faint:#3f5c4d;
+  --line:rgba(124,255,178,.16); --line2:rgba(124,255,178,.32);
+  --grn:#7CFFB2; --amb:#ffb347; --cyan:#5fe3ff; --mag:#ff6ad5;
+  --ipa:#7CFFB2; --stout:#c39bff; --sour:#ff6ad5; --pale:#ffb347; --other:#5fe3ff;
+  --maxw:1180px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);
+  font-family:"Zen Kaku Gothic New",sans-serif;line-height:1.75;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.pix{font-family:"DotGothic16",monospace}
+.mono{font-family:"Share Tech Mono",monospace;letter-spacing:.02em}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+a{color:inherit;text-decoration:none}img{max-width:100%;display:block}
+::selection{background:rgba(124,255,178,.3);color:#03110a}
+
+#stars{position:fixed;inset:0;z-index:0;pointer-events:none}
+.scan{position:fixed;inset:0;z-index:40;pointer-events:none;opacity:.5;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,0) 0,rgba(0,0,0,0) 2px,rgba(0,0,0,.16) 3px,rgba(0,0,0,0) 4px)}
+.vig{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(120% 90% at 50% 0%,rgba(124,255,178,.06),transparent 55%),
+             radial-gradient(80% 60% at 100% 100%,rgba(255,179,71,.05),transparent 60%)}
+main{position:relative;z-index:1}
+.cur{display:inline-block;width:9px;height:1.05em;background:var(--grn);vertical-align:-2px;margin-left:3px;
+  animation:blink 1.05s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+
+header{position:sticky;top:0;z-index:20;backdrop-filter:blur(6px);
+  background:linear-gradient(180deg,rgba(5,8,10,.92),rgba(5,8,10,.55));border-bottom:1px solid var(--line2)}
+.nav{display:flex;align-items:center;gap:26px;height:64px}
+.brand{font-family:"DotGothic16";font-size:19px;letter-spacing:.02em;color:var(--grn);
+  text-shadow:0 0 12px rgba(124,255,178,.5);display:flex;align-items:center;gap:8px}
+.brand .b{color:var(--amb)}
+.nav .links{margin-left:auto;display:flex;gap:22px;font-family:"Share Tech Mono";font-size:13px;color:var(--muted)}
+.nav .links a:hover{color:var(--grn);text-shadow:0 0 10px rgba(124,255,178,.6)}
+.viewtoggle{display:flex;border:1px solid var(--line2);border-radius:3px;overflow:hidden;font-family:"Share Tech Mono"}
+.viewtoggle button{background:transparent;border:0;color:var(--muted);font:inherit;font-size:12.5px;padding:8px 14px;cursor:pointer;transition:.15s}
+.viewtoggle button.on{background:var(--grn);color:#03110a;text-shadow:none}
+
+.eyebrow{font-family:"Share Tech Mono";font-size:12px;letter-spacing:.16em;color:var(--amb)}
+.eyebrow::before{content:"> ";color:var(--grn)}
+.sec-h{font-family:"DotGothic16";font-size:clamp(22px,3.2vw,32px);margin-top:10px;color:var(--ink);letter-spacing:.02em}
+.sec-top{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.more{font-family:"Share Tech Mono";font-size:13px;color:var(--muted);display:inline-flex;gap:6px;align-items:center;transition:.15s}
+.more:hover{color:var(--grn)}
+.more::before{content:"[ "}.more::after{content:" ]"}
+
+.hero{padding:64px 0 30px}
+.hero-grid{display:grid;grid-template-columns:1.02fr 1fr;gap:44px;align-items:center}
+.hero h1{font-family:"DotGothic16";font-size:clamp(34px,5.4vw,60px);line-height:1.22;letter-spacing:.01em;text-wrap:balance}
+.hero h1 .g{color:var(--grn);text-shadow:0 0 22px rgba(124,255,178,.5)}
+.hero h1 .a{color:var(--amb);text-shadow:0 0 22px rgba(255,179,71,.4)}
+.hero .lead{margin-top:22px;color:var(--muted);font-size:15px;max-width:46ch;line-height:1.9}
+.hero .lead .mono{color:var(--grn)}
+.hero .cta{margin-top:30px;display:flex;gap:14px;flex-wrap:wrap}
+.btn{font-family:"Share Tech Mono";font-size:14px;padding:13px 22px;border-radius:4px;cursor:pointer;
+  border:1px solid var(--line2);transition:.18s;display:inline-flex;align-items:center;gap:8px;background:transparent;color:var(--ink)}
+.btn.pri{background:var(--grn);color:#03110a;border-color:var(--grn);box-shadow:0 0 22px rgba(124,255,178,.3)}
+.btn.pri:hover{box-shadow:0 0 34px rgba(124,255,178,.55);transform:translateY(-1px)}
+.btn.ghost:hover{border-color:var(--amb);color:var(--amb);box-shadow:0 0 20px rgba(255,179,71,.2)}
+.stat-row{display:flex;gap:34px;flex-wrap:wrap;margin-top:28px}
+.stat b{font-family:"Share Tech Mono";font-size:30px;color:var(--amb);font-variant-numeric:tabular-nums}
+.stat span{display:block;font-family:"Share Tech Mono";font-size:11.5px;color:var(--muted);letter-spacing:.04em}
+
+/* HUD frame corners */
+.hud{position:relative}
+.hud::before,.hud::after{content:"";position:absolute;width:14px;height:14px;pointer-events:none}
+.hud::before{left:-1px;top:-1px;border-left:2px solid var(--grn);border-top:2px solid var(--grn)}
+.hud::after{right:-1px;bottom:-1px;border-right:2px solid var(--grn);border-bottom:2px solid var(--grn)}
+
+.galaxy-shell{position:relative;border:1px solid var(--line2);border-radius:4px;overflow:hidden;
+  background:radial-gradient(120% 100% at 50% 0%,#0a1512,#05080a 78%);aspect-ratio:1/1}
+canvas.galaxy{position:absolute;inset:0;width:100%;height:100%;cursor:crosshair}
+.galaxy-tag{position:absolute;left:14px;top:12px;font-family:"Share Tech Mono";font-size:11px;letter-spacing:.14em;color:var(--amb);z-index:3}
+.galaxy-hint{position:absolute;right:14px;top:12px;font-family:"Share Tech Mono";font-size:10.5px;color:var(--faint);z-index:3}
+@media(max-width:560px){.galaxy-hint{display:none}}
+.legend{position:absolute;left:14px;bottom:12px;display:flex;flex-wrap:wrap;gap:5px 10px;z-index:3;max-width:72%;font-family:"Share Tech Mono"}
+.legend span{font-size:10.5px;color:var(--muted);display:inline-flex;align-items:center;gap:5px;cursor:pointer;padding:2px 4px;transition:.15s;user-select:none}
+.legend span:hover{color:var(--ink)}
+.legend i{width:8px;height:8px;box-shadow:0 0 8px currentColor}
+.legend span.off{opacity:.3}
+.tt{position:absolute;z-index:6;pointer-events:none;background:rgba(5,10,8,.96);border:1px solid var(--grn);
+  border-radius:3px;padding:8px 11px;font-family:"Share Tech Mono";font-size:11.5px;min-width:150px;
+  transform:translate(-50%,-120%);opacity:0;transition:opacity .1s;box-shadow:0 0 20px rgba(124,255,178,.25)}
+.tt b{font-family:"DotGothic16";font-size:13px;color:var(--grn)}
+.tt .st{color:var(--amb);font-size:10px;letter-spacing:.08em;margin:2px 0}
+.tt .row{display:flex;justify-content:space-between;color:var(--muted);gap:14px;font-variant-numeric:tabular-nums}
+
+section.blk{padding:60px 0;border-top:1px solid var(--line)}
+.grid-b{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:26px}
+.subhead{display:flex;align-items:center;gap:9px;margin:32px 0 4px;font-family:"Share Tech Mono";font-size:14px;color:var(--grn)}
+.subhead .fl{font-size:16px}
+.bcard{border:1px solid var(--line2);border-radius:4px;overflow:hidden;background:var(--panel);transition:.18s;display:flex;flex-direction:column;position:relative}
+.bcard:hover{border-color:var(--grn);box-shadow:0 0 26px rgba(124,255,178,.18);transform:translateY(-3px)}
+.bcard .thumb{aspect-ratio:4/3;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;
+  background:radial-gradient(60% 70% at 50% 42%,#0e1a15,#060b09)}
+.bcard .thumb::after{content:"";position:absolute;inset:0;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:20px 20px;opacity:.4}
+.bcard .thumb .can{width:50%;aspect-ratio:1/2.6;border-radius:4px 4px 3px 3px;position:relative;z-index:1;box-shadow:0 10px 24px rgba(0,0,0,.5)}
+.bcard .thumb .halo{position:absolute;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,var(--gc),transparent 66%);filter:blur(7px);opacity:.6}
+.bcard .body{padding:13px 14px 15px;display:flex;flex-direction:column;gap:6px;flex:1}
+.bcard .stylechip{font-family:"Share Tech Mono";font-size:10.5px;letter-spacing:.08em;color:var(--amb)}
+.bcard h4{font-family:"DotGothic16";font-size:15px;line-height:1.4}
+.bcard .meta{margin-top:auto;display:flex;justify-content:space-between;align-items:center;font-family:"Share Tech Mono";
+  font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;padding-top:8px;border-top:1px solid var(--line)}
+.rate{color:var(--amb);letter-spacing:1px}
+
+.grid-br{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:18px}
+.brcard{border:1px solid var(--line2);border-radius:4px;background:var(--panel);padding:18px;display:flex;flex-direction:column;gap:11px;transition:.18s}
+.brcard:hover{border-color:var(--amb);background:var(--panel2)}
+.brcard .logo{width:44px;height:44px;border-radius:4px;border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;
+  font-family:"DotGothic16";font-size:18px;color:var(--grn);background:rgba(124,255,178,.05)}
+.brcard h4{font-family:"DotGothic16";font-size:15px}
+.brcard p{font-size:12.5px;color:var(--muted);line-height:1.7}
+.brcard .loc{font-family:"Share Tech Mono";font-size:11px;color:var(--faint);margin-top:auto}
+
+.types{margin-top:24px;border-top:1px solid var(--line)}
+.trow{display:grid;grid-template-columns:56px 1.4fr 2fr auto;gap:18px;align-items:center;padding:16px 6px;
+  border-bottom:1px solid var(--line);transition:.15s;cursor:pointer}
+.trow:hover{background:rgba(124,255,178,.05);padding-left:12px}
+.trow .n{font-family:"Share Tech Mono";color:var(--amb);font-size:14px;font-variant-numeric:tabular-nums}
+.trow .n::before{content:"#"}
+.trow .tn{font-family:"DotGothic16";font-size:17px}
+.trow .cap{color:var(--muted);font-size:13px}
+.trow .ct{font-family:"Share Tech Mono";font-size:11.5px;color:var(--grn);text-align:right}
+
+#view-detail{display:none}
+.detail-hero{display:grid;grid-template-columns:.85fr 1.15fr;gap:44px;padding:48px 0 18px;align-items:start}
+.dt-img{border:1px solid var(--line2);border-radius:4px;aspect-ratio:4/5;position:relative;overflow:hidden;
+  background:radial-gradient(70% 60% at 50% 38%,#0f1c16,#060b09);display:flex;align-items:center;justify-content:center}
+.dt-img::after{content:"";position:absolute;inset:0;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:26px 26px;opacity:.35}
+.dt-img .can{width:44%;aspect-ratio:1/2.6;border-radius:5px 5px 4px 4px;background:linear-gradient(160deg,#eafff3,#c7e6d3);box-shadow:0 20px 46px rgba(0,0,0,.5);position:relative;z-index:1}
+.dt-img .halo{position:absolute;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,var(--grn),transparent 66%);opacity:.22;filter:blur(10px)}
+.dt-back{font-family:"Share Tech Mono";font-size:13px;color:var(--muted);cursor:pointer;margin-bottom:10px;display:inline-block}
+.dt-back:hover{color:var(--grn)}
+.dt-title{font-family:"DotGothic16";font-size:clamp(28px,4vw,44px);line-height:1.15;color:var(--grn);text-shadow:0 0 20px rgba(124,255,178,.4)}
+.dt-desc{color:var(--muted);margin-top:14px;font-size:14.5px;line-height:1.9;max-width:52ch}
+.spec{margin-top:24px;border:1px solid var(--line);border-radius:4px;padding:4px 16px}
+.spec .r{display:flex;align-items:center;gap:16px;padding:12px 2px;border-bottom:1px solid var(--line)}
+.spec .r:last-child{border-bottom:0}
+.spec .r .k{width:130px;font-family:"Share Tech Mono";color:var(--faint);font-size:12px;flex-shrink:0}
+.spec .r .k::before{content:"› "}
+.spec .r .v{font-family:"Share Tech Mono";font-size:14px;display:flex;align-items:center;gap:9px;font-variant-numeric:tabular-nums}
+.spec .flag{font-size:16px}
+.bar{flex:1;height:8px;background:rgba(124,255,178,.08);position:relative;overflow:hidden;max-width:210px;
+  border:1px solid var(--line)}
+.bar i{position:absolute;inset:0 auto 0 0;background:repeating-linear-gradient(90deg,var(--grn) 0,var(--grn) 4px,transparent 4px,transparent 7px)}
+.dt-lower{display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:34px 0 70px}
+.panel{border:1px solid var(--line2);border-radius:4px;background:var(--panel);padding:20px}
+.panel h3{font-family:"Share Tech Mono";font-size:12.5px;letter-spacing:.1em;color:var(--amb);margin-bottom:5px}
+.panel h3::before{content:"// "}
+.panel .sub{font-family:"Share Tech Mono";font-size:11.5px;color:var(--faint);margin-bottom:14px}
+canvas.radar{width:100%;aspect-ratio:1/1;display:block}
+.map{position:relative;aspect-ratio:16/11;border-radius:4px;overflow:hidden;border:1px solid var(--line2);background:#060b09}
+.map .grid{position:absolute;inset:0;background-image:linear-gradient(var(--line2) 1px,transparent 1px),linear-gradient(90deg,var(--line2) 1px,transparent 1px);background-size:30px 30px;opacity:.5}
+.map .cross{position:absolute;left:60%;top:44%;width:1px;height:100%;background:rgba(124,255,178,.3);transform:translateX(-50%)}
+.map .cross2{position:absolute;left:0;top:44%;width:100%;height:1px;background:rgba(124,255,178,.3)}
+.map .pin{position:absolute;left:60%;top:44%;width:12px;height:12px;transform:translate(-50%,-50%)}
+.map .pin::before{content:"";position:absolute;inset:0;border:2px solid var(--grn);border-radius:50%;box-shadow:0 0 14px var(--grn)}
+.map .pin::after{content:"";position:absolute;left:50%;top:50%;width:3px;height:3px;background:var(--grn);transform:translate(-50%,-50%);border-radius:50%}
+.map .lbl{position:absolute;left:60%;top:44%;transform:translate(16px,-24px);font-family:"Share Tech Mono";font-size:11.5px;color:var(--grn);
+  background:rgba(5,10,8,.9);border:1px solid var(--line2);padding:3px 8px}
+.map .note{position:absolute;left:10px;bottom:8px;font-family:"Share Tech Mono";font-size:10px;color:var(--faint)}
+
+footer{border-top:1px solid var(--line2);padding:38px 0;color:var(--faint);font-family:"Share Tech Mono";font-size:12px}
+.foot{display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px;align-items:center}
+.pitch{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:30;background:rgba(5,10,8,.94);
+  border:1px solid var(--line2);border-radius:4px;padding:8px 8px 8px 16px;display:flex;align-items:center;gap:14px;
+  font-family:"Share Tech Mono";font-size:12px;color:var(--muted);box-shadow:0 0 30px rgba(124,255,178,.15)}
+.pitch b{color:var(--grn)}
+.pitch .x{color:var(--faint);cursor:pointer;padding:4px 8px}
+
+@media(max-width:900px){
+  .hero-grid{grid-template-columns:1fr;gap:28px}.hero{padding:38px 0 8px}
+  .detail-hero{grid-template-columns:1fr;gap:24px;padding:30px 0 8px}.dt-lower{grid-template-columns:1fr}
+  .grid-b{grid-template-columns:repeat(2,1fr)}.grid-br{grid-template-columns:repeat(2,1fr)}
+  .nav .links{display:none}.trow{grid-template-columns:44px 1fr auto;gap:12px}.trow .cap{display:none}
+}
+@media(max-width:560px){.grid-b{grid-template-columns:1fr 1fr}.grid-br{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+
+<canvas id="stars"></canvas>
+<div class="vig"></div>
+<div class="scan"></div>
+
+<header><div class="wrap nav">
+  <div class="brand">[DARTH<span class="b">_</span>BEER]<span class="cur"></span></div>
+  <div class="links"><a onclick="show('top')">BEER</a><a onclick="show('top')">BREWERY</a><a onclick="show('top')">TYPE</a></div>
+  <div class="viewtoggle"><button id="tb-top" class="on" onclick="show('top')">TOP</button><button id="tb-detail" onclick="show('detail')">BEER.DETAIL</button></div>
+</div></header>
+
+<main>
+<div id="view-top">
+ <div class="wrap hero"><div class="hero-grid">
+   <div>
+     <div class="eyebrow">C案 — Star Terminal</div>
+     <h1>味覚の<span class="g">座標</span>を、<br><span class="a">スキャンせよ</span>。</h1>
+     <p class="lead"><span class="mono">FLAVOUR_MAP v1.0</span> 度数・IBU・フルーティーさの三軸に、38銘柄をプロット。星域をスキャンして、まだ知らない一杯を捕捉する。</p>
+     <div class="cta"><button class="btn pri" onclick="show('detail')">▶ SCAN GALAXY</button>
+       <button class="btn ghost" onclick="document.getElementById('latest').scrollIntoView()">最新のBeer</button></div>
+     <div class="stat-row">
+       <div class="stat"><b>38</b><span>BEERS</span></div><div class="stat"><b>19</b><span>BREWERIES</span></div><div class="stat"><b>15</b><span>STYLES</span></div>
+     </div>
+   </div>
+   <div class="galaxy-shell hud">
+     <canvas class="galaxy" id="gx1"></canvas>
+     <div class="galaxy-tag">» FLAVOUR_GALAXY.scan</div>
+     <div class="galaxy-hint">DRAG:ROTATE / HOVER:SCAN</div>
+     <div class="legend" id="lg1"></div><div class="tt" id="tt1"></div>
+   </div>
+ </div></div>
+
+ <section class="blk"><div class="wrap">
+   <div class="sec-top"><div><div class="eyebrow">Latest Beer</div><div class="sec-h" id="latest">最新のBeer</div></div><a class="more" onclick="show('top')">ALL BEERS</a></div>
+   <div class="subhead"><span class="fl">🇯🇵</span>JAPAN</div><div class="grid-b" id="jp-beers"></div>
+   <div class="subhead"><span class="fl">🌍</span>OVERSEAS</div><div class="grid-b" id="ov-beers"></div>
+ </div></section>
+
+ <section class="blk"><div class="wrap">
+   <div class="sec-top"><div><div class="eyebrow">Popular Brewery</div><div class="sec-h">人気のBrewery</div></div><a class="more" onclick="show('top')">ALL BREWERIES</a></div>
+   <div class="subhead"><span class="fl">🇯🇵</span>JAPAN</div><div class="grid-br" id="jp-br"></div>
+   <div class="subhead"><span class="fl">🌍</span>OVERSEAS</div><div class="grid-br" id="ov-br"></div>
+ </div></section>
+
+ <section class="blk"><div class="wrap">
+   <div class="sec-top"><div><div class="eyebrow">Popular Type</div><div class="sec-h">人気のType</div></div><a class="more" onclick="show('top')">ALL TYPES</a></div>
+   <div class="types" id="types"></div>
+ </div></section>
+</div>
+
+<div id="view-detail"><div class="wrap">
+  <div class="detail-hero">
+   <div class="dt-img hud"><div class="halo"></div><div class="can"></div></div>
+   <div>
+     <div class="dt-back" onclick="show('top')">‹ RETURN_TO_LIST</div>
+     <div class="eyebrow">DDH IPA · UCHU BREWING</div>
+     <h1 class="dt-title">MARS</h1>
+     <p class="dt-desc">五次元フルーツを探す若者に人気の「うちゅうDO」を極める猛者たちのための五次元DOJO。柑橘とトロピカルが弾ける、宇宙的なダブルドライホップIPA。</p>
+     <div class="spec">
+       <div class="r"><div class="k">BREWERY</div><div class="v"><span class="flag">🇯🇵</span> UCHU BREWING</div></div>
+       <div class="r"><div class="k">STYLE</div><div class="v">DDH IPA</div></div>
+       <div class="r"><div class="k">ALCOHOL</div><div class="v">7.0%<span class="bar"><i style="width:63%"></i></span></div></div>
+       <div class="r"><div class="k">IBU</div><div class="v">20<span class="bar"><i style="width:27%"></i></span></div></div>
+       <div class="r"><div class="k">FRUITY</div><div class="v">2/4<span class="bar"><i style="width:50%"></i></span></div></div>
+       <div class="r"><div class="k">RATING</div><div class="v"><span class="rate">★★★★☆</span> 4.0</div></div>
+     </div>
+   </div>
+  </div>
+  <div class="dt-lower">
+    <div class="panel"><h3>TASTE_PROFILE</h3><div class="sub">5-axis balance readout</div><canvas class="radar" id="radar1"></canvas></div>
+    <div class="panel"><h3>ORIGIN</h3><div class="sub">brewery location — 山梨県 北杜市</div>
+      <div class="map"><div class="grid"></div><div class="cross"></div><div class="cross2"></div><div class="pin"></div><div class="lbl">UCHU BREWING</div><div class="note">// 実装ではLeafletで実地図を表示</div></div>
+    </div>
+  </div>
+</div></div>
+</main>
+
+<footer><div class="wrap foot"><div class="brand" style="font-size:15px">[DARTH<span class="b">_</span>BEER]</div>
+  <div>C案 Star Terminal — レトロSF / HUD · design mock</div></div></footer>
+<div class="pitch"><span><b>C案 · Star Terminal</b> — レトロSF/HUD。TOPとBEER.DETAILを切替表示中</span><span class="x" onclick="this.parentElement.remove()">×</span></div>
+
+<script>
+const G=[
+ {n:"MARS",s:"IPA",a:7.0,i:20,f:2,r:4.0,o:"jp"},{n:"KABUKI",s:"Sour",a:7.5,i:15,f:4,r:3.0,o:"jp"},
+ {n:"紅赤 Beniaka",s:"Pale",a:5.5,i:30,f:2,r:4.2,o:"jp"},{n:"漆黒 Shikkoku",s:"Stout",a:5.0,i:35,f:1,r:3.8,o:"jp"},
+ {n:"白 Shiro",s:"Pale",a:5.0,i:12,f:3,r:3.5,o:"jp"},{n:"伽羅 Kyara",s:"Pale",a:6.5,i:25,f:3,r:4.1,o:"jp"},
+ {n:"正気のサタン",s:"Other",a:0.7,i:18,f:3,r:3.9,o:"jp"},{n:"僕ビール君ビール",s:"Pale",a:5.0,i:22,f:3,r:3.7,o:"jp"},
+ {n:"裏通りのドンダバダ",s:"IPA",a:4.5,i:30,f:3,r:4.0,o:"jp"},{n:"東京ブラック",s:"Stout",a:5.0,i:28,f:1,r:4.3,o:"jp"},
+ {n:"Neko Nihiki",s:"IPA",a:6.0,i:45,f:3,r:4.4,o:"ov"},{n:"つまぶるIPA",s:"IPA",a:5.5,i:40,f:2,r:3.6,o:"jp"},
+ {n:"雷電カンヌキIPA",s:"IPA",a:6.5,i:55,f:3,r:4.2,o:"jp"},{n:"ホワイトエール",s:"Pale",a:5.0,i:12,f:3,r:3.8,o:"jp"},
+ {n:"ゆずふわIPA",s:"IPA",a:5.0,i:30,f:4,r:3.5,o:"jp"},{n:"ジューシーIPA",s:"IPA",a:6.0,i:40,f:4,r:4.5,o:"ov"},
+ {n:"ガツンとIPA",s:"IPA",a:6.5,i:60,f:2,r:4.3,o:"ov"},{n:"STONE HAZY IPA",s:"IPA",a:7.7,i:50,f:4,r:4.6,o:"ov"},
+ {n:"ヘイジーIPA",s:"IPA",a:6.0,i:35,f:4,r:4.1,o:"jp"},{n:"TrES-2b North",s:"Stout",a:11.0,i:65,f:1,r:4.7,o:"ov"},
+ {n:"Contract Burn",s:"IPA",a:10.5,i:74.6,f:3,r:4.4,o:"ov"},{n:"Starwatcher",s:"IPA",a:6.8,i:62,f:2,r:4.2,o:"ov"},
+ {n:"LAYER CAKE",s:"Stout",a:8.0,i:30,f:2,r:4.5,o:"ov"}];
+const COL={IPA:"#7CFFB2",Stout:"#c39bff",Sour:"#ff6ad5",Pale:"#ffb347",Other:"#5fe3ff"};
+const SL={IPA:"IPA",Stout:"STOUT",Sour:"SOUR",Pale:"PALE/AMBER",Other:"LOW-ALC"};
+
+(function(){const c=document.getElementById('stars'),x=c.getContext('2d');let w,h,st=[];
+ function rs(){w=c.width=innerWidth;h=c.height=innerHeight;st=[];const n=Math.min(180,w*h/11000);
+  for(let i=0;i<n;i++)st.push({x:Math.random()*w,y:Math.random()*h,z:Math.random(),ph:Math.random()*6.28});}
+ rs();addEventListener('resize',rs);let t=0;const rm=matchMedia('(prefers-reduced-motion:reduce)').matches;
+ (function lp(){t+=.02;x.clearRect(0,0,w,h);for(const s of st){const tw=rm?.6:.5+.5*Math.sin(t+s.ph);
+   x.globalAlpha=(.15+s.z*.5)*tw;x.fillStyle=s.z>.8?'#7CFFB2':'#3a6b52';x.fillRect(s.x|0,s.y|0,1,1);}
+   x.globalAlpha=1;if(!rm)requestAnimationFrame(lp);})();})();
+
+function galaxy(canvasId,ttId,lgId,palette){
+ const c=document.getElementById(canvasId),x=c.getContext('2d'),tt=document.getElementById(ttId);
+ let W,H,DPR=Math.min(2,devicePixelRatio||1);
+ const A=[0.7,11],I=[11,74.6],F=[1,4];function nm(v,r){return (v-r[0])/(r[1]-r[0])*2-1;}
+ const pts=G.map(b=>({b,x:nm(b.a,A),y:-nm(b.i,I),z:nm(b.f,F)}));
+ const off={};Object.keys(COL).forEach(k=>off[k]=false);
+ let ry=0.6,rx=-0.35,tRy=0.6,tRx=-0.35,drag=false,px,py,auto=true;
+ const rm=matchMedia('(prefers-reduced-motion:reduce)').matches;
+ function rs(){const r=c.getBoundingClientRect();W=c.width=r.width*DPR;H=c.height=r.height*DPR;}rs();addEventListener('resize',rs);
+ function proj(p){const cy=Math.cos(ry),sy=Math.sin(ry),cx=Math.cos(rx),sx=Math.sin(rx);
+   let X=p.x*cy-p.z*sy,Z=p.x*sy+p.z*cy,Y=p.y*cx-Z*sx;Z=p.y*sx+Z*cx;
+   const d=3.2,sc=d/(d+Z),s=Math.min(W,H);return{sx:W/2+X*s*.34*sc,sy:H/2+Y*s*.34*sc,sc,Z};}
+ let hov=null,hx=0,hy=0;
+ function draw(){x.clearRect(0,0,W,H);
+   const order=pts.map((p,idx)=>({p,idx,pr:proj(p)})).sort((a,b)=>a.pr.Z-b.pr.Z);
+   // scanning reticle when hovering
+   if(hov!==null){x.strokeStyle='rgba(124,255,178,.35)';x.lineWidth=DPR;
+     x.beginPath();x.moveTo(hx,0);x.lineTo(hx,H);x.moveTo(0,hy);x.lineTo(W,hy);x.stroke();}
+   for(const o of order){const b=o.p.b;if(off[b.s])continue;const pr=o.pr,col=palette[b.s]||'#fff';
+     const rad=(2.6+b.r*1.3)*pr.sc*DPR*(hov===o.idx?1.6:1);
+     const gg=x.createRadialGradient(pr.sx,pr.sy,0,pr.sx,pr.sy,rad*3);
+     gg.addColorStop(0,col);gg.addColorStop(.4,col+'88');gg.addColorStop(1,col+'00');
+     x.globalAlpha=hov===null?.9:(hov===o.idx?1:.4);x.fillStyle=gg;x.beginPath();x.arc(pr.sx,pr.sy,rad*3,0,7);x.fill();
+     // pixel core (square)
+     x.globalAlpha=1;x.fillStyle='#fff';const sz=Math.max(1.4,rad*.7);x.fillRect(pr.sx-sz/2,pr.sy-sz/2,sz,sz);
+     if(hov===o.idx){x.strokeStyle=col;x.lineWidth=DPR;x.strokeRect(pr.sx-rad*2,pr.sy-rad*2,rad*4,rad*4);}
+     o._sx=pr.sx;o._sy=pr.sy;o._r=rad*3;}
+   window._ord=order;}
+ function tick(){if(auto&&!drag&&!rm)tRy+=0.0015;ry+=(tRy-ry)*.08;rx+=(tRx-rx)*.08;draw();requestAnimationFrame(tick);}tick();
+ function pick(mx,my){let best=null,bd=99999;for(const o of(window._ord||[])){if(off[o.p.b.s])continue;
+   const dx=mx-o._sx,dy=my-o._sy,d=dx*dx+dy*dy;if(d<Math.max(o._r*o._r,(16*DPR)*(16*DPR))&&d<bd){bd=d;best=o;}}return best;}
+ c.addEventListener('mousedown',e=>{drag=true;px=e.clientX;py=e.clientY;auto=false;});
+ addEventListener('mouseup',()=>drag=false);
+ addEventListener('mousemove',e=>{if(drag){tRy+=(e.clientX-px)*.008;tRx+=(e.clientY-py)*.008;px=e.clientX;py=e.clientY;tRx=Math.max(-1.2,Math.min(1.2,tRx));}});
+ c.addEventListener('mousemove',e=>{const r=c.getBoundingClientRect();const mx=(e.clientX-r.left)*DPR,my=(e.clientY-r.top)*DPR;hx=mx;hy=my;const o=pick(mx,my);
+   if(o){hov=o.idx;const b=o.p.b;tt.innerHTML='<b>'+b.n+'</b><div class="st">'+SL[b.s]+'</div>'+
+     '<div class="row"><span>ALC</span><span>'+b.a.toFixed(1)+'%</span></div><div class="row"><span>IBU</span><span>'+b.i+'</span></div>'+
+     '<div class="row"><span>FRT</span><span>'+b.f+'/4</span></div><div class="row"><span>RTG</span><span>'+b.r.toFixed(1)+'</span></div>';
+     tt.style.left=(o._sx/DPR)+'px';tt.style.top=(o._sy/DPR)+'px';tt.style.opacity=1;}
+   else{hov=null;tt.style.opacity=0;}});
+ c.addEventListener('mouseleave',()=>{hov=null;tt.style.opacity=0;});
+ c.addEventListener('touchstart',e=>{drag=true;auto=false;px=e.touches[0].clientX;py=e.touches[0].clientY;},{passive:true});
+ c.addEventListener('touchmove',e=>{if(drag){tRy+=(e.touches[0].clientX-px)*.008;tRx+=(e.touches[0].clientY-py)*.008;px=e.touches[0].clientX;py=e.touches[0].clientY;tRx=Math.max(-1.2,Math.min(1.2,tRx));}},{passive:true});
+ c.addEventListener('touchend',()=>drag=false);
+ const lg=document.getElementById(lgId);Object.keys(COL).forEach(k=>{const sp=document.createElement('span');
+   sp.innerHTML='<i style="background:'+COL[k]+';color:'+COL[k]+'"></i>'+SL[k];sp.onclick=()=>{off[k]=!off[k];sp.classList.toggle('off',off[k]);};lg.appendChild(sp);});}
+galaxy('gx1','tt1','lg1',COL);
+
+function radar(id,vals){const c=document.getElementById(id),x=c.getContext('2d');const DPR=Math.min(2,devicePixelRatio||1);
+ const r=c.getBoundingClientRect();c.width=r.width*DPR;c.height=r.height*DPR;
+ const labels=["IBU","ALC","FRUITY","COLOR","RATING"],W=c.width,H=c.height,cx=W/2,cy=H/2,R=Math.min(W,H)*.33,N=5;x.clearRect(0,0,W,H);
+ for(let g=1;g<=4;g++){x.beginPath();for(let i=0;i<=N;i++){const an=-Math.PI/2+i/N*6.283,rr=R*g/4,px=cx+Math.cos(an)*rr,py=cy+Math.sin(an)*rr;i?x.lineTo(px,py):x.moveTo(px,py);}x.closePath();x.strokeStyle='rgba(124,255,178,.14)';x.stroke();}
+ for(let i=0;i<N;i++){const an=-Math.PI/2+i/N*6.283;x.beginPath();x.moveTo(cx,cy);x.lineTo(cx+Math.cos(an)*R,cy+Math.sin(an)*R);x.strokeStyle='rgba(124,255,178,.1)';x.stroke();
+   x.fillStyle='#6f9a84';x.font=(10*DPR)+'px "Share Tech Mono"';x.textAlign='center';x.fillText(labels[i],cx+Math.cos(an)*(R+16*DPR),cy+Math.sin(an)*(R+16*DPR)+4);}
+ x.beginPath();vals.forEach((v,i)=>{const an=-Math.PI/2+i/N*6.283,rr=R*v,px=cx+Math.cos(an)*rr,py=cy+Math.sin(an)*rr;i?x.lineTo(px,py):x.moveTo(px,py);});x.closePath();
+ x.fillStyle='rgba(124,255,178,.16)';x.fill();x.strokeStyle='#7CFFB2';x.lineWidth=2*DPR;x.stroke();
+ vals.forEach((v,i)=>{const an=-Math.PI/2+i/N*6.283,rr=R*v;x.fillStyle='#ffb347';const px=cx+Math.cos(an)*rr,py=cy+Math.sin(an)*rr;x.fillRect(px-2*DPR,py-2*DPR,4*DPR,4*DPR);});}
+setTimeout(()=>radar('radar1',[0.27,0.63,0.5,0.3,0.8]),60);
+
+function canCol(s){return COL[s]||'#fff';}
+function stars(r){const f=Math.round(r);return '★★★★★'.slice(0,f)+'☆☆☆☆☆'.slice(0,5-f);}
+function beerCard(b){return '<div class="bcard" onclick="show(\'detail\')"><div class="thumb">'+
+  '<div class="halo" style="--gc:'+canCol(b.s)+'40"></div><div class="can" style="background:linear-gradient(160deg,'+canCol(b.s)+'55,#060b09)"></div></div>'+
+  '<div class="body"><div class="stylechip">'+SL[b.s]+'</div><h4>'+b.n+'</h4>'+
+  '<div class="meta"><span>'+b.a.toFixed(1)+'% IBU'+b.i+'</span><span class="rate">'+stars(b.r)+'</span></div></div></div>';}
+document.getElementById('jp-beers').innerHTML=G.filter(b=>b.o==='jp').slice(0,4).map(beerCard).join('');
+document.getElementById('ov-beers').innerHTML=G.filter(b=>b.o==='ov').slice(0,4).map(beerCard).join('');
+
+const BR=[
+ {n:"UCHU BREWING",init:"宇",loc:"YAMANASHI, JP",d:"宇宙をテーマにしたラベルと、突き抜けたホップ感で唯一無二の存在。",o:"jp"},
+ {n:"West Coast Brewing",init:"W",loc:"SHIZUOKA, JP",d:"西海岸スタイルを日本で追求。フラッグシップIPAが看板。",o:"jp"},
+ {n:"志賀高原ビール",init:"志",loc:"NAGANO, JP",d:"自社栽培ホップを使う実力派。硬派な苦味に定評。",o:"jp"},
+ {n:"うちゅうブルーイング",init:"う",loc:"YAMANASHI, JP",d:"ヘイジーとサワーの表現力で全国区の人気。",o:"jp"},
+ {n:"Strathcona Beer Co.",init:"S",loc:"VANCOUVER, CA",d:"NYのデザイナーが手掛ける、目を引くパッケージが特徴。",o:"ov"},
+ {n:"STONE Brewing",init:"◆",loc:"CALIFORNIA, US",d:"ホップの暴力とも言われる西海岸IPAの代名詞。",o:"ov"},
+ {n:"Other Half",init:"½",loc:"NEW YORK, US",d:"NEIPAシーンを牽引。ジューシーで濁った一杯。",o:"ov"},
+ {n:"Brewski",init:"B",loc:"SWEDEN",d:"デザートのようなペイストリーサワーで世界を驚かせる。",o:"ov"}];
+function brCard(b){return '<div class="brcard"><div class="logo">'+b.init+'</div><h4>'+b.n+'</h4><p>'+b.d+'</p><div class="loc">📍 '+b.loc+'</div></div>';}
+document.getElementById('jp-br').innerHTML=BR.filter(b=>b.o==='jp').slice(0,4).map(brCard).join('');
+document.getElementById('ov-br').innerHTML=BR.filter(b=>b.o==='ov').slice(0,4).map(brCard).join('');
+
+const TY=[{n:"Hazy IPA",cap:"濁りと果実味の主役級。",c:12,tag:"FRUITY"},{n:"West Coast IPA",cap:"松脂と柑橘、ガツンと苦い。",c:8,tag:"BITTER"},
+ {n:"Imperial Stout",cap:"漆黒・高アルコール・余韻長め。",c:5,tag:"HEAVY"},{n:"Smoothie Sour",cap:"スムージーのように甘酸っぱい。",c:4,tag:"DESSERT"},
+ {n:"Pale Ale",cap:"毎日飲めるバランス型。",c:9,tag:"CLASSIC"}];
+document.getElementById('types').innerHTML=TY.map((t,i)=>'<div class="trow" onclick="show(\'top\')"><div class="n">'+String(i+1).padStart(2,'0')+'</div><div class="tn">'+t.n+'</div><div class="cap">'+t.cap+'</div><div class="ct">'+t.tag+' · '+t.c+'</div></div>').join('');
+
+function show(v){document.getElementById('view-top').style.display=v==='top'?'block':'none';
+ document.getElementById('view-detail').style.display=v==='detail'?'block':'none';
+ document.getElementById('tb-top').classList.toggle('on',v==='top');document.getElementById('tb-detail').classList.toggle('on',v==='detail');
+ scrollTo({top:0,behavior:'smooth'});if(v==='detail')setTimeout(()=>radar('radar1',[0.27,0.63,0.5,0.3,0.8]),50);}
+</script>
