@@ -22,7 +22,8 @@ $mn       = $maker['MakerName'];
 $init     = mb_substr(preg_replace('/\s.*$/', '', $mn), 0, 1);
 $title    = $mn;
 $desc     = mb_strimwidth(trim((string)$maker['MakerExplain']) ?: ($mn . ' のクラフトビール'), 0, 110, '…');
-$pageJs   = ['/assets/js/galaxy.js'];
+$pageJs   = ['/assets/js/galaxy.js', '/assets/js/beermap.js'];
+$useMap   = !empty($maker['latitude']) && !empty($maker['longitude']);
 require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
 ?>
 <body>
@@ -57,10 +58,14 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
     <div class="brew-map">
       <div class="cap">製造地 — <?= e(country_name($maker['country_code'])) ?></div>
       <div class="map">
-        <div class="grid"></div>
-        <div class="pin" style="left:56%;top:50%"></div>
-        <div class="lbl" style="left:56%;top:50%;font-size:11px"><?= e($mn) ?></div>
-        <div class="note">※ Leaflet実地図はフェーズ2</div>
+        <?php if ($useMap): ?>
+          <div class="lmap" data-lat="<?= e($maker['latitude']) ?>" data-lng="<?= e($maker['longitude']) ?>" data-label="<?= e($mn) ?>"></div>
+        <?php else: ?>
+          <div class="grid"></div>
+          <div class="pin" style="left:56%;top:50%"></div>
+          <div class="lbl" style="left:56%;top:50%;font-size:11px"><?= e($mn) ?></div>
+          <div class="note">※ 所在地データ未設定</div>
+        <?php endif; ?>
       </div>
     </div>
   </div>

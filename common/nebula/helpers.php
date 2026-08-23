@@ -145,6 +145,16 @@ function beers_by_style($sid) {
     return $st->fetchAll();
 }
 
+/** 実際にビールが紐づくスタイル(Type)を人気順(取扱数→平均評価)で返す */
+function styles_used() {
+    return db()->query(
+        "SELECT s.StyleID, s.StyleName, s.FamilyName, s.StyleExplain, s.catchcopy,
+                COUNT(p.ProductID) AS beer_count, AVG(p.Favorite) AS avg_rating
+         FROM style s JOIN products p ON p.StyleID = s.StyleID
+         GROUP BY s.StyleID
+         ORDER BY beer_count DESC, avg_rating DESC")->fetchAll();
+}
+
 /** 銀河/一覧JS用に軽量化した配列 */
 function beers_for_js($beers) {
     $out = [];

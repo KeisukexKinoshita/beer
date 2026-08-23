@@ -23,7 +23,8 @@ $allBeers = all_beers();   // グラフの座標系(平均・スケール)は全
 $title = $beer['ProductName'];
 $descText = trim((string)$beer['ProductExplain']);
 $desc = $descText !== '' ? mb_substr($descText, 0, 110) : ($beer['ProductName'] . ' — ' . ($beer['StyleName'] ?: 'クラフトビール'));
-$pageJs = ['/assets/js/radar.js', '/assets/js/galaxy.js'];
+$pageJs = ['/assets/js/radar.js', '/assets/js/galaxy.js', '/assets/js/beermap.js'];
+$useMap = !empty($beer['latitude']) && !empty($beer['longitude']);
 
 // レーダー用の正規化値 [IBU, アルコール, フルーティー, 色, 評価]
 $rv = [
@@ -98,10 +99,14 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
       <h3>製造地</h3>
       <div class="sub">ブリュワリー所在地 — <?= e(country_name($beer['country_code'])) ?></div>
       <div class="map">
-        <div class="grid"></div>
-        <div class="pin" style="left:60%;top:46%"></div>
-        <div class="lbl" style="left:60%;top:46%"><?= e($beer['MakerName']) ?></div>
-        <div class="note">※ 実装ではLeafletで実地図に緯度経度をプロット（フェーズ2）</div>
+        <?php if ($useMap): ?>
+          <div class="lmap" data-lat="<?= e($beer['latitude']) ?>" data-lng="<?= e($beer['longitude']) ?>" data-label="<?= e($beer['MakerName']) ?>"></div>
+        <?php else: ?>
+          <div class="grid"></div>
+          <div class="pin" style="left:60%;top:46%"></div>
+          <div class="lbl" style="left:60%;top:46%"><?= e($beer['MakerName']) ?></div>
+          <div class="note">※ 所在地データ未設定</div>
+        <?php endif; ?>
       </div>
     </div>
   </div>

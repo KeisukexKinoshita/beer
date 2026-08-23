@@ -11,6 +11,7 @@ $beersOV = array_values(array_filter($beers, fn($b) => ($b['country_code'] ?? 'J
 usort($makers, fn($a, $b) => (int)$b['beer_count'] <=> (int)$a['beer_count']);
 $makJP = array_values(array_filter($makers, fn($m) => ($m['country_code'] ?? 'JP') === 'JP'));
 $makOV = array_values(array_filter($makers, fn($m) => ($m['country_code'] ?? 'JP') !== 'JP'));
+$types = styles_used();
 
 function beer_card($b) {
   $g = style_group($b['FamilyName'] ?? '', $b['StyleName'] ?? '');
@@ -95,6 +96,27 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
   <div class="subhead"><span class="fl">🌍</span>海外</div>
   <div class="grid-br"><?php foreach (array_slice($makOV, 0, 4) as $m) echo brewery_card($m); ?></div>
   <?php endif; ?>
+</div></section>
+
+<section class="blk"><div class="wrap">
+  <div class="sec-top">
+    <div><div class="eyebrow">Popular Type</div><div class="sec-h">人気のType</div></div>
+    <a class="more" href="/style/styles.php">すべてのTypeを見る →</a>
+  </div>
+  <div class="types" style="margin-top:24px">
+    <?php $rank = 0; foreach (array_slice($types, 0, 6) as $t):
+      $rank++;
+      $g = style_group($t['FamilyName'] ?? '', $t['StyleName'] ?? '');
+      list($gcol, $glabel) = group_meta($g);
+    ?>
+    <a class="trow" href="/style/detail/style.php?StyleID=<?= e($t['StyleID']) ?>">
+      <div class="n" style="color:<?= $gcol ?>;-webkit-text-fill-color:<?= $gcol ?>"><?= str_pad($rank, 2, '0', STR_PAD_LEFT) ?></div>
+      <div class="tn"><?= e($t['StyleName']) ?></div>
+      <div class="cap"><?= e($t['catchcopy'] ?: ($t['FamilyName'] ?: '')) ?></div>
+      <div class="ct"><span style="color:<?= $gcol ?>"><?= e($glabel) ?></span> · <?= (int)$t['beer_count'] ?>件</div>
+    </a>
+    <?php endforeach; ?>
+  </div>
 </div></section>
 
 <script>window.BEERS = <?= json_encode(beers_for_js($beers), JSON_UNESCAPED_UNICODE) ?>;</script>
