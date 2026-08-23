@@ -1,0 +1,168 @@
+@charset "UTF-8";
+/* =========================================================================
+   Darth Beer.com — Nebula Design System (B案 確定 / 2026-08-23)
+   このファイルがリニューアル全ページの視覚的な正 (single source of truth)。
+   個別ページCSSはこのトークンとコンポーネントを使い、色や余白の直値を書かない。
+   参照モック: docs/design-mocks/B_nebula.html
+   ========================================================================= */
+
+/* ---- 1. デザイントークン ---- */
+:root{
+  /* 背景・面 */
+  --bg:#0b0820; --bg2:#0f0b28; --panel:#17123a; --panel2:#1d1748;
+  /* 文字 */
+  --ink:#f3ecff; --muted:#ac9fd6; --faint:#6f639b;
+  /* 罫線 */
+  --line:rgba(170,150,240,.16); --line2:rgba(170,150,240,.30);
+  /* アクセント (Nebulaグラデの三色) */
+  --mag:#ff5ca8; --vio:#a06bff; --teal:#4be0c8; --amber:#ffcf6b;
+  --grad:linear-gradient(100deg,var(--mag),var(--vio) 45%,var(--teal));
+  /* スタイル別カラー (銀河の天体・カードのハロー・凡例) */
+  --st-ipa:#5fd0ff; --st-stout:#b98cff; --st-sour:#ff6fb0; --st-pale:#ffd06b; --st-other:#5cf0c2;
+  /* タイポ */
+  --f-disp:"M PLUS 1",-apple-system,BlinkMacSystemFont,sans-serif;
+  --f-body:"Noto Sans JP",-apple-system,sans-serif;
+  /* レイアウト */
+  --maxw:1180px; --gutter:24px;
+  --radius:16px; --radius-sm:12px; --radius-pill:999px;
+  --shadow-card:0 18px 48px rgba(160,107,255,.28);
+  --shadow-glow:0 8px 30px rgba(160,107,255,.35);
+  --t:.22s;
+}
+
+/* ---- 2. ベース ---- */
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:var(--f-body); font-weight:400; line-height:1.8;
+  -webkit-font-smoothing:antialiased; overflow-x:hidden;
+}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+::selection{background:rgba(160,107,255,.35)}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 var(--gutter)}
+.disp{font-family:var(--f-disp)}
+.grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.flag{font-size:1.1em;vertical-align:-.05em}
+
+/* 背景演出 (canvas #stars と .neb を各ページ先頭に置く) */
+#stars{position:fixed;inset:0;z-index:0;pointer-events:none}
+.neb{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(60% 50% at 78% 8%,rgba(255,92,168,.16),transparent 60%),
+             radial-gradient(55% 55% at 12% 30%,rgba(160,107,255,.16),transparent 62%),
+             radial-gradient(60% 60% at 60% 100%,rgba(75,224,200,.12),transparent 60%)}
+main{position:relative;z-index:1}
+
+/* ---- 3. ヘッダー / ナビ ---- */
+.site-header{position:sticky;top:0;z-index:20;backdrop-filter:blur(12px);
+  background:linear-gradient(180deg,rgba(11,8,32,.9),rgba(11,8,32,.5));border-bottom:1px solid var(--line)}
+.nav{display:flex;align-items:center;gap:28px;height:68px}
+.brand{font-family:var(--f-disp);font-weight:800;font-size:21px;letter-spacing:.02em;
+  display:flex;align-items:center;gap:11px}
+.brand .dot{width:11px;height:11px;border-radius:50%;
+  background:conic-gradient(from 0deg,var(--mag),var(--vio),var(--teal),var(--mag));box-shadow:0 0 16px var(--vio)}
+.nav .links{margin-left:auto;display:flex;gap:26px;font-size:14px;color:var(--muted);font-weight:500}
+.nav .links a:hover{color:var(--ink)}
+
+/* ---- 4. 見出し・セクション ---- */
+.eyebrow{font-family:var(--f-disp);font-size:12px;letter-spacing:.28em;text-transform:uppercase;
+  font-weight:700;color:var(--teal);display:inline-flex;align-items:center;gap:11px}
+.eyebrow::before{content:"";width:7px;height:7px;background:var(--mag);transform:rotate(45deg);
+  box-shadow:0 0 8px var(--mag);flex-shrink:0}
+.sec-h{font-family:var(--f-disp);font-weight:800;font-size:clamp(25px,3.6vw,36px);margin-top:12px;
+  text-wrap:balance;letter-spacing:.01em}
+.sec-top{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.subhead{display:flex;align-items:center;gap:10px;margin:34px 0 4px;font-family:var(--f-disp);
+  font-size:15px;color:var(--ink);font-weight:700}
+.more{font-family:var(--f-disp);font-size:13px;color:var(--muted);font-weight:500;
+  display:inline-flex;gap:7px;align-items:center;transition:var(--t)}
+.more:hover{color:var(--teal)}
+section.blk{padding:66px 0;border-top:1px solid var(--line)}
+
+/* ---- 5. ボタン ---- */
+.btn{font-family:var(--f-disp);font-weight:700;font-size:14px;padding:14px 26px;border-radius:var(--radius-sm);
+  cursor:pointer;border:1px solid transparent;background:transparent;transition:var(--t);
+  display:inline-flex;align-items:center;gap:9px}
+.btn.pri{background:linear-gradient(100deg,var(--mag),var(--vio));color:#fff;box-shadow:var(--shadow-glow)}
+.btn.pri:hover{transform:translateY(-2px);box-shadow:0 14px 42px rgba(255,92,168,.4)}
+.btn.ghost{border-color:var(--line2);color:var(--ink);background:rgba(160,107,255,.05)}
+.btn.ghost:hover{border-color:var(--teal);color:var(--teal)}
+
+/* ---- 6. Beerカード ---- */
+.grid-b{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:28px}
+.bcard{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--panel);
+  transition:var(--t);display:flex;flex-direction:column}
+.bcard:hover{transform:translateY(-5px);border-color:var(--vio);box-shadow:var(--shadow-card)}
+.bcard .thumb{aspect-ratio:4/3;position:relative;display:flex;align-items:center;justify-content:center;
+  overflow:hidden;background:radial-gradient(60% 70% at 50% 40%,#231858,#0e0a26)}
+.bcard .thumb img{width:100%;height:100%;object-fit:contain;padding:14px}
+.bcard .body{padding:15px 16px 17px;display:flex;flex-direction:column;gap:7px;flex:1}
+.bcard .stylechip{font-family:var(--f-disp);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
+  font-weight:700;background:linear-gradient(100deg,var(--mag),var(--teal));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.bcard h4{font-family:var(--f-disp);font-size:16px;font-weight:700;line-height:1.35}
+.bcard .meta{margin-top:auto;display:flex;justify-content:space-between;align-items:center;font-size:12px;
+  color:var(--muted);font-variant-numeric:tabular-nums;padding-top:9px;border-top:1px solid var(--line)}
+.rate{color:var(--amber);letter-spacing:1px;font-size:12px}
+
+/* ---- 7. Breweryカード ---- */
+.grid-br{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:20px}
+.brcard{border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);padding:22px;
+  display:flex;flex-direction:column;gap:13px;transition:var(--t)}
+.brcard:hover{border-color:var(--teal);background:var(--panel2)}
+.brcard .logo{width:48px;height:48px;border-radius:14px;font-family:var(--f-disp);font-weight:800;font-size:19px;
+  display:flex;align-items:center;justify-content:center;color:#fff;
+  background:linear-gradient(135deg,rgba(255,92,168,.4),rgba(160,107,255,.4));border:1px solid var(--line2)}
+.brcard h4{font-family:var(--f-disp);font-size:16.5px;font-weight:700}
+.brcard p{font-size:13px;color:var(--muted);line-height:1.75}
+.brcard .loc{font-size:11.5px;color:var(--faint);margin-top:auto}
+
+/* ---- 8. Type行リスト ---- */
+.types{margin-top:26px}
+.trow{display:grid;grid-template-columns:54px 1.4fr 2fr auto;gap:20px;align-items:center;padding:19px 8px;
+  border-bottom:1px solid var(--line);transition:var(--t);cursor:pointer;border-radius:var(--radius-sm)}
+.trow:hover{background:linear-gradient(100deg,rgba(255,92,168,.07),rgba(75,224,200,.05));padding-left:16px}
+.trow .n{font-family:var(--f-disp);font-weight:800;font-size:20px;font-variant-numeric:tabular-nums;
+  background:linear-gradient(100deg,var(--mag),var(--vio));-webkit-background-clip:text;background-clip:text;color:transparent}
+.trow .tn{font-family:var(--f-disp);font-size:18px;font-weight:700}
+.trow .cap{color:var(--muted);font-size:13.5px}
+.trow .ct{font-size:12px;color:var(--teal);text-align:right;font-weight:500}
+
+/* ---- 9. 詳細ページ: スペック / バー / パネル ---- */
+.spec .r{display:flex;align-items:center;gap:16px;padding:14px 2px;border-bottom:1px solid var(--line)}
+.spec .r .k{width:132px;color:var(--faint);font-size:12.5px;flex-shrink:0;font-family:var(--f-disp)}
+.spec .r .v{font-size:15px;font-weight:500;display:flex;align-items:center;gap:9px;font-variant-numeric:tabular-nums}
+.bar{flex:1;height:6px;border-radius:4px;background:rgba(255,255,255,.07);position:relative;overflow:hidden;max-width:230px}
+.bar i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,var(--vio),var(--mag));border-radius:4px}
+.panel{border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);padding:24px}
+.panel h3{font-family:var(--f-disp);font-size:13px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--teal);font-weight:700;margin-bottom:6px}
+.panel .sub{font-size:12px;color:var(--faint);margin-bottom:14px}
+
+/* ---- 10. 銀河 / レーダー / 地図 コンテナ ---- */
+.galaxy-shell{position:relative;border:1px solid var(--line2);border-radius:20px;overflow:hidden;
+  background:radial-gradient(120% 100% at 50% 0%,#1a1145,#0b0820 78%);aspect-ratio:1/1;
+  box-shadow:0 0 60px rgba(160,107,255,.25),inset 0 0 80px rgba(0,0,0,.5)}
+.galaxy-shell canvas{position:absolute;inset:0;width:100%;height:100%;cursor:grab}
+.galaxy-shell canvas:active{cursor:grabbing}
+canvas.radar{width:100%;aspect-ratio:1/1;display:block}
+.map{position:relative;aspect-ratio:16/11;border-radius:14px;overflow:hidden;border:1px solid var(--line);
+  background:linear-gradient(160deg,#160f3a,#0d0926)}
+
+/* ---- 11. フッター ---- */
+.site-footer{border-top:1px solid var(--line);padding:42px 0;color:var(--faint);font-size:12.5px}
+
+/* ---- 12. レスポンシブ (モバイルファースト前提のブレークポイント) ---- */
+@media(max-width:900px){
+  .grid-b{grid-template-columns:repeat(2,1fr)}
+  .grid-br{grid-template-columns:repeat(2,1fr)}
+  .nav .links{display:none}
+  .trow{grid-template-columns:44px 1fr auto;gap:12px}
+  .trow .cap{display:none}
+}
+@media(max-width:560px){
+  .grid-b{grid-template-columns:1fr 1fr}
+  .grid-br{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}}
