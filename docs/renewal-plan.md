@@ -22,7 +22,17 @@
 - §7: title/meta動的化・alt適正化・星評価aria-label・ロゴリンク/index.php・loading=lazy
 - DB: 001マイグレーション(maker.country_code等 / style.catchcopy)をbeer_devに適用済み
 - 注意: 旧characterizationテスト(tests/)はmainの旧コード用。renewalの新ページには適用しない(挙動を意図的に刷新)
-- フェーズ2でやる残: 3D top本格化 / Typeマスタ拡充(catchcopy)+Typeページ・Type一覧 / Leaflet地図(要lat/lng投入) / ロゴ素材
+- フェーズ2でやる残: 3D top本格化 / Typeマスタ拡充(catchcopy)+Type一覧 / Leaflet地図(要lat/lng投入) / ロゴ素材
+
+## グラフ強化 (2026-08-23、ユーザー要望)
+
+- 3D味覚グラフ: **原点=各軸の平均**にして±方向にプロット(平均からのズレが見える)。**軸は白黒系**(点はスタイル色)
+- 座標系(平均・スケール)は常に全ビールで決め、`highlightIds`で特定の銘柄/集合を強調・他を淡色化
+- 個別ページにグラフ追加:
+  - beer詳細: この銘柄をリング+名前で強調。スタイル名をstyle詳細へリンク
+  - brewery詳細: PC=ロゴ|概要|製造地(ロゴと同高)の3カラム→スマホ縦積み。その下に自社ビール強調グラフ
+  - style/detail/style.php: Nebula化(Type詳細を前倒し作成)。そのスタイルのビール強調グラフ+一覧
+- 注: Type一覧ページと catchcopy/StyleExplain の文言投入はフェーズ2で
 
 ## 決定事項 (2026-08-23)
 
