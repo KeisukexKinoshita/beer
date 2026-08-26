@@ -25,10 +25,16 @@
     for (var i = 0; i < seed.length; i++) s = (s * 31 + seed.charCodeAt(i)) >>> 0;
     return function () { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
   }
-  function norm(b) {
-    return { alc: (b.a - 0.7) / 10.3, ibu: (b.i - 11) / 64, haze: (b.cl - 1) / 3, fr: (b.f - 1) / 3 };
-  }
   function clamp01(v) { return Math.max(0, Math.min(1, v)); }
+  /* 正規化の分母は既存銘柄の実測レンジに合わせた目安であって、ビールの取りうる
+     範囲ではない。IBU 90 のインペリアルIPAや IBU 8 のヴァイツェンは実在するので、
+     0〜1 の外に出た値をそのまま描画係数に使わないよう必ず丸める。 */
+  function norm(b) {
+    return { alc:  clamp01((b.a - 0.7) / 10.3),
+             ibu:  clamp01((b.i - 11) / 64),
+             haze: clamp01((b.cl - 1) / 3),
+             fr:   clamp01((b.f - 1) / 3) };
+  }
 
   /* ---- 円柱グラス(タンブラー型)の形状 ---- */
   function glassGeom(W, H) {
