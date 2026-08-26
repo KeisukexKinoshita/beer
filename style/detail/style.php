@@ -23,7 +23,7 @@ list($gcol, $glabel) = group_meta($g);
 $sn       = $style['StyleName'];
 $title    = $sn;
 $desc     = trim((string)$style['StyleExplain']) ?: ($sn . ' — ' . $glabel . 'のクラフトビール' . count($beers) . '件');
-$pageJs   = ['/assets/js/galaxy.js'];
+$pageJs   = ['/assets/js/galaxy.js', '/assets/js/beerglass.js'];
 require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
 ?>
 <body>
@@ -60,10 +60,7 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
     <div class="grid-b" style="margin-top:24px;margin-bottom:30px">
       <?php foreach ($beers as $b): ?>
       <a class="bcard" href="/beer/detail/product.php?ProductID=<?= e($b['ProductID']) ?>">
-        <div class="thumb">
-          <div class="halo" style="position:absolute;width:60%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,<?= $gcol ?>55,transparent 66%);filter:blur(8px)"></div>
-          <img src="/img/product/<?= e($b['ProductID']) ?>.png" alt="<?= e($b['ProductName']) ?> のボトル画像" loading="lazy" onerror="this.style.opacity=0">
-        </div>
+        <div class="thumb"><?= beer_glass_tag($b) ?></div>
         <div class="body">
           <div class="stylechip"><?= e($glabel) ?></div>
           <h4><?= e($b['ProductName']) ?></h4>

@@ -4,7 +4,7 @@ $beers   = all_beers();
 $total   = count($beers);
 $title   = 'Beer一覧';
 $desc    = "登録されている{$total}銘柄のクラフトビールを、味わいの銀河とカードで探せます。スタイルで絞り込み、度数・IBU・評価で並び替え。";
-$pageJs  = ['/assets/js/galaxy.js', '/assets/js/beerlist.js'];
+$pageJs  = ['/assets/js/galaxy.js', '/assets/js/beerlist.js', '/assets/js/beerglass.js'];
 require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
 ?>
 <body>
@@ -57,11 +57,7 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
        data-group="<?= $g ?>" data-name="<?= e($b['ProductName']) ?>" data-maker="<?= e($b['MakerName']) ?>"
        data-style="<?= e($b['StyleName']) ?>" data-rating="<?= e($b['Favorite']) ?>" data-ibu="<?= e($b['IBU_all']) ?>"
        data-alcohol="<?= e($b['Alcohol']) ?>" data-order="<?= $order-- ?>">
-      <div class="thumb">
-        <div class="halo" style="position:absolute;width:60%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,<?= $gcol ?>55,transparent 66%);filter:blur(8px)"></div>
-        <img src="/img/product/<?= e($pid) ?>.png" alt="<?= e($b['ProductName']) ?> のボトル画像" loading="lazy"
-             onerror="this.style.opacity=0">
-      </div>
+      <div class="thumb"><?= beer_glass_tag($b) ?></div>
       <div class="body">
         <div class="stylechip"><?= e($glabel) ?></div>
         <h4><?= e($b['ProductName']) ?></h4>

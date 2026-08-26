@@ -23,7 +23,7 @@ $allBeers = all_beers();   // グラフの座標系(平均・スケール)は全
 $title = $beer['ProductName'];
 $descText = trim((string)$beer['ProductExplain']);
 $desc = $descText !== '' ? mb_substr($descText, 0, 110) : ($beer['ProductName'] . ' — ' . ($beer['StyleName'] ?: 'クラフトビール'));
-$pageJs = ['/assets/js/radar.js', '/assets/js/galaxy.js', '/assets/js/beermap.js'];
+$pageJs = ['/assets/js/radar.js', '/assets/js/galaxy.js', '/assets/js/beermap.js', '/assets/js/beerglass.js'];
 $useMap = !empty($beer['latitude']) && !empty($beer['longitude']);
 
 // レーダー用の正規化値 [IBU, アルコール, フルーティー, 色, 評価]
@@ -41,12 +41,7 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
 
 <div class="wrap">
   <div class="detail-hero">
-    <div class="dt-img">
-      <div class="halo" style="background:radial-gradient(circle,<?= $gcol ?>,transparent 66%)"></div>
-      <img src="/img/product/<?= e($beer['ProductID']) ?>.png"
-           alt="<?= e($beer['ProductName']) ?>（<?= e($beer['MakerName']) ?>）のボトル画像"
-           onerror="this.style.display='none'">
-    </div>
+    <div class="dt-img"><?= beer_glass_tag($beer, 'dt-glass') ?></div>
     <div>
       <a class="dt-back" href="/beer/products.php">← Beer一覧へ</a>
       <div class="eyebrow"><?= e($beer['StyleName'] ?: 'Craft Beer') ?> · <?= e($beer['MakerName']) ?></div>

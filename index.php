@@ -4,7 +4,7 @@ $beers   = all_beers();               // 新着順(ProductID降順)
 $makers  = all_makers();
 $title   = '';                        // トップは "Darth Beer.com" のみ
 $desc    = '世界中のクラフトビールを、味わいの座標で並べた宇宙。度数・IBU・フルーティーさの銀河から、あなたの好みの一杯を見つけよう。';
-$pageJs  = ['/assets/js/galaxy.js'];
+$pageJs  = ['/assets/js/galaxy.js', '/assets/js/beerglass.js'];
 
 $beersJP = array_values(array_filter($beers, fn($b) => ($b['country_code'] ?? 'JP') === 'JP'));
 $beersOV = array_values(array_filter($beers, fn($b) => ($b['country_code'] ?? 'JP') !== 'JP'));
@@ -18,10 +18,7 @@ function beer_card($b) {
   list($gcol, $glabel) = group_meta($g);
   ob_start(); ?>
   <a class="bcard" href="/beer/detail/product.php?ProductID=<?= e($b['ProductID']) ?>">
-    <div class="thumb">
-      <div class="halo" style="position:absolute;width:60%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,<?= $gcol ?>55,transparent 66%);filter:blur(8px)"></div>
-      <img src="/img/product/<?= e($b['ProductID']) ?>.png" alt="<?= e($b['ProductName']) ?> のボトル画像" loading="lazy" onerror="this.style.opacity=0">
-    </div>
+    <div class="thumb"><?= beer_glass_tag($b) ?></div>
     <div class="body">
       <div class="stylechip"><?= e($glabel) ?></div>
       <h4><?= e($b['ProductName']) ?></h4>

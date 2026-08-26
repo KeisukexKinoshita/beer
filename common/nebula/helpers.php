@@ -74,6 +74,28 @@ function stars_html($rating) {
          . $vis . '</span>';
 }
 
+/**
+ * ビールのプレースホルダー(グラス+微かな宇宙)を出力する。
+ * 仕様9-1: 商品写真は使わず、そのビール自身の数値から生成する。
+ * 実描画は assets/js/beerglass.js (canvas)。JSが無効でも枠が崩れないよう背景色を持たせる。
+ */
+function beer_glass_tag($b, $class = '') {
+    $g = style_group($b['FamilyName'] ?? '', $b['StyleName'] ?? '');
+    $label = ($b['ProductName'] ?? 'このビール') . ' のイメージ（'
+           . '色' . fmt_num($b['Color'] ?? '') . '・'
+           . 'アルコール度' . fmt_num($b['Alcohol'] ?? '') . '%・'
+           . 'IBU' . fmt_num($b['IBU_all'] ?? '') . ' から生成）';
+    return '<canvas class="beerglass ' . e($class) . '"'
+         . ' data-bid="' . e($b['ProductID'] ?? '') . '"'
+         . ' data-c="'   . e($b['Color'] ?? '') . '"'
+         . ' data-cl="'  . e($b['Clarity'] ?? '') . '"'
+         . ' data-f="'   . e($b['Fruity'] ?? '') . '"'
+         . ' data-i="'   . e($b['IBU_all'] ?? '') . '"'
+         . ' data-a="'   . e($b['Alcohol'] ?? '') . '"'
+         . ' data-g="'   . e($g) . '"'
+         . ' role="img" aria-label="' . e($label) . '"></canvas>';
+}
+
 /* ---- クエリ ---- */
 
 /** 全ビール (maker/style を結合)。一覧・銀河・詳細で共通 */
