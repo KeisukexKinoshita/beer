@@ -98,3 +98,24 @@
 
 ③公開フェーズで構築済みの「git → tarアーカイブ → scp → deploy.sh 展開」を正式手順化。
 GitHub Actions化は運用が固まってから検討。
+
+
+## 仕様9章対応 / プレースホルダー確定 (2026-08-26)
+
+- 仕様書の最新版は **docs/darth-beer-renewal-spec.md**(9章「コンテンツの権利方針」あり)。
+  リポジトリ直下の同名ファイルは旧版なので参照しないこと
+- **商品写真を全廃**(仕様9-1)。既存39枚も表示停止し、`make_archive.sh` の対象からも除外。
+  dev の `img/product/` は削除済み
+- プレースホルダーは **案C「円柱グラス + 液中の淡い星雲と漂う星」** に確定(ユーザー選択)。
+  実装は `assets/js/beerglass.js`(canvas描画・画像ファイルを作らない)と
+  `helpers.php` の `beer_glass_tag()`。適用先は index / beer一覧 / beer詳細 / brewery詳細 / style詳細
+- データ対応: 液の色=Color / 泡の厚み=Clarity / 漂う星の数=IBU / 奥の光=Alcohol / 星の色づき=スタイル群
+- 検証: dev で38銘柄すべてが描画されることを確認済み
+
+### 次にやること(未着手)
+1. マイグレーション003: products に source_url / image_rights / official_url / estimated_fields、
+   maker に source_url / logo_rights (仕様9-6)
+2. データ更新スキル `beer-data-pipeline` の構築(計画は /root/.claude/plans/ にあり)
+   - 収集役に原文を保存させない(仕様9-4)。監査は出典URLの再訪で行う
+   - Open Brewery DB を一次ソースに(仕様9-5)。日本は10件のみなので公式サイト併用
+   - robots.txt / 利用規約の尊重、1サイト数秒に1回 (仕様9-3)
