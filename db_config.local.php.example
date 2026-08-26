@@ -5,4 +5,6 @@ $db_host = 'beer-rds.cqpmrauqnmy0.ap-northeast-1.rds.amazonaws.com';
 $db_name = 'beer';
 $db_user = 'admin';
 $db_pass = 'CHANGE_ME';
-$db_dsn  = "mysql:dbname={$db_name};host={$db_host}";
+// charset は必須。省略するとサーバ既定(utf8mb3)で接続し、絵文字や一部の漢字が
+// エラーなく ???? に化ける(カラムが utf8mb4 でも接続経路で壊れる)
+$db_dsn  = "mysql:dbname={$db_name};host={$db_host};charset=utf8mb4";
