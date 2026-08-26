@@ -96,6 +96,23 @@ function beer_glass_tag($b, $class = '') {
          . ' role="img" aria-label="' . e($label) . '"></canvas>';
 }
 
+/**
+ * その列がスタイルからの推定値かを判定する (products.estimated_fields はカンマ区切り)。
+ * 仕様: 推定した場合は必ず記録し、詳細ページで「推定値」と補記する。
+ */
+function is_estimated($beer, $field) {
+    $raw = trim((string)($beer['estimated_fields'] ?? ''));
+    if ($raw === '') return false;
+    return in_array($field, array_map('trim', explode(',', $raw)), true);
+}
+
+/** 推定値の注記(該当しなければ空文字) */
+function est_note($beer, $field) {
+    return is_estimated($beer, $field)
+        ? ' <span class="est-note" title="公式情報が無いため、同じスタイルの典型値から推定した値です">推定</span>'
+        : '';
+}
+
 /* ---- クエリ ---- */
 
 /** 全ビール (maker/style を結合)。一覧・銀河・詳細で共通 */

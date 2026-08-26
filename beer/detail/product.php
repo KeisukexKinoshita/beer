@@ -61,14 +61,25 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
           <?php else: ?>—<?php endif; ?>
         </div></div>
         <div class="r"><div class="k">アルコール度</div>
-          <div class="v"><?= fmt_num($beer['Alcohol']) ?>%<span class="bar"><i style="width:<?= min(100, (float)$beer['Alcohol']/11*100) ?>%"></i></span></div></div>
+          <div class="v"><?= fmt_num($beer['Alcohol']) ?>%<?= est_note($beer,'Alcohol') ?><span class="bar"><i style="width:<?= min(100, (float)$beer['Alcohol']/11*100) ?>%"></i></span></div></div>
         <div class="r"><div class="k">IBU（苦味）</div>
-          <div class="v"><?= fmt_num($beer['IBU_all']) ?><span class="bar"><i style="width:<?= min(100, (float)$beer['IBU_all']/74.6*100) ?>%"></i></span></div></div>
+          <div class="v"><?= fmt_num($beer['IBU_all']) ?><?= est_note($beer,'IBU_all') ?><span class="bar"><i style="width:<?= min(100, (float)$beer['IBU_all']/74.6*100) ?>%"></i></span></div></div>
         <div class="r"><div class="k">フルーティーさ</div>
-          <div class="v"><?= fmt_num($beer['Fruity']) ?> / 4<span class="bar"><i style="width:<?= min(100, (float)$beer['Fruity']/4*100) ?>%"></i></span></div></div>
+          <div class="v"><?= fmt_num($beer['Fruity']) ?> / 4<?= est_note($beer,'Fruity') ?><span class="bar"><i style="width:<?= min(100, (float)$beer['Fruity']/4*100) ?>%"></i></span></div></div>
         <div class="r"><div class="k">評価</div>
           <div class="v"><?= stars_html($beer['Favorite']) ?> <?= number_format((float)$beer['Favorite'],1) ?></div></div>
+        <?php if (!empty($beer['official_url'])): ?>
+        <div class="r"><div class="k">公式サイト</div>
+          <div class="v"><a href="<?= e($beer['official_url']) ?>" target="_blank" rel="noopener"
+             style="color:var(--teal);word-break:break-all"><?= e($beer['official_url']) ?></a></div></div>
+        <?php endif; ?>
       </div>
+      <?php if (!empty($beer['estimated_fields'])): ?>
+        <p class="est-caption">※「推定」と付いた値は公式情報が見つからなかったため、同じスタイルの典型値から推定しています。</p>
+      <?php endif; ?>
+      <?php if (!empty($beer['source_url'])): ?>
+        <p class="est-caption">出典：<a href="<?= e($beer['source_url']) ?>" target="_blank" rel="noopener" style="color:var(--muted)"><?= e($beer['source_url']) ?></a></p>
+      <?php endif; ?>
     </div>
   </div>
 
