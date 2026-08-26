@@ -3,3 +3,6 @@
 db_config.local.php
 tests/sandbox/
 tests/out/
+
+# データ更新パイプラインの作業ディレクトリ
+beer-data-work/
