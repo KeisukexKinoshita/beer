@@ -1,0 +1,98 @@
+-- Darth Beer.com データ更新パイプライン シード
+-- 目的     : 候補 28件 の反映 (新規 28件 / 更新 0件)。仕様§6 データ更新パイプライン
+-- 対象DB   : dev = beer_dev / 本番昇格時 = beer
+-- 種別     : DML のみ (DDL を含まない)
+-- 冪等性   : deploy/apply_sql.php が schema_migrations(filename + sha256)で二重適用を防ぐ。
+--            適用済みのこのファイルは書き換えないこと(内容の改変は runner が検知して拒否する)。
+--            直し直すときは新しい番号のファイルを作る。
+-- 生成元   : scripts/make_sql.py / run_id=20260826 / seq=002
+--            候補ファイル = /workspace/tool/beer/beer-data-work/candidates-ship.json
+-- 生成日時 : 2026-08-26 12:04:58
+-- 巻き戻し : 002_seed_20260826_rollback.sql
+-- 適用     : remote_sql.sh dev --apply <このファイル> --dry-run  で件数を確認してから本適用
+--            (このパイプラインは DB を直接書き換えない。適用は必ず runner 経由)
+-- 文字コード : SET NAMES は書かない。runner が DSN の charset=utf8mb4 を検査して保証する
+
+-- mk0020: 大雪地ビール (c-maker-taisetsujibeer)
+INSERT INTO `maker` (`MakerID`, `MakerName`, `MakerExplain`, `URL1`, `country_code`, `latitude`, `longitude`, `logo_path`, `source_url`, `logo_rights`) VALUES ('mk0020', '大雪地ビール', '北海道旭川市宮下通に拠点を置く醸造会社。1996年に設立され、旭川の街なかでビール造りを続けている。北海道の農産物を用いた銘柄を手がけており、個々の商品の情報は自社の醸造ブランドのサイトで公開されている。道北の気候と畑を背景に持つブリュワリー。', 'https://ji-beer.com/', 'JP', 43.762599, 142.363878, NULL, 'https://ji-beer.com/gaiyou/', 'none');
+
+-- mk0021: 横浜ビール (c-maker-yokohamabeer)
+INSERT INTO `maker` (`MakerID`, `MakerName`, `MakerExplain`, `URL1`, `country_code`, `latitude`, `longitude`, `logo_path`, `source_url`, `logo_rights`) VALUES ('mk0021', '横浜ビール', '神奈川県横浜市中区住吉町、関内の街なかに拠点を置くブリュワリー。運営する株式会社横浜ビール醸造所は1999年6月にビールの製造を始めた。港町の名を冠したラガーやピルスナーを定番に揃え、瓶や缶で通年展開している。', 'https://yokohamabeer.com/', 'JP', 35.448607, 139.634055, NULL, 'https://yokohamabeer.com/company/', 'none');
+
+-- mk0022: Baird Brewing (d-maker-baird)
+INSERT INTO `maker` (`MakerID`, `MakerName`, `MakerExplain`, `URL1`, `country_code`, `latitude`, `longitude`, `logo_path`, `source_url`, `logo_rights`) VALUES ('mk0022', 'Baird Brewing', 'ブライアン・ベアードとさゆり・ベアードの二人が、2000年に静岡・沼津でビール造りを始めたブリュワリー。英語表記は Baird Brewing Company。2014年春には伊豆市大平にベアードブルワリーガーデン修善寺を開き、沼津の醸造所に加えてもうひとつの仕込みの場を持つことになった。ふたつの拠点を静岡県内に構える造り手である。', 'https://bairdbeer.com', 'JP', 34.956422, 138.909951, NULL, 'https://bairdbeer.com/pages/the-baird-beer-way', 'none');
+
+-- mk0024: 京都醸造 (d-maker-kyotobrewing)
+INSERT INTO `maker` (`MakerID`, `MakerName`, `MakerExplain`, `URL1`, `country_code`, `latitude`, `longitude`, `logo_path`, `source_url`, `logo_rights`) VALUES ('mk0024', '京都醸造', '京都市南区西九条に醸造所とタップルームを構えるブルワリーで、創業は2015年。一意専心や一期一会など、日本語の言葉を冠した銘柄を年間定番シリーズとして揃えている。市街地の南側に位置し、醸造設備に併設された空間でそのビールを味わえる。', 'https://kyotobrewing.com/en', 'JP', 34.974111, 135.744464, NULL, 'https://kyotobrewing.com/en/pages/taproom', 'none');
+
+-- mk0025: 箕面ビール (d-maker-minoh)
+INSERT INTO `maker` (`MakerID`, `MakerName`, `MakerExplain`, `URL1`, `country_code`, `latitude`, `longitude`, `logo_path`, `source_url`, `logo_rights`) VALUES ('mk0025', '箕面ビール', '大阪府箕面市牧落に本社を置くブルワリー。1996年の創業以来、箕面の地で自社醸造を続けている。定番の黒ビールから度数を上げたエールまで幅広く展開し、公式のオンラインストアで各銘柄の仕様を公開している。大阪北部、山あいの街を拠点とする造り手。', 'https://www.minoh-beer.jp', 'JP', 34.82355132, 135.4730884, NULL, 'https://www.minoh-beer.jp/company/', 'none');
+
+-- mk0027: ひでじビール (e-maker-hidejibeer)
+INSERT INTO `maker` (`MakerID`, `MakerName`, `MakerExplain`, `URL1`, `country_code`, `latitude`, `longitude`, `logo_path`, `source_url`, `logo_rights`) VALUES ('mk0027', 'ひでじビール', '宮崎県延岡市むかばき町に醸造所を構えるブリュワリー。ビール造りの始まりは1996年6月にさかのぼり、2006年10月には酵母の自家培養を導入している。2010年7月15日に宮崎ひでじビール株式会社として法人を設立し、同年11月には従業員による買収(EBO)で株式会社ニシダからビール製造・販売の事業を引き継いだ。', 'https://hideji-beer.jp', 'JP', 32.615243, 131.580033, NULL, 'https://hideji-beer.jp/aboutus/', 'none');
+
+-- mk0028: 霧島酒造 (e-maker-kirishimashuzo)
+INSERT INTO `maker` (`MakerID`, `MakerName`, `MakerExplain`, `URL1`, `country_code`, `latitude`, `longitude`, `logo_path`, `source_url`, `logo_rights`) VALUES ('mk0028', '霧島酒造', '宮崎県都城市に本社を置く、1916年創業の酒類メーカー。本業は焼酎づくりで、KIRISHIMA BEER の名を冠したビールは、直営施設のなかに置かれた霧の蔵ブルワリーで醸されている。商品は熱処理をしない生ビールとして区分されている。', 'https://www.kirishima.co.jp', 'JP', 31.747102, 131.074459, NULL, 'https://www.kirishima.co.jp/company/about/', 'none');
+
+-- mk0029: 道後ビール (e-maker-minakuchishuzo)
+INSERT INTO `maker` (`MakerID`, `MakerName`, `MakerExplain`, `URL1`, `country_code`, `latitude`, `longitude`, `logo_path`, `source_url`, `logo_rights`) VALUES ('mk0029', '道後ビール', '愛媛県松山市道後喜多町の水口酒造が手がけるビールブランド。母体は1895年創業の清酒蔵で、アルトやケルシュといったドイツ由来のスタイルを揃えている。それぞれ「マドンナビール」「坊っちゃんビール」の愛称を持ち、道後の土地に結びついた名前が付けられている。', 'https://minakuchi-shuzo.jp', 'JP', 33.851231, 132.782578, NULL, 'https://prtimes.jp/main/html/rd/p/000000013.000140111.html', 'none');
+
+-- pr0041: ボヘミアン ピルスナー (c-yokohamabeer-bohemianpilsner)
+INSERT INTO `products` (`ProductID`, `MakerID`, `ProductName`, `StyleID`, `Alcohol`, `IBU_all`, `IBU`, `Color`, `Clarity`, `Fruity`, `Favorite`, `ProductExplain`, `IBU_Style`, `Comment`, `source_url`, `image_rights`, `official_url`, `estimated_fields`) VALUES ('pr0041', 'mk0021', 'ボヘミアン ピルスナー', 'st0066', 5.5, 35, 35, 2, 1, 1, NULL, '横浜・関内の醸造所が定番として揃えるピルスナー。淡い黄金色の液体は濁りがほとんどなく、グラスに注ぐと澄んだ光を通す。立ちのぼるのはホップの効いた爽やかな香りで、飲み口も後を引かない軽やかさにまとめられている。ボヘミアン系のピルスナーらしく、苦味は輪郭をはっきり残しながらも角が立たず、麦の甘みと釣り合う位置に置かれた造り。瓶で通年手に入るレギュラー商品として、食事に寄り添わせる一杯にも扱いやすい。', 37.5, NULL, 'https://yokohamabeer.com/products/', 'placeholder', 'https://yokohamabeer.com/products/', 'Color,Clarity,Fruity');
+
+-- pr0042: Angry Boy Brown Ale (d-baird-angryboybrownale)
+INSERT INTO `products` (`ProductID`, `MakerID`, `ProductName`, `StyleID`, `Alcohol`, `IBU_all`, `IBU`, `Color`, `Clarity`, `Fruity`, `Favorite`, `ProductExplain`, `IBU_Style`, `Comment`, `source_url`, `image_rights`, `official_url`, `estimated_fields`) VALUES ('pr0042', 'mk0022', 'Angry Boy Brown Ale', 'st0013', 7.0, 45, 45, 8, 1, 1, NULL, 'フロアモルテッドのマリスオター麦芽に小麦、カラメルとチョコレートの各モルトを重ね、さらに黒糖と氷砂糖を加えて仕込んだブラウンエール。こげ茶に沈んだ液色は澄んでいて、グラスに鼻を寄せると香ばしい麦芽とカラメルの甘い香りが立ちのぼる。糖類由来の厚みのある甘さと、ブラウンエールとしては強めに効かせたホップの苦味が正面からぶつかり合う、名前のとおり気の荒い一本。伊豆の山あいの醸造所から届く、夜更けにゆっくり付き合いたいビールだ。', 35, NULL, 'https://bairdbeer.com/products/angry-boy-brown-ale', 'placeholder', 'https://bairdbeer.com/products/angry-boy-brown-ale', 'Color,Clarity,Fruity');
+
+-- pr0044: Ichii Senshin (一意専心) (d-kyotobrewing-ichiisenshin)
+INSERT INTO `products` (`ProductID`, `MakerID`, `ProductName`, `StyleID`, `Alcohol`, `IBU_all`, `IBU`, `Color`, `Clarity`, `Fruity`, `Favorite`, `ProductExplain`, `IBU_Style`, `Comment`, `source_url`, `image_rights`, `official_url`, `estimated_fields`) VALUES ('pr0044', 'mk0024', 'Ichii Senshin (一意専心)', 'st0090', 6.0, 45, 45, 2, 2, 3, NULL, '京都の醸造所が年間を通して仕込む定番シリーズの一本で、ベルジャンスタイルの流れをくむIPA。ラカウ、リワカ、モザイクのホップを重ね、トロピカルフルーツと花を思わせる香りが立ちのぼる。ピルスナーとミュンヘンの麦芽に小麦を合わせた土台が、わずかに濁りを帯びた淡い金色と丸みのある口当たりをつくり、苦味は香りを支える位置に置かれている。名のとおり、一点に意識を集めたような輪郭を持つ一杯。', 50, NULL, 'https://kyotobrewing.com/en/products/kbc20-ichii', 'placeholder', 'https://kyotobrewing.com/en/products/kbc20-ichii', 'Color,Clarity,Fruity');
+
+-- pr0045: Stout (d-minoh-stout)
+INSERT INTO `products` (`ProductID`, `MakerID`, `ProductName`, `StyleID`, `Alcohol`, `IBU_all`, `IBU`, `Color`, `Clarity`, `Fruity`, `Favorite`, `ProductExplain`, `IBU_Style`, `Comment`, `source_url`, `image_rights`, `official_url`, `estimated_fields`) VALUES ('pr0045', 'mk0025', 'Stout', 'st0052', 5.5, 35.0, NULL, 9, 4, 1, NULL, '箕面のブルワリーが麦芽とホップだけで組み立てた黒いエール。深く焙かれた麦芽から、焙煎したコーヒーやビターチョコレートを思わせる香りが立つ。光を通さない液面は、夜空の底をのぞき込むような佇まい。ローストの香ばしさと苦味が中心にあり、果実的な要素は前に出てこない。公式にIBUは公表されていないが、飲み口は重くなりすぎず、時間をかけて味わうのに向いたスタウト。', 35.0, NULL, 'https://store.minoh-beer.jp/products/stout', 'placeholder', 'https://www.minoh-beer.jp/products/stout/', 'IBU_all,Color,Clarity,Fruity');
+
+-- pr0047: 太陽のラガー (e-hideji-taiyolager)
+INSERT INTO `products` (`ProductID`, `MakerID`, `ProductName`, `StyleID`, `Alcohol`, `IBU_all`, `IBU`, `Color`, `Clarity`, `Fruity`, `Favorite`, `ProductExplain`, `IBU_Style`, `Comment`, `source_url`, `image_rights`, `official_url`, `estimated_fields`) VALUES ('pr0047', 'mk0027', '太陽のラガー', 'st0088', 5.0, 32, 32, 2, 1, 1, NULL, '宮崎・延岡のブリュワリーが定番として醸すラガー。淡い黄金色の液体は澄みきっていて、光にかざすと真昼の陽射しのような色が残る。香りは穏やかで、麦の甘みとホップのどちらも出しゃばらないところに落ち着いている。下面発酵らしいすっきりとした飲み口ながら苦味の輪郭ははっきりしていて、食事に合わせても存在感が消えない。太陽という名にふさわしく、まだ明るい時間に開けたくなる一本。', 35, NULL, 'https://hideji-beer.jp/lineup/', 'placeholder', 'https://hideji-beer.jp/lineup/', 'Color,Clarity,Fruity');
+
+-- pr0054: 銀河高原ビール 小麦のビール (a-ginga-kogen-komugi)
+INSERT INTO `products` (`ProductID`, `MakerID`, `ProductName`, `StyleID`, `Alcohol`, `IBU_all`, `IBU`, `Color`, `Clarity`, `Fruity`, `Favorite`, `ProductExplain`, `IBU_Style`, `Comment`, `source_url`, `image_rights`, `official_url`, `estimated_fields`) VALUES ('pr0054', 'mk0006', '銀河高原ビール 小麦のビール', 'st0100', 5.5, 11, 11, 2, 3, 3, NULL, '1996年の発売から続く、小麦を主役に据えたヴァイツェン。酵母がもたらすまろやかな含み香と、小麦由来のやさしい口当たりが結びつき、苦味はごく控えめに抑えられている。ホップで押すのではなく、麦と酵母の香りをゆっくり味わうタイプ。名が示すとおり夜空と高原のイメージをまとった全国流通の定番で、インターナショナルビアカップでの金賞をはじめ受賞歴も重ねてきた。缶入りで、日常の食卓にも置きやすい。', 20, NULL, 'https://yohobrewing.com/products/gingakogen', 'placeholder', 'https://yohobrewing.com/products/gingakogen', 'Color,Clarity,Fruity');
+
+-- pr0056: Lupulin Nectar (b-ymarket-lupulin-nectar)
+INSERT INTO `products` (`ProductID`, `MakerID`, `ProductName`, `StyleID`, `Alcohol`, `IBU_all`, `IBU`, `Color`, `Clarity`, `Fruity`, `Favorite`, `ProductExplain`, `IBU_Style`, `Comment`, `source_url`, `image_rights`, `official_url`, `estimated_fields`) VALUES ('pr0056', 'mk0009', 'Lupulin Nectar', 'st0093', 7.5, 11.23, 11.23, 4, 4, 3, NULL, 'Y.MARKET BREWING が手がけるヘイジーIPA。グラスに満たすと向こう側が透けないほど強く濁り、トロピカルフルーツを思わせるジューシーな香りが立ちのぼる。使用ホップは US Cascade、US Mosaic、US Citra、AU Galaxy の四種で、産地の異なるホップを重ねることで果実の印象に厚みを持たせている。苦味は前に出ず、香りと口当たりの滑らかさが主役になる造り。度数は高めに取られているが、飲み口はあくまで柔らかく、冷えた状態から温度が上がるにつれて甘やかな余韻が伸びていく。', 50, NULL, 'https://craftbeer.nagoya/gallery/%e3%83%ab%e3%83%97%e3%83%aa%e3%83%b3%e3%83%8d%e3%82%af%e3%82%bf%e3%83%bc/', 'placeholder', 'https://craftbeer.nagoya/gallery/%e3%83%ab%e3%83%97%e3%83%aa%e3%83%b3%e3%83%8d%e3%82%af%e3%82%bf%e3%83%bc/', 'Color,Clarity,Fruity');
+
+-- pr0057: SPRING VALLEY BREWERY JAPANエール 香 (a-japan-ale-kaori)
+INSERT INTO `products` (`ProductID`, `MakerID`, `ProductName`, `StyleID`, `Alcohol`, `IBU_all`, `IBU`, `Color`, `Clarity`, `Fruity`, `Favorite`, `ProductExplain`, `IBU_Style`, `Comment`, `source_url`, `image_rights`, `official_url`, `estimated_fields`) VALUES ('pr0057', 'mk0010', 'SPRING VALLEY BREWERY JAPANエール 香', 'st0004', 6.0, 40, NULL, NULL, NULL, 3, NULL, 'スプリングバレーブリュワリーが通年で手がけるペールエール。日本産ホップ「MURAKAMI SEVEN」を一部に使い、和柑橘を思わせる爽やかな香りに、いちじくやみかん、マスカットのような果実の気配を重ねている。香という名のとおり、栓を開けた瞬間に立ちのぼるアロマがこのビールの中心にあり、口に含んでからも余韻として長く残る。World Beer Awards 2025 のゴールデンエール部門では、スタイルウィナーに選ばれている。', 40, NULL, 'https://hometap.kirin.co.jp/beer/019802.html', 'placeholder', 'https://hometap.kirin.co.jp/beer/019802.html', 'IBU_all,Fruity');
+
+-- pr0059: ヒメホワイト（缶） (b-isekado-hime-white)
+INSERT INTO `products` (`ProductID`, `MakerID`, `ProductName`, `StyleID`, `Alcohol`, `IBU_all`, `IBU`, `Color`, `Clarity`, `Fruity`, `Favorite`, `ProductExplain`, `IBU_Style`, `Comment`, `source_url`, `image_rights`, `official_url`, `estimated_fields`) VALUES ('pr0059', 'mk0013', 'ヒメホワイト（缶）', 'st0086', 5.0, 25, 25, 1, 2, 3, NULL, '大麦麦芽に小麦麦芽と小麦を重ね、柚子の果皮とコリアンダーを加えて仕込まれたホワイトエール。和の柑橘がもたらす香りにスパイスの気配が寄り添い、口に含むとやわらかな酸味と軽い苦味が続いて、後口はすっきりと引いていく。液色は淡く、小麦を使ったビールらしい軽やかさが全体を通している。伊勢角屋麦酒が缶で届ける一本。', 15, NULL, 'https://www.biyagura.jp/c/allitems/0002', 'placeholder', 'https://www.biyagura.jp/c/allitems/0002', 'Color,Clarity,Fruity');
+
+-- pr0060: エスプレッソスタウト (b-hitachino-espresso-stout)
+INSERT INTO `products` (`ProductID`, `MakerID`, `ProductName`, `StyleID`, `Alcohol`, `IBU_all`, `IBU`, `Color`, `Clarity`, `Fruity`, `Favorite`, `ProductExplain`, `IBU_Style`, `Comment`, `source_url`, `image_rights`, `official_url`, `estimated_fields`) VALUES ('pr0060', 'mk0016', 'エスプレッソスタウト', 'st0073', 7.0, 35.0, 35.0, 9, NULL, 1, NULL, '常陸野ネストビールが、麦芽とホップに大麦とコーヒー豆を合わせて仕込む濃色ビール。深煎りのコーヒーを思わせる香りが強く立ち、公式の味わいチャートでも香りの項目が最上位に置かれている。ローストの香ばしさと苦味が中心にあり、果実的な甘さには寄らない構成。黒く沈んだ液色は、光を吸い込む天体のような静けさをたたえる。食後の時間や、甘さのある菓子と合わせても輪郭を失わない飲みごたえがある。', 30.0, NULL, 'https://kiuchibrewery.co.jp/products/beer/list/espresso-stout/', 'placeholder', 'https://kiuchibrewery.co.jp/products/beer/list/espresso-stout/', 'Color,Fruity');
+
+-- pr0061: ゴールデンエール (b-ohlaho-golden-ale)
+INSERT INTO `products` (`ProductID`, `MakerID`, `ProductName`, `StyleID`, `Alcohol`, `IBU_all`, `IBU`, `Color`, `Clarity`, `Fruity`, `Favorite`, `ProductExplain`, `IBU_Style`, `Comment`, `source_url`, `image_rights`, `official_url`, `estimated_fields`) VALUES ('pr0061', 'mk0017', 'ゴールデンエール', 'st0097', 5.0, 35, 35, 2, NULL, 2, NULL, 'オラホビールが定番として造るゴールデンエール。柑橘系ホップの香りが軽やかに立ち、色合いは名のとおり淡い金色に収まっている。苦味は輪郭を残しつつも重くならず、飲み口はすっきりとした方向へまとめられた一本。常温で保存でき、賞味期間も長めに設定されているため、買い置きしておいて飲みたい夜に開けやすいのもありがたい。食事に寄り添う場面から、何もない夜にただ一本開ける場面まで、幅広く付き合える性格を持っている。', 30, NULL, 'https://ohlahobeer.com/goldenale/', 'placeholder', 'https://ohlahobeer.com/goldenale/', 'Color,Fruity');
+
+-- pr0065: 富良野大麦 (c-taisetsujibeer-furanoohmugi)
+INSERT INTO `products` (`ProductID`, `MakerID`, `ProductName`, `StyleID`, `Alcohol`, `IBU_all`, `IBU`, `Color`, `Clarity`, `Fruity`, `Favorite`, `ProductExplain`, `IBU_Style`, `Comment`, `source_url`, `image_rights`, `official_url`, `estimated_fields`) VALUES ('pr0065', 'mk0020', '富良野大麦', 'st0097', 5.0, 30, NULL, NULL, NULL, 1, NULL, '大雪地ビールが、主原料に富良野産の大麦、副原料に北海道産の米と麦芽を用いて仕込む一本。香りづくりの軸に置かれているのはアロマホップで、爽やかな香りが立ちのぼる。産地の名を冠したとおり、北海道の畑から集めた原料で骨格を組み立てた構成が持ち味で、スタイルとしてはゴールデンエールに分類されている。', 30, NULL, 'https://craft.ji-beer.com/product/furano-ohmugi/', 'placeholder', 'https://craft.ji-beer.com/product/furano-ohmugi/', 'IBU_all,Fruity');
+
+-- pr0067: Suruga Bay Imperial IPA (d-baird-surugabayimperialipa)
+INSERT INTO `products` (`ProductID`, `MakerID`, `ProductName`, `StyleID`, `Alcohol`, `IBU_all`, `IBU`, `Color`, `Clarity`, `Fruity`, `Favorite`, `ProductExplain`, `IBU_Style`, `Comment`, `source_url`, `image_rights`, `official_url`, `estimated_fields`) VALUES ('pr0067', 'mk0022', 'Suruga Bay Imperial IPA', 'st0018', 8.5, 90, 90, 6, 1, 2, NULL, 'フロアモルテッドのマリスオターにピルスナー麦芽、ライ麦芽、カラメル系のモルトを合わせ、スコティッシュエール酵母で発酵させたインペリアルIPA。深い琥珀色の液体は澄んでいて、注ぐと松脂を思わせる樹脂感と柑橘のホップ香が立ちのぼる。ライ由来のかすかなスパイス感と厚いモルトの土台が、鋭く伸びる苦味を受け止める構成で、温度が上がるにつれて表情が移り変わっていく。駿河湾の名を冠した、腰を据えて向き合いたい一本。', 82.5, NULL, 'https://bairdbeer.com/products/suruga-bay-imperial-ipa', 'placeholder', 'https://bairdbeer.com/products/suruga-bay-imperial-ipa', 'Color,Clarity,Fruity');
+
+-- pr0069: New Ichigo Ichie (d-kyotobrewing-newichigoichie)
+INSERT INTO `products` (`ProductID`, `MakerID`, `ProductName`, `StyleID`, `Alcohol`, `IBU_all`, `IBU`, `Color`, `Clarity`, `Fruity`, `Favorite`, `ProductExplain`, `IBU_Style`, `Comment`, `source_url`, `image_rights`, `official_url`, `estimated_fields`) VALUES ('pr0069', 'mk0024', 'New Ichigo Ichie', 'st0098', 5.0, 20, 20, 2, 2, 3, NULL, '二次発酵をかけて仕上げるセゾン。カスケードとモチュエカのホップが柑橘とトロピカルな果実の香りを描き、小麦を含む麦芽の構成が軽い濁りとやわらかな口当たりをもたらす。淡い麦わら色の液体は苦味を強く立てず、酵母由来の乾いた後口がすっと引いていく。京都の醸造所が年間定番として醸す一本で、一度きりの出会いを指す言葉を名に冠している。', 20, NULL, 'https://kyotobrewing.com/en/products/kbc20-ichigo', 'placeholder', 'https://kyotobrewing.com/en/products/kbc20-ichigo', 'Color,Clarity,Fruity');
+
+-- pr0073: KIRISHIMA BEER PILSNER (e-kirishima-pilsner)
+INSERT INTO `products` (`ProductID`, `MakerID`, `ProductName`, `StyleID`, `Alcohol`, `IBU_all`, `IBU`, `Color`, `Clarity`, `Fruity`, `Favorite`, `ProductExplain`, `IBU_Style`, `Comment`, `source_url`, `image_rights`, `official_url`, `estimated_fields`) VALUES ('pr0073', 'mk0028', 'KIRISHIMA BEER PILSNER', 'st0069', 5.0, 37.5, NULL, NULL, NULL, NULL, NULL, '焼酎づくりで知られる霧島酒造が展開するビールブランドの一本。醸造は直営施設内の霧の蔵ブルワリーが担い、仕込み水には霧島裂罅水と呼ばれる水が使われている。ジャーマンスタイルに分類されるピルスナーで、熱処理をしない生ビールとして流通する。内容量は330ミリリットル。苦味の数値は公式には公開されていない。', 37.5, NULL, 'https://www.kirishima-fg.jp/post_beer/pilsner', 'placeholder', 'https://www.kirishima-fg.jp/post_beer/pilsner', 'IBU_all');
+
+-- pr0074: 道後ビール ケルシュ(坊っちゃんビール) (e-dogo-kolsch)
+INSERT INTO `products` (`ProductID`, `MakerID`, `ProductName`, `StyleID`, `Alcohol`, `IBU_all`, `IBU`, `Color`, `Clarity`, `Fruity`, `Favorite`, `ProductExplain`, `IBU_Style`, `Comment`, `source_url`, `image_rights`, `official_url`, `estimated_fields`) VALUES ('pr0074', 'mk0029', '道後ビール ケルシュ(坊っちゃんビール)', 'st0041', 5.0, 23, NULL, NULL, NULL, 2, NULL, '水口酒造が道後の名を冠して展開するビールのうち、ケルンに発するスタイルを下敷きにした一本。麦芽はドイツやカナダで製造されたものを使い、大麦とホップを合わせて仕込む。口に含んだ印象はマイルドで、後半に切れ味が立ちあがってすっと引いていく。香りにはフルーティーな要素があり、全体としては軽やかさの側に寄った造り。「坊っちゃんビール」という愛称を併せ持つ。', 23, NULL, 'https://minakuchi-shuzo.jp/products/%E9%81%93%E5%BE%8C%E3%83%93%E3%83%BC%E3%83%AB-%E3%82%B1%E3%83%AB%E3%82%B7%E3%83%A5-%E5%9D%8A%E3%81%A3%E3%81%A1%E3%82%83%E3%82%93%E3%83%93%E3%83%BC%E3%83%AB', 'placeholder', 'https://minakuchi-shuzo.jp/products/%E9%81%93%E5%BE%8C%E3%83%93%E3%83%BC%E3%83%AB-%E3%82%B1%E3%83%AB%E3%82%B7%E3%83%A5-%E5%9D%8A%E3%81%A3%E3%81%A1%E3%82%83%E3%82%93%E3%83%93%E3%83%BC%E3%83%AB', 'IBU_all,Fruity');
+
+-- pr0077: Harmonic Dreams (a-harmonic-dreams)
+INSERT INTO `products` (`ProductID`, `MakerID`, `ProductName`, `StyleID`, `Alcohol`, `IBU_all`, `IBU`, `Color`, `Clarity`, `Fruity`, `Favorite`, `ProductExplain`, `IBU_Style`, `Comment`, `source_url`, `image_rights`, `official_url`, `estimated_fields`) VALUES ('pr0077', 'mk0002', 'Harmonic Dreams', 'st0084', 8.0, 50, NULL, 5, 2, 2, NULL, 'シトラ、ストラータ、そしてアイダホ7を通常品とCGXの二種で重ねた、ダンクさを前面に押し出したウエストコーストスタイルのダブルIPA。グレープフルーツやオレンジのような柑橘感の奥から、ウッディで青草を思わせるニュアンスが顔を出し、香りの層が時間とともに移り変わっていく。シリーズとしては十作目にあたるリリースで、ホップの組み合わせを変えながら重ねてきた試行の延長線上にある一本。苦味の数値は公開されていないが、西海岸らしい輪郭のはっきりした造りになっている。', 50, NULL, 'https://www.westcoastbrewing.jp/beer/harmonic-dreams/', 'placeholder', 'https://www.westcoastbrewing.jp/beer/harmonic-dreams/', 'IBU_all,Color,Clarity,Fruity');
+
+-- pr0078: Magnolia (a-magnolia)
+INSERT INTO `products` (`ProductID`, `MakerID`, `ProductName`, `StyleID`, `Alcohol`, `IBU_all`, `IBU`, `Color`, `Clarity`, `Fruity`, `Favorite`, `ProductExplain`, `IBU_Style`, `Comment`, `source_url`, `image_rights`, `official_url`, `estimated_fields`) VALUES ('pr0078', 'mk0004', 'Magnolia', 'st0094', 8.0, 15, 15, NULL, NULL, 3, NULL, 'ピルスナーモルトとエクストラペールのプレミアムピルスナーモルト、マリスオッターを組み合わせた麦芽構成に、アイダホ7とエルドラドを軸にしたホップを重ねたダブルIPA。同じ品種の加工ホップも併用し、香りの層を厚くしている。発酵にはイングリッシュエールイーストを用いる。柑橘とパイナップルを思わせるアロマが立ちのぼる一方、苦味は前に出さない設計で、飲み口の厚みと香りで運ぶタイプ。度数は高めに取られており、ゆっくり時間をかけて向き合いたい一本。', 60, NULL, 'https://verterebrew.com/brewlog/magnolia/', 'placeholder', 'https://verterebrew.com/brewlog/magnolia/', 'Fruity');
+
+-- pr0082: SPRING VALLEY BREWERY シルクエール 白 (a-silk-ale-shiro)
+INSERT INTO `products` (`ProductID`, `MakerID`, `ProductName`, `StyleID`, `Alcohol`, `IBU_all`, `IBU`, `Color`, `Clarity`, `Fruity`, `Favorite`, `ProductExplain`, `IBU_Style`, `Comment`, `source_url`, `image_rights`, `official_url`, `estimated_fields`) VALUES ('pr0082', 'mk0010', 'SPRING VALLEY BREWERY シルクエール 白', 'st0021', 5.5, 22.5, NULL, NULL, 3, 2, NULL, '小麦麦芽を含む麦芽にホップとコーンを合わせ、濾過をかけずに仕上げたアメリカンスタイルのウィートビール。にごりを残した液体で、加熱処理を経たうえで1リットルの容器に詰められている。香りは華やかな側に振れ、泡立ちとまろやかさが手ざわりをつくる。World Beer Awards 2025 の American Style Wheat Beer 部門で金を、International Beer Cup 2024 の酵母入りライトアメリカン・ウィートビール部門で金賞を得ている。', 22.5, NULL, 'https://hometap.kirin.co.jp/beer/020384.html', 'placeholder', 'https://hometap.kirin.co.jp/beer/020384.html', 'IBU_all,Clarity,Fruity');
+
+-- pr0086: アンバーエール (b-ohlaho-amber-ale)
+INSERT INTO `products` (`ProductID`, `MakerID`, `ProductName`, `StyleID`, `Alcohol`, `IBU_all`, `IBU`, `Color`, `Clarity`, `Fruity`, `Favorite`, `ProductExplain`, `IBU_Style`, `Comment`, `source_url`, `image_rights`, `official_url`, `estimated_fields`) VALUES ('pr0086', 'mk0017', 'アンバーエール', 'st0003', 5.0, 45, 45, 5, NULL, 1, NULL, 'オラホビールのアンバーエール。ロースト麦芽に由来するリッチな香りが立ち、色合いは深みのある琥珀に寄る。麦の香ばしさと甘みを土台に、ホップの苦味がしっかり伸びる構成で、飲みごたえと後口の切れの両方を持たせた造り。インターナショナル・ビアカップ2020では銀賞を受けている。常温で保存でき、賞味期間も長めに設定されているため、季節を選ばず手元に置いておける。ローストした肉や、焦がした香りのある料理と合わせたい一本。', 35, NULL, 'https://ohlahobeer.com/amberale/', 'placeholder', 'https://ohlahobeer.com/amberale/', 'Color,Fruity');
