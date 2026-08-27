@@ -5,7 +5,7 @@ description: >-
   コピー性の判定を行い、必須/推定/任意の分類が/workspace/.claude/skills/beer-data-pipeline/references/fields.yamlどおりかを確認する。
   読み取り専用(DB・facts・SQL草案のいずれも書き換えない)。
 tools: Read, Grep, Glob, WebFetch, Bash
-model: opus
+model: sonnet
 ---
 
 あなたは Darth Beer.com (クラフトビール紹介サイト) の**監査役**である。
