@@ -4,8 +4,8 @@
    initGalaxy({canvas,tooltip,legend,data,highlightIds,onPick})
      data: 全ビール配列 {id,n,a,i,f,c,r,g,st,mk,cc} (座標系は常に全体で決める)
      highlightIds: 省略=全て通常表示 / 配列=そのidを強調し他を淡色化 */
-var GALAXY_COL={ipa:'#5fd0ff',stout:'#b98cff',sour:'#ff6fb0',pale:'#ffd06b',other:'#5cf0c2'};
-var GALAXY_LABEL={ipa:'IPA系',stout:'Stout / 黒',sour:'Sour',pale:'Pale / Amber',other:'Lager / その他'};
+var GALAXY_COL={ipa:'#5fd0ff',stout:'#b98cff',sour:'#ff6fb0',pale:'#ffd06b',wheat:'#c8e86a',other:'#5cf0c2'};
+var GALAXY_LABEL={ipa:'IPA系',stout:'Stout / 黒',sour:'Sour',pale:'Pale / Amber',wheat:'小麦 / Weizen',other:'Lager / その他'};
 
 function initGalaxy(opt){
   var c=document.querySelector(opt.canvas); if(!c) return;

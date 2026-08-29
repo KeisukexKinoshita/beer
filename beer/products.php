@@ -31,6 +31,7 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
       <button class="f-chip" data-group="stout">Stout / 黒</button>
       <button class="f-chip" data-group="sour">Sour</button>
       <button class="f-chip" data-group="pale">Pale / Amber</button>
+      <button class="f-chip" data-group="wheat">小麦 / Weizen</button>
       <button class="f-chip" data-group="other">Lager / その他</button>
     </div>
     <div class="f-right">

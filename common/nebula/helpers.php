@@ -45,7 +45,17 @@ function country_name($cc) {
 function style_group($family, $name) {
     $hay = (string)$family . ' ' . (string)$name;
     if (stripos($hay, 'sour') !== false || stripos($hay, 'wild') !== false) return 'sour';
-    if ((string)$family === 'IPA' || stripos($name, 'ipa') !== false) return 'ipa';
+    // Black IPA は American Black Ale の呼称違い(規律 §9-1 2-b)。IPA 系に寄せる。
+    // 「Black Lager」は Ale ではないのでここには入らない。
+    if ((string)$family === 'IPA' || stripos($name, 'ipa') !== false
+        || stripos($name, 'black ale') !== false) return 'ipa';
+    // 小麦ビール。IPA 判定の後に置くことで「White IPA」は IPA 側に残る。
+    // 「White Ale」はベルギー系の白ビール(=ヴィットビア)で、実質 Witbier と同じ
+    // スタイルなので、FamilyName が Belgian Styles でも小麦として扱う。
+    if ((string)$family === 'Weizen' || (string)$family === 'Wheat Beers'
+        || stripos($name, 'weizen') !== false || stripos($name, 'weisse') !== false
+        || stripos($name, 'wheat')  !== false || stripos($name, 'witbier') !== false
+        || stripos($name, 'white ale') !== false) return 'wheat';
     if (stripos($hay, 'stout') !== false || stripos($hay, 'porter') !== false) return 'stout';
     if (stripos($family, 'pale') !== false || stripos($family, 'amber') !== false
         || stripos($family, 'belgian') !== false || stripos($family, 'brown') !== false) return 'pale';
@@ -59,6 +69,7 @@ function group_meta($g) {
         'stout' => ['#b98cff', 'Stout / 黒'],
         'sour'  => ['#ff6fb0', 'Sour'],
         'pale'  => ['#ffd06b', 'Pale / Amber'],
+        'wheat' => ['#c8e86a', '小麦 / Weizen'],
         'other' => ['#5cf0c2', 'Lager / その他'],
     ];
     return $m[$g] ?? $m['other'];

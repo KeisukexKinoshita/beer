@@ -7,7 +7,7 @@
                    role="img" aria-label="…"></canvas>
    値が欠けている場合は中央値で描く(欠損でも絵が壊れない)。 */
 (function () {
-  var GC = { ipa:'#5fd0ff', stout:'#b98cff', sour:'#ff6fb0', pale:'#ffd06b', other:'#5cf0c2' };
+  var GC = { ipa:'#5fd0ff', stout:'#b98cff', sour:'#ff6fb0', pale:'#ffd06b', wheat:'#c8e86a', other:'#5cf0c2' };
 
   /* ビールの色(1-10) → 実際のビール色に近いRGB */
   function beerColor(c) {
