@@ -4,8 +4,15 @@
    initGalaxy({canvas,tooltip,legend,data,highlightIds,onPick})
      data: 全ビール配列 {id,n,a,i,f,c,r,g,st,mk,cc} (座標系は常に全体で決める)
      highlightIds: 省略=全て通常表示 / 配列=そのidを強調し他を淡色化 */
-var GALAXY_COL={ipa:'#5fd0ff',stout:'#b98cff',sour:'#ff6fb0',pale:'#ffd06b',wheat:'#c8e86a',other:'#5cf0c2'};
-var GALAXY_LABEL={ipa:'IPA系',stout:'Stout / 黒',sour:'Sour',pale:'Pale / Amber',wheat:'小麦 / Weizen',other:'Lager / その他'};
+/* スタイルグループの色とラベルは PHP の group_map() が単一の出所。
+   common/nebula/footer.php が window.STYLE_GROUPS として渡す。
+   ここは値を持たず、それを展開するだけにしてある(以前は同じ値が4ファイルに重複していた)。
+   JS 単体で開かれた場合に落ちないよう最小限の既定値だけ持つ。 */
+var GALAXY_COL={}, GALAXY_LABEL={};
+(function(){
+  var G = (typeof window!=='undefined' && window.STYLE_GROUPS) || {other:{c:'#5cf0c2',l:'その他'}};
+  Object.keys(G).forEach(function(k){ GALAXY_COL[k]=G[k].c; GALAXY_LABEL[k]=G[k].l; });
+})();
 
 function initGalaxy(opt){
   var c=document.querySelector(opt.canvas); if(!c) return;

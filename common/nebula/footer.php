@@ -6,6 +6,8 @@
     <div>クラフトビールを宇宙のように旅する</div>
   </div>
 </footer>
+<?php /* スタイルグループの色とラベル。定義は helpers.php の group_map() が単一の出所 */ ?>
+<script>window.STYLE_GROUPS = <?= json_encode(group_map_js(), JSON_UNESCAPED_UNICODE) ?>;</script>
 <script src="/assets/js/nebula-bg.js"></script>
 <?php foreach (($pageJs ?? []) as $js): ?><script src="<?= e($js) ?>"></script>
 <?php endforeach; ?>

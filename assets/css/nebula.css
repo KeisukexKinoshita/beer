@@ -18,7 +18,10 @@
   --mag:#ff5ca8; --vio:#a06bff; --teal:#4be0c8; --amber:#ffcf6b;
   --grad:linear-gradient(100deg,var(--mag),var(--vio) 45%,var(--teal));
   /* スタイル別カラー (銀河の天体・カードのハロー・凡例) */
-  --st-ipa:#5fd0ff; --st-stout:#b98cff; --st-sour:#ff6fb0; --st-pale:#ffd06b; --st-wheat:#c8e86a; --st-other:#5cf0c2;
+  /* スタイルグループの色は PHP の group_map() が単一の出所(window.STYLE_GROUPS 経由で
+     JS が使う)。ここに CSS 変数として重複させていたが、どこからも参照されて
+     いなかったため削除した。CSS から色が要る場面が出たら、
+     footer.php で :root にインラインで流し込むのが筋。 */
   /* タイポ */
   --f-disp:"M PLUS 1",-apple-system,BlinkMacSystemFont,sans-serif;
   --f-body:"Noto Sans JP",-apple-system,sans-serif;

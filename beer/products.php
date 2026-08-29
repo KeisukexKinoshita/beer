@@ -27,12 +27,10 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
   <div class="filterbar">
     <div class="f-chips">
       <button class="f-chip on" data-group="all">すべて</button>
-      <button class="f-chip" data-group="ipa">IPA系</button>
-      <button class="f-chip" data-group="stout">Stout / 黒</button>
-      <button class="f-chip" data-group="sour">Sour</button>
-      <button class="f-chip" data-group="pale">Pale / Amber</button>
-      <button class="f-chip" data-group="wheat">小麦 / Weizen</button>
-      <button class="f-chip" data-group="other">Lager / その他</button>
+      <?php /* 定義は helpers.php の group_map() が単一の出所。手で並べない */ ?>
+      <?php foreach (group_map() as $gk => $gv): ?>
+      <button class="f-chip" data-group="<?= e($gk) ?>"><?= e($gv[1]) ?></button>
+      <?php endforeach; ?>
     </div>
     <div class="f-right">
       <span class="f-count-wrap"><b id="f-count"><?= $total ?></b> 件</span>

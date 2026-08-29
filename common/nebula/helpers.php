@@ -62,8 +62,19 @@ function style_group($family, $name) {
     return 'other';
 }
 
-/** グループ→ {color,label} */
-function group_meta($g) {
+/**
+ * スタイルグループの定義。**色とラベルの単一の出所はここ。**
+ *
+ * 以前は同じ値が4ファイル(ここ / nebula.css の CSS変数 / galaxy.js の GALAXY_COL・
+ * GALAXY_LABEL / beerglass.js の GC)に重複し、さらに beer/products.php の
+ * 絞り込みチップも別に持っていた。グループを1つ増やすのに5箇所を揃える必要があり、
+ * 実際に wheat を足したときに全部を手で直した。
+ *
+ * いまは PHP から window.STYLE_GROUPS として JS へ渡し(common/nebula/footer.php)、
+ * 絞り込みチップもこの配列から生成する。**足すときはこの1箇所だけ**。
+ * 表示順は凡例・チップの並び順になる。
+ */
+function group_map() {
     static $m = [
         'ipa'   => ['#5fd0ff', 'IPA系'],
         'stout' => ['#b98cff', 'Stout / 黒'],
@@ -72,7 +83,20 @@ function group_meta($g) {
         'wheat' => ['#c8e86a', '小麦 / Weizen'],
         'other' => ['#5cf0c2', 'Lager / その他'],
     ];
+    return $m;
+}
+
+/** グループ→ {color,label} */
+function group_meta($g) {
+    $m = group_map();
     return $m[$g] ?? $m['other'];
+}
+
+/** JS へ渡す形 {key: {c: 色, l: ラベル}} */
+function group_map_js() {
+    $out = [];
+    foreach (group_map() as $k => $v) { $out[$k] = ['c' => $v[0], 'l' => $v[1]]; }
+    return $out;
 }
 
 /** アクセシブルな星評価マークアップ (視覚★ + 数値 + aria-label) */
