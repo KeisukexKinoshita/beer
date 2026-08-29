@@ -106,10 +106,27 @@ function is_estimated($beer, $field) {
     return in_array($field, array_map('trim', explode(',', $raw)), true);
 }
 
-/** 推定値の注記(該当しなければ空文字) */
+/** 推定値の注記(該当しなければ空文字)。詳細ページ用 */
 function est_note($beer, $field) {
     return is_estimated($beer, $field)
         ? ' <span class="est-note" title="公式情報が無いため、同じスタイルの典型値から推定した値です">推定</span>'
+        : '';
+}
+
+/**
+ * 推定値の注記(一覧カード用の小さい版)。
+ *
+ * 一覧・トップ・ブリュワリー詳細・Type別詳細のカードは、以前は注記を出しておらず
+ * **実測値と推定値が同じ見た目**だった。IBU_all は152件中86件が推定なので、
+ * 一覧を眺める人は半数以上が推定だと分からない状態だった(仕様の「黙って推定しない」に反する)。
+ *
+ * 記号(* など)にすると凡例なしでは意味が伝わらず、タッチ環境ではツールチップも出ない。
+ * **詳細ページと同じ「推定」という語を、小さいサイズで使う**。
+ * サイト内で語彙を増やさないほうが読み手に負担が少ない。
+ */
+function est_mark($beer, $field) {
+    return is_estimated($beer, $field)
+        ? '<span class="est-mark" title="公式情報が無いため、同じスタイルの典型値から推定した値です">推定</span>'
         : '';
 }
 
@@ -118,7 +135,7 @@ function est_note($beer, $field) {
 /** 全ビール (maker/style を結合)。一覧・銀河・詳細で共通 */
 function all_beers() {
     $sql = "SELECT p.ProductID, p.ProductName, p.Alcohol, p.IBU_all, p.IBU, p.Fruity, p.Color,
-                   p.Clarity, p.Favorite, p.ProductExplain,
+                   p.Clarity, p.Favorite, p.ProductExplain, p.estimated_fields,
                    p.StyleID, s.StyleName, s.FamilyName,
                    p.MakerID, m.MakerName, m.country_code, m.latitude, m.longitude
             FROM products p
