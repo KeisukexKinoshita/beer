@@ -17,10 +17,28 @@ function db() {
 /** htmlspecialchars 短縮 */
 function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
 
-/** DECIMAL値の末尾ゼロを落とす (20.000→20, 7.500→7.5) */
+/** DECIMAL値の末尾ゼロを落とす (20.000→20, 7.500→7.5)
+ *  **値があることが分かっている場合にだけ使う。** 未計測かもしれない値は fmt_unit() を通すこと
+ *  (この関数は (float)null → 0 とするので、未計測が「0」になる)。 */
 function fmt_num($v) {
     $t = rtrim(rtrim(number_format((float)$v, 3, '.', ''), '0'), '.');
     return $t === '' ? '0' : $t;
+}
+
+/** 未計測(NULL)かどうか。0 は「本当に0」であって未計測ではない */
+function is_unmeasured($v) { return $v === null || $v === ''; }
+
+/**
+ * スペック値の表示。**未計測(NULL)は 0 ではない。**
+ *
+ * 未計測を 0 と描くと「苦味がゼロのビール」「アルコール度0%」という存在しない事実を
+ * 読み手に伝えてしまう。DB 側の同じ誤り(未計測が NULL ではなく 0 で記録されていた15件)は
+ * db/seeds/008_fix_ibu_zero_20260829.sql で直したが、表示側は (float)null → 0 のまま
+ * 残っていた —— つまり DB を NULL に直しても画面には「0」と出ていた。
+ */
+function fmt_unit($v, $unit = '') {
+    if (is_unmeasured($v)) return '—';
+    return fmt_num($v) . $unit;
 }
 
 /** 国コード(JP等) → 国旗絵文字 */
@@ -101,6 +119,12 @@ function group_map_js() {
 
 /** アクセシブルな星評価マークアップ (視覚★ + 数値 + aria-label) */
 function stars_html($rating) {
+    // 未評価(NULL)を 0 点として描かない。152銘柄中114銘柄が未評価で、
+    // そのすべてが「5段階評価で0.0点」と読み上げられていた(fmt_unit() と同じ誤り)。
+    if (is_unmeasured($rating)) {
+        return '<span class="rate rate-none" role="img" aria-label="評価はまだありません">'
+             . '☆☆☆☆☆</span>';
+    }
     $r = (float)$rating;
     $full = (int)round($r);
     $full = max(0, min(5, $full));
@@ -116,10 +140,12 @@ function stars_html($rating) {
  */
 function beer_glass_tag($b, $class = '') {
     $g = style_group($b['FamilyName'] ?? '', $b['StyleName'] ?? '');
+    // 読み上げにも「未計測」がそのまま伝わるよう fmt_unit() を通す
+    // (以前は fmt_num() で、未計測が「IBU0 から生成」と読まれていた)
     $label = ($b['ProductName'] ?? 'このビール') . ' のイメージ（'
-           . '色' . fmt_num($b['Color'] ?? '') . '・'
-           . 'アルコール度' . fmt_num($b['Alcohol'] ?? '') . '%・'
-           . 'IBU' . fmt_num($b['IBU_all'] ?? '') . ' から生成）';
+           . '色' . fmt_unit($b['Color'] ?? null) . '・'
+           . 'アルコール度' . fmt_unit($b['Alcohol'] ?? null, '%') . '・'
+           . 'IBU' . fmt_unit($b['IBU_all'] ?? null) . ' から生成）';
     return '<canvas class="beerglass ' . e($class) . '"'
          . ' data-bid="' . e($b['ProductID'] ?? '') . '"'
          . ' data-c="'   . e($b['Color'] ?? '') . '"'

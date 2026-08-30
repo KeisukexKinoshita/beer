@@ -108,6 +108,8 @@ section.blk{padding:66px 0;border-top:1px solid var(--line)}
 .bcard .meta{margin-top:auto;display:flex;justify-content:space-between;align-items:center;font-size:12px;
   color:var(--muted);font-variant-numeric:tabular-nums;padding-top:9px;border-top:1px solid var(--line)}
 .rate{color:var(--amber);letter-spacing:1px;font-size:12px}
+/* 未評価。星は出すが色を落として「0点」と読ませない */
+.rate-none{color:var(--muted);opacity:.55}
 
 /* ---- 7. Breweryカード ---- */
 .grid-br{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:20px}

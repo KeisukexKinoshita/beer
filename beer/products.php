@@ -62,7 +62,7 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
         <h4><?= e($b['ProductName']) ?></h4>
         <div class="mk"><?= flag($b['country_code']) ?> <?= e($b['MakerName']) ?></div>
         <div class="meta">
-          <span><?= fmt_num($b['Alcohol']) ?>% · IBU<?= fmt_num($b['IBU_all']) ?><?= est_mark($b,'IBU_all') ?></span>
+          <span><?= fmt_unit($b['Alcohol'],'%') ?> · IBU<?= fmt_unit($b['IBU_all']) ?><?= est_mark($b,'IBU_all') ?></span>
           <?= stars_html($b['Favorite']) ?>
         </div>
       </div>
