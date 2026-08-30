@@ -79,7 +79,10 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
   <p>当サイトからリンクした外部サイトの内容について、当サイトは責任を負いません。</p>
 
   <h2>8. お問い合わせ</h2>
-  <p><a href="/about.php">運営者情報</a>のページに記載しています。</p>
+  <p>このポリシーに関するお問い合わせ、掲載内容の訂正のご依頼は、
+     <a href="https://docs.google.com/forms/d/e/1FAIpQLScgFCJ3dqGIYd5M2V3rX_mEuOQ8g34xY9siXF7OOLAQ4wj4RA/viewform?usp=sf_link" target="_blank" rel="noopener nofollow">お問い合わせフォーム</a>よりお寄せください。</p>
+  <p>掲載しているブリュワリー・商品の関係者の方で、記載の修正や削除をご希望の場合も、
+     同じフォームからご連絡ください。確認のうえ対応します。</p>
 
   <h2>9. 改定</h2>
   <p>このポリシーは必要に応じて改定します。改定した場合は、このページに最終更新日を示します。</p>

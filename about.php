@@ -46,7 +46,8 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
     <tbody>
       <tr><th>サイト名</th><td>Darth Beer.com</td></tr>
       <tr><th>運営者</th><td><!-- TODO(公開前): 表示名を入れる -->（準備中）</td></tr>
-      <tr><th>お問い合わせ</th><td><!-- TODO(公開前): 連絡手段を入れる -->（準備中）</td></tr>
+      <tr><th>お問い合わせ</th><td><a href="https://docs.google.com/forms/d/e/1FAIpQLScgFCJ3dqGIYd5M2V3rX_mEuOQ8g34xY9siXF7OOLAQ4wj4RA/viewform?usp=sf_link" target="_blank" rel="noopener nofollow">お問い合わせフォーム</a><br>
+        <span class="doc-note">Google フォームが開きます。返信が必要な場合はメールアドレスをご記入ください。</span></td></tr>
       <tr><th>営利性</th><td>非営利の個人サイトです。商品の販売は行っていません。</td></tr>
     </tbody>
   </table>

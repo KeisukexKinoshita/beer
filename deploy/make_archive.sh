@@ -22,7 +22,7 @@ OUT="${1:-/tmp/claude-0/beer-deploy.tar.gz}"
 mkdir -p "$(dirname "$OUT")"
 git archive --format=tar.gz --prefix=html/ -o "$OUT" HEAD \
   index.php style.css chartjs-plugin-datalabels.min.js googlebb691fb861bc6308.html \
-  robots.txt sitemap.php privacy.php about.php \
+  robots.txt ads.txt sitemap.php privacy.php about.php \
   common post style brewery beer assets \
   $(git ls-files img | grep -v '^img/product/' | tr '\n' ' ')
 echo "archive: $OUT ($(du -h "$OUT" | cut -f1))"
