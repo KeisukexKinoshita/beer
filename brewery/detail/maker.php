@@ -51,7 +51,7 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
       <?php endif; ?>
       <?php if (!empty($maker['URL1'])): ?>
         <p style="margin-top:12px;font-size:13px">公式サイト：
-          <a href="<?= e($maker['URL1']) ?>" target="_blank" rel="noopener" style="color:var(--teal);word-break:break-all"><?= e($maker['URL1']) ?></a></p>
+          <a href="<?= e($maker['URL1']) ?>" target="_blank" rel="noopener nofollow" style="color:var(--teal);word-break:break-all"><?= e($maker['URL1']) ?></a></p>
       <?php endif; ?>
     </div>
 

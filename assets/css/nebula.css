@@ -159,6 +159,28 @@ canvas.radar{width:100%;aspect-ratio:1/1;display:block}
 
 /* ---- 11. フッター ---- */
 .site-footer{border-top:1px solid var(--line);padding:42px 0;color:var(--faint);font-size:12.5px}
+.foot-nav{display:flex;gap:22px;flex-wrap:wrap}
+.foot-nav a{color:var(--muted)}
+.foot-nav a:hover{color:var(--teal)}
+.foot-note{margin-top:14px;color:var(--faint)}
+
+/* 規約・運営者情報など、読ませる文書のページ */
+.doc{max-width:74ch;padding-top:46px;padding-bottom:60px}
+.doc-h1{font-family:var(--f-disp);font-size:clamp(26px,4vw,38px);font-weight:800;
+  line-height:1.25;margin:6px 0 14px;text-wrap:balance}
+.doc-lead{color:var(--muted);font-size:15px;line-height:1.95;margin-bottom:34px}
+.doc h2{font-family:var(--f-disp);font-size:18px;font-weight:700;color:var(--teal);
+  margin:38px 0 12px;padding-top:18px;border-top:1px solid var(--line)}
+.doc p{color:var(--ink);font-size:14.5px;line-height:2;margin:0 0 14px}
+.doc ul{margin:0 0 18px;padding-left:1.15em;color:var(--ink);font-size:14.5px;line-height:2}
+.doc li{margin-bottom:8px}
+.doc a{color:var(--teal)}
+.doc-note{color:var(--faint);font-size:13px}
+.tablewrap{overflow-x:auto;margin:0 0 20px}
+.doc-table{border-collapse:collapse;width:100%;font-size:13.5px;line-height:1.85;min-width:520px}
+.doc-table th,.doc-table td{border:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}
+.doc-table thead th{color:var(--teal);font-weight:700;white-space:nowrap}
+.doc-table tbody th{color:var(--muted);font-weight:500;white-space:nowrap;width:9em}
 
 /* ---- 11b. ヒーロー ---- */
 .hero{padding:70px 0 34px}

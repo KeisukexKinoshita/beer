@@ -70,7 +70,7 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
           <div class="v"><?= stars_html($beer['Favorite']) ?> <?= is_unmeasured($beer['Favorite']) ? '未評価' : number_format((float)$beer['Favorite'],1) ?></div></div>
         <?php if (!empty($beer['official_url'])): ?>
         <div class="r"><div class="k">公式サイト</div>
-          <div class="v"><a href="<?= e($beer['official_url']) ?>" target="_blank" rel="noopener"
+          <div class="v"><a href="<?= e($beer['official_url']) ?>" target="_blank" rel="noopener nofollow"
              style="color:var(--teal);word-break:break-all"><?= e($beer['official_url']) ?></a></div></div>
         <?php endif; ?>
       </div>
@@ -78,7 +78,7 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
         <p class="est-caption">※「推定」と付いた値は公式情報が見つからなかったため、同じスタイルの典型値から推定しています。</p>
       <?php endif; ?>
       <?php if (!empty($beer['source_url'])): ?>
-        <p class="est-caption">出典：<a href="<?= e($beer['source_url']) ?>" target="_blank" rel="noopener" style="color:var(--muted)"><?= e($beer['source_url']) ?></a></p>
+        <p class="est-caption">出典：<a href="<?= e($beer['source_url']) ?>" target="_blank" rel="noopener nofollow" style="color:var(--muted)"><?= e($beer['source_url']) ?></a></p>
       <?php endif; ?>
     </div>
   </div>

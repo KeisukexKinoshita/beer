@@ -272,6 +272,15 @@ function styles_used() {
          ORDER BY beer_count DESC, avg_rating DESC")->fetchAll();
 }
 
+/** 全スタイル(銘柄が紐づいていないものも含む)。sitemap.php が使う */
+function all_styles() {
+    return db()->query(
+        "SELECT s.StyleID, s.StyleName, s.FamilyName, s.StyleExplain, s.catchcopy,
+                (SELECT COUNT(*) FROM products p WHERE p.StyleID = s.StyleID) AS beer_count
+         FROM style s
+         ORDER BY s.StyleID")->fetchAll();
+}
+
 /** 銀河/一覧JS用に軽量化した配列 */
 function beers_for_js($beers) {
     $out = [];

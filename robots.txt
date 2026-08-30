@@ -1,0 +1,12 @@
+# Darth Beer.com
+# 投稿フォームは動作確認が済んでいないため、当面クロールさせない。
+# 検索結果に出ると、送信できない状態のページに人を送ることになる。
+User-agent: *
+Disallow: /post/
+Disallow: /img/tmp/
+
+# 旧サイト (php/) と jQuery のデモページ (js/) は 2026-08-30 に配信をやめた。
+# すでに索引されている場合に備えて明示しておく。
+Disallow: /php/
+Disallow: /js/
+Disallow: /css/
