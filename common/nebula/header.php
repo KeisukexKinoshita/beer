@@ -10,7 +10,6 @@
       <a href="/beer/products.php">Beer</a>
       <a href="/brewery/makers.php">Brewery</a>
       <a href="/style/styles.php">Type</a>
-      <a href="/post/add_product.php" style="color:var(--faint);font-size:13px">投稿</a>
     </nav>
   </div>
 </header>

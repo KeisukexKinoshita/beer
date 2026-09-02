@@ -16,6 +16,14 @@
 #     common/ の js を使う)。php/ を外すと同時に不要になる
 #   広告審査 (AdSense) では重複・低価値・第三者コンテンツが不合格の典型なので外した。
 #   git には残してあるので、必要になったら履歴から取り出せる。
+#
+# **投稿機能 (post/) も配信しない。** 2026-09-02、ユーザー判断で「完全に見えないように。
+#   あとで作り直す」となった。動作確認が済んでいないものを公開したままにしない。
+#   あわせて common/ のうち投稿専用のファイル (sql_POST.php / header.php /
+#   sql.php / *.js / pages.*) も外す。**特に common/sql_POST.php は、
+#   直接 GET されると rate_user に空行を1件 INSERT してしまう**
+#   (フォーム経由の変数が無いまま後段の INSERT に到達する)。
+#   新サイトが必要とするのは common/nebula/ だけ。
 set -euo pipefail
 cd "$(dirname "$0")/.."
 OUT="${1:-/tmp/claude-0/beer-deploy.tar.gz}"
@@ -23,6 +31,6 @@ mkdir -p "$(dirname "$OUT")"
 git archive --format=tar.gz --prefix=html/ -o "$OUT" HEAD \
   index.php style.css chartjs-plugin-datalabels.min.js googlebb691fb861bc6308.html \
   robots.txt ads.txt sitemap.php privacy.php about.php \
-  common post style brewery beer assets \
+  common/nebula style brewery beer assets \
   $(git ls-files img | grep -v '^img/product/' | tr '\n' ' ')
 echo "archive: $OUT ($(du -h "$OUT" | cut -f1))"
