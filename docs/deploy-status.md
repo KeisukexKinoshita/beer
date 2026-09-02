@@ -43,3 +43,52 @@ MacのhostsにALBのIPを追加してブラウザで開く (Basic認証は seisa
 
 - 投稿画像renameバグ (post/check/thank経由で画像未反映) ほか別課題は docs/loop-scope.md 参照
 - サーバは夜間停止 (JST 1:00〜6:50)。beerも一緒に停止する
+
+---
+
+## 公開完了 (2026-09-02) —— https://drtbeer.com
+
+**フェーズ③ 公開が完了した。** 構成は「seisan3-next サーバへのコンテナ同居」。
+
+| 項目 | 内容 |
+|---|---|
+| 本番 | `https://drtbeer.com` → ALBwarikan → seisan3-next-tg → nginx(proxy) → `beer-prod` |
+| dev | `https://dev.drtbeer.com`(Basic認証)→ 同上 → `beer-dev` |
+| www | `https://www.drtbeer.com` → **301 で apex へ**(正規URLを1本にする) |
+| HTTP | `http://drtbeer.com` → **301 で HTTPS へ**(ALB のリダイレクトルール) |
+
+### 証明書
+
+**旧証明書は 2024-02-12 に期限切れだった**(2023年発行・`drtbeer.com` のみ・更新も不可)。
+新規に取り直した。
+
+- ARN: `arn:aws:acm:ap-northeast-1:127146709373:certificate/3f2171d3-0651-47f3-9414-ce676b0f91e0`
+- 対象: `drtbeer.com` / `dev.drtbeer.com` / `www.drtbeer.com`
+- 期限: 2027-03-18(**ALB に載っているので自動更新される**)
+- **apex の検証用CNAMEは旧証明書のものと同値だったため、そのまま流用できた。**
+  追加したのは dev と www の2件だけ
+
+### 変更した AWS リソース
+
+すべて**追加のみ**。既存の seisan3 の設定は書き換えていない。
+
+| リソース | 変更 |
+|---|---|
+| Route 53 `drtbeer.com` ゾーン | A レコード3件を UPSERT。**変更前は削除済みの ALB `beeralb-546652632` を指しており、ドメインはどこにも繋がっていなかった**(2022年の旧beer環境の残骸) |
+| ALB :443 リスナー | 証明書を **SNI で追加**。デフォルト証明書(seisan3)は変更していない |
+| ALB :443 ルール | 優先度25 に drtbeer 系3ホスト → seisan3-next-tg |
+| ALB :80 ルール | 優先度26 に drtbeer 系3ホスト → **HTTPS へ 301** |
+| nginx | `drtbeer.conf` を新設(実体は `/srv/seisan3/deploy/nginx/conf.d/`。コンテナ内は読み取り専用マウント) |
+
+`beer.conf`(`beer.local` / `dev.beer.local`)は内部確認用としてそのまま残してある。
+
+### 閉じたもの
+
+`beer-dev-public.conf` を撤去した(`/srv/beer/beer-dev-public.conf.retired-20260902` に退避)。
+ALB のホスト名で **dev サイトが認証なしに閲覧できる**一時経路で、公開ドメインが
+できたので不要になった。残すと dev の中身が公開され、本番と同内容の重複にもなる。
+
+### 作業中に確認したこと
+
+nginx の reload 直後と ALB の証明書追加直後に、**毎回 `https://seisan3.com` が 200 を
+返すことを確認**した。共用の ALB を触るときはこれを省かない。
