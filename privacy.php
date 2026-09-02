@@ -42,6 +42,12 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
         <td>地図画像（タイル）の配信</td>
       </tr>
       <tr>
+        <td>Google LLC<br>（Google AdSense）</td>
+        <td>すべてのページ</td>
+        <td>IPアドレス、ブラウザの種類とバージョン、OSの種類、リファラ、Cookie に保存された識別子、閲覧したページのURL</td>
+        <td>広告の配信と表示回数の計測、パーソナライズド広告の表示</td>
+      </tr>
+      <tr>
         <td>Google LLC<br>（Google Hosted Libraries）</td>
         <td>ビールの投稿フォームの各ページ</td>
         <td>IPアドレス、ブラウザの種類とバージョン、OSの種類、リファラ</td>
@@ -54,14 +60,14 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
   <p class="doc-note">これらの送信を望まない場合は、ブラウザの設定やアドオンで外部への通信を遮断することで停止できます。その場合、フォントや地図が正しく表示されないことがあります。</p>
 
   <h2>3. 広告について</h2>
-  <p>当サイトは、第三者配信の広告サービス（Google AdSense）の利用を予定しています。利用を開始した場合、次のとおりとなります。</p>
+  <p>当サイトは、第三者配信の広告サービス（Google AdSense）を利用しています。</p>
   <ul>
     <li>Google などの第三者配信事業者が Cookie を使用して、利用者が当サイトや他のウェブサイトに過去にアクセスした際の情報にもとづいて広告を配信します。</li>
     <li>Google およびそのパートナーは、この情報をもとにパーソナライズド広告を表示することがあります。</li>
     <li>パーソナライズド広告は、<a href="https://www.google.com/settings/ads" target="_blank" rel="noopener">Google の広告設定</a>で無効にできます。</li>
     <li>第三者配信事業者による Cookie の使用については、<a href="https://policies.google.com/technologies/ads?hl=ja" target="_blank" rel="noopener">Google の広告に関するポリシー</a>をご覧ください。</li>
   </ul>
-  <p class="doc-note">広告の配信を開始した時点で、この節を「予定」から現在の記述に改め、上の外部送信の表にも追記します。</p>
+
 
   <h2>4. アクセス解析について</h2>
   <p>当サイトは、現時点でアクセス解析ツールを導入していません。導入した場合は、この項目と上の外部送信の表を更新します。</p>
@@ -86,7 +92,7 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
 
   <h2>9. 改定</h2>
   <p>このポリシーは必要に応じて改定します。改定した場合は、このページに最終更新日を示します。</p>
-  <p class="doc-note">最終更新日: 2026年8月30日</p>
+  <p class="doc-note">最終更新日: 2026年9月2日</p>
 </div>
 
 <?php require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/footer.php'; ?>

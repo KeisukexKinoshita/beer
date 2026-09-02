@@ -18,6 +18,15 @@ $extraCss  = $extraCss ?? [];
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+1:wght@400;500;700;800&family=Noto+Sans+JP:wght@300;400;500;700&display=swap">
 <link rel="stylesheet" href="/assets/css/nebula.css">
+<?php
+/* Google AdSense。**本番ホストでのみ読み込む。**
+   dev (dev.drtbeer.com) や内部名 (beer.local) で読み込むと、開発中の閲覧が
+   表示回数として計上され、無効なトラフィックとみなされる恐れがある。
+   プライバシーポリシー(/privacy.php)の「3. 広告について」と外部送信の表は、
+   この設置と同時に現在形へ改めてある。 */
+if (($_SERVER['HTTP_HOST'] ?? '') === 'drtbeer.com'): ?>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3292112504579579" crossorigin="anonymous"></script>
+<?php endif; ?>
 <?php if (!empty($useMap)): ?>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
