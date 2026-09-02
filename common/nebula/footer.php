@@ -6,7 +6,7 @@
     <nav class="foot-nav">
       <a href="/about.php">このサイトについて</a>
       <a href="/privacy.php">プライバシーポリシー</a>
-      <a href="https://docs.google.com/forms/d/e/1FAIpQLScgFCJ3dqGIYd5M2V3rX_mEuOQ8g34xY9siXF7OOLAQ4wj4RA/viewform?usp=sf_link" target="_blank" rel="noopener nofollow">お問い合わせ</a>
+      <a href="https://docs.google.com/forms/d/e/1FAIpQLSc59D4Xn78uL0XDJ9Ztfu_Mp2yY2XJuBZtzbZqmY-7YN0XPcw/viewform?usp=header" target="_blank" rel="noopener nofollow">お問い合わせ</a>
     </nav>
   </div>
   <div class="wrap foot-note">

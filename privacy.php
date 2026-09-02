@@ -80,7 +80,7 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
 
   <h2>8. お問い合わせ</h2>
   <p>このポリシーに関するお問い合わせ、掲載内容の訂正のご依頼は、
-     <a href="https://docs.google.com/forms/d/e/1FAIpQLScgFCJ3dqGIYd5M2V3rX_mEuOQ8g34xY9siXF7OOLAQ4wj4RA/viewform?usp=sf_link" target="_blank" rel="noopener nofollow">お問い合わせフォーム</a>よりお寄せください。</p>
+     <a href="https://docs.google.com/forms/d/e/1FAIpQLSc59D4Xn78uL0XDJ9Ztfu_Mp2yY2XJuBZtzbZqmY-7YN0XPcw/viewform?usp=header" target="_blank" rel="noopener nofollow">お問い合わせフォーム</a>よりお寄せください。</p>
   <p>掲載しているブリュワリー・商品の関係者の方で、記載の修正や削除をご希望の場合も、
      同じフォームからご連絡ください。確認のうえ対応します。</p>
 
