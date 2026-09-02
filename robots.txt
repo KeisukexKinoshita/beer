@@ -13,4 +13,8 @@ Disallow: /css/
 
 # サイトマップの場所。Sitemap ディレクティブは絶対URLでしか書けないため、
 # 公開ドメインが決まるまで書けなかった (2026-09-02 に drtbeer.com で公開)。
-Sitemap: https://drtbeer.com/sitemap.php
+#
+# 実体は sitemap.php (ホスト名から絶対URLを組み立てる動的生成) だが、
+# **Search Console は拡張子が .php のパスを受け付けない**ため、
+# nginx (deploy/nginx/drtbeer.conf) で /sitemap.xml から振り向けている。
+Sitemap: https://drtbeer.com/sitemap.xml
