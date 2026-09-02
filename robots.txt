@@ -10,3 +10,7 @@ Disallow: /img/tmp/
 Disallow: /php/
 Disallow: /js/
 Disallow: /css/
+
+# サイトマップの場所。Sitemap ディレクティブは絶対URLでしか書けないため、
+# 公開ドメインが決まるまで書けなかった (2026-09-02 に drtbeer.com で公開)。
+Sitemap: https://drtbeer.com/sitemap.php
