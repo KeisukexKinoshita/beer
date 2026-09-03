@@ -14,6 +14,20 @@ $extraCss  = $extraCss ?? [];
 <meta property="og:title" content="<?= e($pageTitle) ?>">
 <meta property="og:description" content="<?= e($pageDesc) ?>">
 <meta property="og:type" content="website">
+<?php
+/* 正規URL。同じ内容に複数のURLで到達できるため、どれが本命かを明示する:
+     - `/` と `/index.php` はどちらも同じトップページを返す
+     - www.drtbeer.com は 301 で apex に寄せているが、念のため canonical でも示す
+   クエリは ProductID / MakerID / StyleID だけを残す。並び替えや絞り込みの
+   パラメータが付いても、同じページとして1本に寄せるため。 */
+$canonHost  = $_SERVER['HTTP_HOST'] ?? '';
+$canonPath  = strtok($_SERVER['REQUEST_URI'] ?? '/', '?');
+if ($canonPath === '/index.php') { $canonPath = '/'; }
+$canonKeep  = array_intersect_key($_GET, array_flip(['ProductID', 'MakerID', 'StyleID']));
+$canonQuery = $canonKeep ? '?' . http_build_query($canonKeep) : '';
+if ($canonHost !== '') : ?>
+<link rel="canonical" href="https://<?= e($canonHost . $canonPath . $canonQuery) ?>">
+<?php endif; ?>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+1:wght@400;500;700;800&family=Noto+Sans+JP:wght@300;400;500;700&display=swap">

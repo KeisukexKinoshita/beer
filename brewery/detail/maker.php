@@ -4,6 +4,10 @@ $mid   = $_GET['MakerID'] ?? '';
 $maker = maker_by_id($mid);
 
 if (!$maker) {
+    // **HTTPステータスも 404 にする。** 画面に「見つかりません」と出しながら
+    // 200 を返すと、検索エンジンには「中身のあるページ」に見える(ソフト404)。
+    // IDはクエリで自由に作れるため、放置すると無限の空ページを抱えることになる。
+    http_response_code(404);
     $title = 'お探しのブリュワリーが見つかりません';
     require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
     echo '<body>';
