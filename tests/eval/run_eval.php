@@ -101,9 +101,25 @@ function reco_eval_normalize(?string $s): string
  *     0.6 のような比率一本の閾値だとこの区別ができず、蔵名を前置きしただけの正しい読みまで
  *     落としてしまっていた(修正ラウンド1で発覚)
  *
+ * 修正ラウンド3 Critical: 「期待⊆読み」側に上限が無く、読みが極端に長ければ何を渡しても
+ * 当たりになってしまっていた(15銘柄を連結した文字列で実証された)。
+ * **比率では直さない**(実測: IMG_1765 0.250 / IMG_2238 0.185 / IMG_4756 0.200 の3件は
+ * 正しい読みなのに、レビュアの推奨する閾値0.3だと10/13まで落ちてしまう。ラベルには
+ * 銘柄名のほかに蔵名・スタイル名・産地が印字されるので、正しく読むほど比率は下がり、
+ * 比率という指標そのものが使えない)。代わりに「何が書いてあるか」を直接見る2つのガード:
+ *   (a) 復唱の検出: 読みに**他の正解銘柄名**まで含まれていたら、1枚のラベルを読んだのではない
+ *   (b) ラベルとして現実的な長さか: 上限80文字。実測15枚(result-20260916.json、
+ *       修正ラウンド2適用後の正しい読み)での正規化後の最長は37文字
+ *       ("PAULANER Hefe-Weißbier Naturtrüb München")。今後もっと多くの情報
+ *       (産地・受賞歴・キャッチコピー等)を読み取る余地を見て、実測最長のおよそ2倍を
+ *       上限にした
+ *
  * similar_text() の一致率(pct)は合否には使わず、人が結果JSONで見るための参考値として残す。
+ *
+ * @param array $otherNames この銘柄**以外**の正解銘柄名(正規化前の生文字列でよい)。
+ *                          復唱の検出に使う。自分自身の product は呼び出し側で除いて渡すこと
  */
-function reco_eval_text_match(?string $got, ?string $expect): array
+function reco_eval_text_match(?string $got, ?string $expect, array $otherNames = []): array
 {
     $g = reco_eval_normalize($got);
     $e = reco_eval_normalize($expect);
@@ -117,9 +133,21 @@ function reco_eval_text_match(?string $got, ?string $expect): array
         return ['ok' => true, 'direction' => 'exact', 'contains' => true, 'length_ratio' => 1.0, 'pct' => $pct, 'got_norm' => $g, 'expect_norm' => $e];
     }
 
-    // 読み過ぎ: 期待が読みに丸ごと含まれる。ラベルは読めている
+    // 読み過ぎ: 期待が読みに丸ごと含まれる。ラベルは読めている……が、無条件に当たりにはしない
     if (mb_strlen($e) >= 5 && mb_strpos($g, $e) !== false) {
         $ratio = mb_strlen($g) > 0 ? mb_strlen($e) / mb_strlen($g) : 0.0;
+
+        // (a) 復唱の検出: 他の正解銘柄名まで読みに含まれていたら、1枚のラベルではない
+        foreach ($otherNames as $other) {
+            $o = reco_eval_normalize($other);
+            if ($o !== '' && $o !== $e && mb_strlen($o) >= 5 && mb_strpos($g, $o) !== false) {
+                return ['ok' => false, 'direction' => 'expect_in_got_recital', 'contains' => true, 'length_ratio' => round($ratio, 3), 'pct' => $pct, 'got_norm' => $g, 'expect_norm' => $e, 'recited' => $o];
+            }
+        }
+        // (b) ラベルとして現実的な長さか。上限80文字の根拠は上の関数コメント参照
+        if (mb_strlen($g) > 80) {
+            return ['ok' => false, 'direction' => 'expect_in_got_too_long', 'contains' => true, 'length_ratio' => round($ratio, 3), 'pct' => $pct, 'got_norm' => $g, 'expect_norm' => $e];
+        }
         return ['ok' => true, 'direction' => 'expect_in_got', 'contains' => true, 'length_ratio' => round($ratio, 3), 'pct' => $pct, 'got_norm' => $g, 'expect_norm' => $e];
     }
 
@@ -135,9 +163,10 @@ function reco_eval_text_match(?string $got, ?string $expect): array
 
 /**
  * 1件の銘柄同定を判定する。方式は上のファイル冒頭コメント参照。
+ * @param array $otherNames この銘柄以外の正解銘柄名一覧(復唱検出用。reco_eval_text_match に渡すだけ)
  * @return array{ok:?bool, method:string, detail:array}
  */
-function reco_eval_product(array $case, array $r): array
+function reco_eval_product(array $case, array $r, array $otherNames = []): array
 {
     if (isset($case['expected_product_id'])) {
         $idOk = ($r['matched_product_id'] === $case['expected_product_id']);
@@ -147,7 +176,7 @@ function reco_eval_product(array $case, array $r): array
         // DB側の**誤記**(db_issue_type === "typo")だけが救済レバー。
         // 表記ゆれ(name_variant)等はID一致で解決できるはずなので対象外(修正ラウンド1 Important-2)
         if (($case['db_issue_type'] ?? null) === 'typo' && $r['matched_product_id'] === null) {
-            $m = reco_eval_text_match($r['brand_text'], $case['product']);
+            $m = reco_eval_text_match($r['brand_text'], $case['product'], $otherNames);
             if ($m['ok']) {
                 return ['ok' => true, 'method' => 'db_issue_text_fallback', 'detail' => $m];
             }
@@ -160,7 +189,7 @@ function reco_eval_product(array $case, array $r): array
     if ($r['matched_product_id'] !== null) {
         return ['ok' => false, 'method' => 'text_match', 'detail' => ['note' => '登録が無いはずが別の銘柄と結びついた', 'got_pid' => $r['matched_product_id']]];
     }
-    $m = reco_eval_text_match($r['brand_text'], $case['product']);
+    $m = reco_eval_text_match($r['brand_text'], $case['product'], $otherNames);
     return ['ok' => $m['ok'], 'method' => 'text_match', 'detail' => $m];
 }
 
@@ -178,12 +207,28 @@ if ($rescoreIdx !== false && $rescoreFile === null) {
     fwrite(STDERR, "使い方: php tests/eval/run_eval.php --rescore <result-*.jsonのパス>\n");
     exit(2);
 }
+// 修正ラウンド3 Minor: --replay と --rescore は同時に受け付けない(どちらのデータで
+// 採点し直すのか一意に決まらなくなるため)。どちらか一方だけ
+if ($replay && $rescoreFile !== null) {
+    fwrite(STDERR, "--replay と --rescore は同時に指定できません。どちらか一方にしてください。\n");
+    exit(2);
+}
 
 $spec = json_decode(file_get_contents(__DIR__ . '/../../data/sample/expected.json'), true);
 $catalog = reco_catalog();
 $styles  = reco_style_catalog();
 $styleNameById = [];
 foreach ($styles as $s) { $styleNameById[$s['StyleID']] = $s['StyleName']; }
+
+// 修正ラウンド3 Critical: 復唱(他の銘柄名を読みに含めてしまう)を検出するため、
+// ファイルごとに「自分以外の全正解銘柄名」を用意しておく
+$otherNamesByFile = [];
+foreach ($spec['cases'] as $cc) {
+    $otherNamesByFile[$cc['file']] = array_values(array_filter(
+        array_map(fn($x) => $x['product'] ?? null, $spec['cases']),
+        fn($p) => $p !== null && $p !== ($cc['product'] ?? null)
+    ));
+}
 
 // --rescore: 過去の実行が残した素の応答(raw_response)をファイル名で引けるようにしておく。
 // APIは一切呼ばない
@@ -269,7 +314,7 @@ foreach ($spec['cases'] as $c) {
     $prod = null;
     if ($c['is_beer']) {
         $beerTotal++;
-        $prod = reco_eval_product($c, $r);
+        $prod = reco_eval_product($c, $r, $otherNamesByFile[$c['file']] ?? []);
         if ($prod['ok']) { $hitProduct++; }
         if ($prod['method'] === 'db_issue_text_fallback' && $prod['ok']) {
             $rescueHit++;
