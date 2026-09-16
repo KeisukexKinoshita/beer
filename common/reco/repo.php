@@ -43,13 +43,20 @@ function gate_context(string $visitorId, string $mime, int $bytes, string $hash)
         return (int)$st->fetchColumn();
     };
 
+    // PHPの time()/strtotime() ではなく、DBの NOW() を使って経過秒数をDB側で計算する。
+    // アプリサーバとDBサーバでタイムゾーンが食い違う(このコンテナは PHP=UTC / DB=JST)と、
+    // PHP側で created_at 文字列を strtotime() し直した瞬間にズレが混入し、バースト制限
+    // (20秒)が効かなくなったり逆に誤発動したりする(最終レビューC-2の確認中に発見)。
     $lastAt = db()->prepare(
-        "SELECT created_at FROM upload WHERE visitor_id = :v ORDER BY upload_id DESC LIMIT 1");
+        "SELECT TIMESTAMPDIFF(SECOND, created_at, NOW()) FROM upload
+         WHERE visitor_id = :v ORDER BY upload_id DESC LIMIT 1");
     $lastAt->execute([':v' => $visitorId]);
-    $last = $lastAt->fetchColumn();
+    $secsSince = $lastAt->fetchColumn();
 
+    // API失敗(status='api_error')は「ビール以外」ではない。連続カウントに混ぜると、
+    // 失敗が続いただけの利用者の枠を誤って絞ってしまう。
     $streak = db()->prepare(
-        "SELECT is_beer FROM upload WHERE visitor_id = :v ORDER BY upload_id DESC LIMIT 5");
+        "SELECT is_beer FROM upload WHERE visitor_id = :v AND status = 'ok' ORDER BY upload_id DESC LIMIT 5");
     $streak->execute([':v' => $visitorId]);
     $recent = $streak->fetchAll(PDO::FETCH_COLUMN);
     $notBeer = 0;
@@ -60,7 +67,9 @@ function gate_context(string $visitorId, string $mime, int $bytes, string $hash)
         'daily_cap'       => (int)($cfg['daily_cap'] ?? GATE_LIMITS['global_daily']),
         'mime'            => $mime,
         'bytes'           => $bytes,
-        'seconds_since'   => $last ? (time() - strtotime((string)$last)) : PHP_INT_MAX,
+        'seconds_since'   => $secsSince !== false ? (int)$secsSince : PHP_INT_MAX,
+        // 件数は status で絞らない。API失敗(api_error)も課金は発生しているので、
+        // 日次・月次・visitor の上限には必ず数える(最終レビュー C-2)。
         'visitor_today'   => $one("SELECT COUNT(*) FROM upload WHERE visitor_id = :v AND DATE(created_at) = CURDATE()", [':v' => $visitorId]),
         'global_today'    => $one("SELECT COUNT(*) FROM upload WHERE DATE(created_at) = CURDATE()", []),
         'global_month'    => $one("SELECT COUNT(*) FROM upload WHERE YEAR(created_at) = YEAR(CURDATE()) AND MONTH(created_at) = MONTH(CURDATE())", []),
@@ -69,24 +78,38 @@ function gate_context(string $visitorId, string $mime, int $bytes, string $hash)
     ];
 }
 
+/**
+ * status='ok' の行だけを返す。失敗した記録(api_error)を「前回の結果」として
+ * 再利用すると、同じ写真の再送が毎回 API を呼び直さずに嘘の失敗を返し続けるか、
+ * 逆に失敗の記録を成功のように見せてしまう(最終レビュー C-2)。
+ */
 function upload_by_hash(string $hash): ?array
 {
-    $st = db()->prepare("SELECT * FROM upload WHERE image_hash = :h ORDER BY upload_id DESC LIMIT 1");
+    $st = db()->prepare(
+        "SELECT * FROM upload WHERE image_hash = :h AND status = 'ok' ORDER BY upload_id DESC LIMIT 1");
     $st->execute([':h' => $hash]);
     $row = $st->fetch();
     return $row ?: null;
 }
 
-function upload_record(string $visitorId, array $r, string $hash, ?string $imagePath): int
+/**
+ * @param string $status 'ok'(通常)または 'api_error'(APIは呼ばれ課金された可能性が
+ *                        あるが、判定に失敗した)。上限のカウントに必ず含めるため、
+ *                        失敗でも upload に1行残す(最終レビュー C-2)。
+ */
+function upload_record(string $visitorId, array $r, string $hash, ?string $imagePath, string $status = 'ok'): int
 {
+    // created_at は DB の NOW() で入れる。PHP の date() を使うと、アプリサーバと
+    // DBサーバのタイムゾーンが食い違ったとき、この直後に読む CURDATE() 比較
+    // (日次・月次の上限)や TIMESTAMPDIFF(バースト制限)とズレる(最終レビューC-2)。
     $st = db()->prepare(
         "INSERT INTO upload
            (visitor_id, created_at, image_path, image_hash, is_beer, product_id,
-            brand_text, brewery_text, style_guess, color, clarity, confidence, model)
+            brand_text, brewery_text, style_guess, color, clarity, confidence, model, status)
          VALUES
-           (:v, :now, :path, :hash, :isbeer, :pid, :brand, :brewery, :style, :color, :clarity, :conf, :model)");
+           (:v, NOW(), :path, :hash, :isbeer, :pid, :brand, :brewery, :style, :color, :clarity, :conf, :model, :status)");
     $st->execute([
-        ':v' => $visitorId, ':now' => date('Y-m-d H:i:s'),
+        ':v' => $visitorId,
         ':path' => $imagePath, ':hash' => $hash,
         ':isbeer' => ($r['is_beer'] === true) ? 1 : 0,
         ':pid' => $r['matched_product_id'] ?: null,
@@ -94,6 +117,7 @@ function upload_record(string $visitorId, array $r, string $hash, ?string $image
         ':style' => $r['style_guess'] ?: null,
         ':color' => $r['color'], ':clarity' => $r['clarity'],
         ':conf' => $r['confidence'], ':model' => $r['model'] ?? null,
+        ':status' => $status,
     ]);
     return (int)db()->lastInsertId();
 }
@@ -107,22 +131,21 @@ function unknown_bump(string $brand, ?string $brewery): void
     $brewery = $brewery ?? '';
     $st = db()->prepare(
         "INSERT INTO unknown_beer (brand_text, brewery_text, hits, last_seen)
-         VALUES (:b, :w, 1, :now)
-         ON DUPLICATE KEY UPDATE hits = hits + 1, last_seen = :now2");
-    $st->execute([':b' => $brand, ':w' => $brewery, ':now' => date('Y-m-d H:i:s'), ':now2' => date('Y-m-d H:i:s')]);
+         VALUES (:b, :w, 1, NOW())
+         ON DUPLICATE KEY UPDATE hits = hits + 1, last_seen = NOW()");
+    $st->execute([':b' => $brand, ':w' => $brewery]);
 }
 
 function reco_record(int $uploadId, array $picked): void
 {
     $st = db()->prepare(
         "INSERT INTO recommendation (upload_id, position, product_id, stage, created_at)
-         VALUES (:u, :pos, :pid, :stage, :now)");
+         VALUES (:u, :pos, :pid, :stage, NOW())");
     $pos = 0;
     foreach ($picked as $p) {
         $pos++;
         $st->execute([':u' => $uploadId, ':pos' => $pos,
-                      ':pid' => $p['ProductID'], ':stage' => $p['stage'],
-                      ':now' => date('Y-m-d H:i:s')]);
+                      ':pid' => $p['ProductID'], ':stage' => $p['stage']]);
     }
 }
 
@@ -130,7 +153,7 @@ function event_record(string $visitorId, string $kind, ?string $target, ?int $up
 {
     $st = db()->prepare(
         "INSERT INTO event (visitor_id, created_at, kind, target, upload_id)
-         VALUES (:v, :now, :k, :t, :u)");
-    $st->execute([':v' => $visitorId, ':now' => date('Y-m-d H:i:s'),
+         VALUES (:v, NOW(), :k, :t, :u)");
+    $st->execute([':v' => $visitorId,
                   ':k' => $kind, ':t' => $target, ':u' => $uploadId]);
 }

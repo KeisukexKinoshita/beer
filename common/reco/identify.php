@@ -144,6 +144,8 @@ function identify_call(string $imagePath, array $catalog, array $styles, ?callab
             if (!$r['error']) { return $r; }
             $last = $r;
         } catch (Throwable $e) {
+            // 鍵が混ざらないよう、メッセージは残さず種類だけ記録する
+            error_log('[reco] identify failed: ' . get_class($e));
             $last = ['is_beer' => null, 'brand_text' => null, 'brewery_text' => null,
                      'matched_product_id' => null, 'style_guess' => null,
                      'color' => null, 'clarity' => null, 'confidence' => null,
@@ -230,8 +232,15 @@ function identify_transport_anthropic(string $imagePath, string $prompt): array
             'stop_reason' => $message->stopReason, 'content' => $content];
 }
 
-/** 長辺を 1568px に縮める。大きい写真をそのまま送ると入力トークンが無駄に増える */
-function identify_shrink(string $src, string $dst): void
+/**
+ * 長辺を 1568px に縮める。大きい写真をそのまま送ると入力トークンが無駄に増える。
+ *
+ * @return bool 保存できたら true。imagescale()/imagejpeg() が失敗したら false を返す
+ *              (存在しないファイルを指す行を DB に作らないため、呼び出し側で見る)。
+ *              画像として読めない・対応形式でないときは従来どおり例外を投げる
+ *              (アップロード前の検証漏れであり、上限で守るべき「課金の失敗」とは別種)。
+ */
+function identify_shrink(string $src, string $dst): bool
 {
     $info = getimagesize($src);
     if ($info === false) { throw new RuntimeException('画像として読めません'); }
@@ -247,6 +256,8 @@ function identify_shrink(string $src, string $dst): void
             ? [min($info[0], IDENTIFY_MAX_EDGE), -1]
             : [(int)round($info[0] * min($info[1], IDENTIFY_MAX_EDGE) / $info[1]), -1]
     ));
-    imagejpeg($im, $dst, 82);
+    if ($im === false) { return false; }
+    $ok = imagejpeg($im, $dst, 82);
     imagedestroy($im);
+    return $ok;
 }

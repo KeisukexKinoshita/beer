@@ -1,0 +1,1 @@
+ALTER TABLE upload DROP COLUMN status;

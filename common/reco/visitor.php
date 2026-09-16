@@ -24,12 +24,15 @@ function visitor_current(): string
         'samesite' => 'Lax',
     ]);
 
-    $now = date('Y-m-d H:i:s');
+    // PHP の date() ではなく DB の NOW() を使う。アプリサーバとDBサーバでタイムゾーンが
+    // 食い違うと(例: PHPがUTC、DBがJST)、upload.created_at がここと同じズレを持ち、
+    // gate_context() の CURDATE() 比較(日次・月次の上限)が毎日9時間ぶん効かなくなる
+    // (最終レビューC-2の確認中に発見。同じ理由で repo.php の各 INSERT も直した)。
     $st = db()->prepare(
         "INSERT INTO visitor (visitor_id, first_seen, last_seen)
-         VALUES (:id, :now, :now)
-         ON DUPLICATE KEY UPDATE last_seen = :now2");
-    $st->execute([':id' => $id, ':now' => $now, ':now2' => $now]);
+         VALUES (:id, NOW(), NOW())
+         ON DUPLICATE KEY UPDATE last_seen = NOW()");
+    $st->execute([':id' => $id]);
 
     return $id;
 }
