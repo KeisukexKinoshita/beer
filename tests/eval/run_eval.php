@@ -229,6 +229,16 @@ if ($replay && $rescoreFile !== null) {
     exit(2);
 }
 
+// 最終レビューの是正(併せて直すもの3): 未知の -- 引数を黙って「実課金」の経路
+// (どちらの引数でもない = 本物のAPIを呼ぶ)に流さない。--relay のようなタイプミスが
+// 15回課金する事故を防ぐため、既知でない -- 引数があれば中止する。
+foreach ($argv as $i => $a) {
+    if ($i === 0 || !str_starts_with($a, '--')) { continue; }
+    if ($a === '--replay' || $a === '--rescore' || str_starts_with($a, '--note=')) { continue; }
+    fwrite(STDERR, "不明な引数です: {$a}\n使い方はファイル冒頭のコメントを参照してください。\n");
+    exit(2);
+}
+
 $spec = json_decode(file_get_contents(__DIR__ . '/../../data/sample/expected.json'), true);
 $catalog = reco_catalog();
 $styles  = reco_style_catalog();
