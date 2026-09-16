@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm'])) {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['photo'])) {
     $f = $_FILES['photo'];
-    if ($f['error'] !== UPLOAD_ERR_OK) {
+    if ($f['error'] !== UPLOAD_ERR_OK || !is_uploaded_file($f['tmp_name'])) {
         $view = 'error'; $msg = '写真を受け取れませんでした。';
     } else {
         $hash = hash_file('sha256', $f['tmp_name']);
@@ -165,7 +165,10 @@ $seedGroup = ($view === 'result' && !empty($seed))
       <?php if (!empty($seed['StyleName'])): ?> · <?= e($seed['StyleName']) ?><?php endif; ?>
     </div>
 
-    <?php if (identify_branch($result) === 'confirm'): ?>
+    <?php if (identify_branch($result) === 'confirm' || $result['matched_product_id']): ?>
+      <?php /* 確度ではなく「DBに銘柄があるか」で文言を決める。確度が中くらいでも
+               matched_product_id が入っていれば実在の銘柄に一致しているので、
+               「登録されていません」は事実と異なる(修正ラウンド1)。 */ ?>
       <form class="ex-ask" method="post" action="/try.php">
         <input type="hidden" name="upload_id" value="<?= (int)$uploadId ?>">
         <button class="ex-btn yes" name="confirm" value="yes">これで合っている</button>
