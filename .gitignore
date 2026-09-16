@@ -24,3 +24,8 @@ api_config.local.php
 # アップロードされた写真(利用者の個人写真)。公開面に出さないのと同じ理由でcommitもしない(設計書 §9)
 img/upload/*
 !img/upload/.htaccess
+
+# tests/eval/run_eval.php の実行結果(実行日ごとに生成される)。
+# 素の応答まで含む生成物で、--replay の動作確認でも同名パターンで作られるため追跡しない。
+# 比較用のサマリは docs/data-log/ に人が残す
+tests/eval/result-*.json
