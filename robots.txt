@@ -4,6 +4,7 @@
 User-agent: *
 Disallow: /post/
 Disallow: /img/tmp/
+Disallow: /img/upload/
 
 # 旧サイト (php/) と jQuery のデモページ (js/) は 2026-08-30 に配信をやめた。
 # すでに索引されている場合に備えて明示しておく。
