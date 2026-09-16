@@ -20,6 +20,11 @@ $r = identify_parse($fx('not_beer'));
 eq($r['is_beer'], false,               'ビール以外を見分けている');
 eq($r['matched_product_id'], null,     'ビール以外は銘柄に結びつけない');
 
+// --- API自体が失敗した応答(最終レビュー指摘: error.json を使うテストが無かった) ---
+$r = identify_parse($fx('error'));
+eq($r['error'], true,   'type=error の応答は判定失敗として扱う');
+eq($r['is_beer'], null, 'API失敗のとき is_beer は作らない(falseにしない)');
+
 // --- JSON として妥当でも、形が違えば失敗として扱う ---
 $bad = function (string $text): array {
     return ['content' => [['type' => 'text', 'text' => $text]]];
@@ -61,7 +66,21 @@ ok(strpos($p, 'pr0013') !== false,     '銘柄一覧がプロンプトに入っ�
 ok(strpos($p, 'HAZY JANE') !== false,  '銘柄名も入っている');
 ok(strpos($p, 'st0007') !== false,     'スタイル一覧がプロンプトに入っている');
 ok(strpos($p, 'New England IPA') !== false, 'スタイル名も入っている');
-eq(identify_prompt($catalog, $styles), $p, '同じ入力なら同じ文字列(キャッシュが効く条件)');
+
+// --- プロンプトのキャッシュが効く条件は「並びが決定的」であること。
+//     本当のリスクは呼び出し元の SQL 側(ORDER BY が無いと並びが不定になりうる)にある。
+//     最終レビュー指摘: 「同じ関数を2回呼んで同じ文字列」という前のテストは、
+//     決定的な関数なら何を書いても通ってしまい、何も主張していなかった ---
+require_once __DIR__ . '/../../common/reco/repo.php';
+$reco_t_fn_src = function (string $fn): string {
+    $r = new ReflectionFunction($fn);
+    $lines = file($r->getFileName());
+    return implode('', array_slice($lines, $r->getStartLine() - 1, $r->getEndLine() - $r->getStartLine() + 1));
+};
+ok(stripos($reco_t_fn_src('reco_catalog'), 'ORDER BY') !== false,
+   'reco_catalog() の SQL に ORDER BY がある(並びが変わるとキャッシュが外れる)');
+ok(stripos($reco_t_fn_src('reco_style_catalog'), 'ORDER BY') !== false,
+   'reco_style_catalog() の SQL に ORDER BY がある(並びが変わるとキャッシュが外れる)');
 
 // --- 範囲外の値は「未取得」に落とす(スキーマで縛れないぶんをここで受ける) ---
 $withVals = function (array $over): array {
@@ -117,11 +136,25 @@ eq(identify_call('/dev/null', $known, $styles, $ghost('pr0013'))['matched_produc
    '一覧にある銘柄IDは通す');
 
 // --- 自由文は VARCHAR(191) に収める(黙って切り詰められるのを防ぐ) ---
-$longText = function (string $key, int $len): array {
-    return ['content' => [['type' => 'text',
-        'text' => json_encode(['is_beer' => true, $key => str_repeat('あ', $len)])]]];
+// 最終レビュー指摘: 長さ(mb_strlen)だけを見ていたので、「常に191文字の何かに切る」
+// (中身が違っても通る)壊し方でも検出できなかった。位置ごとに違う文字にして、
+// **先頭191文字と内容が一致すること**まで見る。
+$reco_t_seq = function (int $len): string {
+    $chars = ['あ', 'い', 'う'];
+    $s = '';
+    for ($i = 0; $i < $len; $i++) { $s .= $chars[$i % 3]; }
+    return $s;
 };
-eq(mb_strlen(identify_parse($longText('brand_text', 300))['brand_text']),   191, '長い銘柄名は191文字に丸める');
-eq(mb_strlen(identify_parse($longText('brewery_text', 300))['brewery_text']), 191, '長い蔵名は191文字に丸める');
-eq(mb_strlen(identify_parse($longText('brand_text', 191))['brand_text']),   191, 'ちょうど191文字はそのまま');
-eq(identify_parse($longText('brand_text', 0))['brand_text'], null, '空文字は null にする');
+$longText = function (string $key, string $val): array {
+    return ['content' => [['type' => 'text',
+        'text' => json_encode(['is_beer' => true, $key => $val])]]];
+};
+$s300brand = $reco_t_seq(300);
+eq(identify_parse($longText('brand_text', $s300brand))['brand_text'],
+   mb_substr($s300brand, 0, 191), '長い銘柄名は先頭191文字に丸める(内容も一致)');
+$s300brew = $reco_t_seq(300);
+eq(identify_parse($longText('brewery_text', $s300brew))['brewery_text'],
+   mb_substr($s300brew, 0, 191), '長い蔵名は先頭191文字に丸める(内容も一致)');
+$s191 = $reco_t_seq(191);
+eq(identify_parse($longText('brand_text', $s191))['brand_text'], $s191, 'ちょうど191文字はそのまま');
+eq(identify_parse($longText('brand_text', ''))['brand_text'], null, '空文字は null にする');
