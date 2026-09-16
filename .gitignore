@@ -20,3 +20,7 @@ data/sample/*.png
 
 # Anthropic の APIキー。db_config.local.php と同じ方式で、実値はリポジトリに置かない
 api_config.local.php
+
+# アップロードされた写真(利用者の個人写真)。公開面に出さないのと同じ理由でcommitもしない(設計書 §9)
+img/upload/*
+!img/upload/.htaccess
