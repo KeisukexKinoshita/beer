@@ -14,7 +14,16 @@ declare(strict_types=1);
  *                                          スクリプト自体が正しく動くかを確認するための
  *                                          常設の経路(使い捨ての確認コードではない)。
  *                                          再生の数字は意味が無いので history.tsv には書かない
- *   php tests/eval/run_eval.php --note="..." history.tsv の備考列に残すメモ(省略可)
+ *   php tests/eval/run_eval.php --rescore <result-*.jsonのパス>
+ *                                          過去の実行が残した「素の応答」(raw_response)を
+ *                                          読み、**APIを呼ばずに**採点だけをやり直す
+ *                                          (修正ラウンド2 指摘2: 採点ロジックを直すたびに
+ *                                          課金して撮り直すのは無駄)。元のファイルは上書きせず、
+ *                                          `result-<今日の日付>-rescored-from-<元ファイル名>.json`
+ *                                          に新規で書く。history.tsv には備考に
+ *                                          `rescore(元ファイル名)` を付けて追記する
+ *   php tests/eval/run_eval.php --note="..." history.tsv の備考列に残すメモ(省略可。
+ *                                          --rescore のときは自動メモの後ろに付く)
  *
  * 採点方針(このファイルで決めたこと。詳細は各関数のコメントを参照):
  *   - is_beer: 期待値と単純一致。ビールでない2件はここだけを見る(銘柄は問わない)
@@ -32,9 +41,10 @@ declare(strict_types=1);
  *     解決できるはずの問題であり、救済レバーにしてはいけない)。救済が発動した件数は
  *     集計行に必ず明記する(黙って数字に混ぜない)
  *   - 文字一致の判定(reco_eval_text_match)は正規化(大文字化・空白/記号除去)した上で、
- *     完全一致 or 「短い方が長い方に完全に含まれ、かつ短い方の長さが長い方の半分を
- *     "超える"」ことを要求する(修正ラウンド1 Critical: 断片一致の是正。閾値の根拠は
- *     同関数のコメントを参照)
+ *     完全一致 or **包含の向き**で判定する: 期待が読みに含まれる(読み過ぎ。蔵名や
+ *     スタイル名が余分に付いただけ)なら当たり、読みが期待に含まれる(読み落とし。断片)
+ *     なら半分を超えて読めているときだけ当たり(修正ラウンド1 Critical・
+ *     修正ラウンド2 指摘1。詳細・閾値の根拠は同関数のコメントを参照)
  *   - 蔵名(brewery_text)の一致は**参考値として記録するだけで合否には使わない**。
  *     ラベルが英語表記(例: OIRASE BEER)でDBが日本語表記(奥入瀬ビール)のような
  *     言語違いは、同定精度ではなく表記の問題であり、これを不合格にすると
@@ -75,15 +85,22 @@ function reco_eval_normalize(?string $s): string
  *
  * 修正ラウンド1 Critical: 包含だけで判定すると "BEER" が "75BEER AMERICAN PALE ALE" に
  * 当たってしまう。ラベルを部分的にしか読めなかったのは**失敗**なので、当たりと数えてはいけない。
- * そこで、完全一致でない限り「短い方が長い方に完全に含まれる」ことに加えて
- * 「短い方の長さが長い方の "半分を超える"」ことを要求する。
  *
- * 閾値を 0.6 ではなく 0.5(超過)にしたのはレビューの実例に合わせたため:
+ * 修正ラウンド2 指摘1: 比率一本(短い方/長い方)では、包含の**向き**を区別できていなかった。
+ * 向きで意味が正反対になる:
+ *   - 期待 ⊆ 読み (例: 期待"AUSMA" / 読み"AUSMA TROPICAL SMOOTHIE SOUR")
+ *     → ラベルは読めていて、蔵名やスタイル名が余分に付いただけ。**当たり**
+ *   - 読み ⊂ 期待 (例: 期待"75BEER AMERICAN PALE ALE" / 読み"BEER")
+ *     → 断片しか読めていない。**外れ**。ただし半分を超えて読めていれば当たり
+ * 期待側が短すぎると偶然の包含が起きる(例: 期待"MOON" が偶然どこかの読みに含まれる)ので、
+ * 「読み過ぎ」側の判定は期待側が5文字以上のときだけ適用する。
+ *
+ * 「読み落とし」側の閾値を 0.6 ではなく 0.5(超過)にしたのは実例に合わせたため:
  *   - "ORIGINAL" vs "Heineken Original" → 8/16 = 50.0% ちょうど。汎用語1語なので落としたい
- *   - "BREWDOG HAZY JANE" vs "HAZY JANE" → 8/15 = 53.3%。蔵名を前置きしただけの正しい
- *     読みなので通したい
- * 0.6 だと後者まで落ちてしまい、「蔵名が前に付いただけ」を厳しすぎる形で不合格にしてしまう。
- * 「長い方の50%を超える」(50%ちょうどは不合格)であれば、両方を意図通りに分けられる。
+ *   - "BREWDOG HAZY JANE" vs "HAZY JANE" → この例は「期待⊆読み」(読み過ぎ)側なので無条件で当たり。
+ *     0.6 のような比率一本の閾値だとこの区別ができず、蔵名を前置きしただけの正しい読みまで
+ *     落としてしまっていた(修正ラウンド1で発覚)
+ *
  * similar_text() の一致率(pct)は合否には使わず、人が結果JSONで見るための参考値として残す。
  */
 function reco_eval_text_match(?string $got, ?string $expect): array
@@ -91,20 +108,29 @@ function reco_eval_text_match(?string $got, ?string $expect): array
     $g = reco_eval_normalize($got);
     $e = reco_eval_normalize($expect);
     similar_text($g, $e, $pct);
+    $pct = round($pct, 1);
+
     if ($g === '' || $e === '') {
-        return ['ok' => false, 'contains' => false, 'length_ratio' => 0.0, 'pct' => 0.0, 'got_norm' => $g, 'expect_norm' => $e];
+        return ['ok' => false, 'direction' => 'empty', 'contains' => false, 'length_ratio' => 0.0, 'pct' => 0.0, 'got_norm' => $g, 'expect_norm' => $e];
     }
     if ($g === $e) {
-        return ['ok' => true, 'contains' => true, 'length_ratio' => 1.0, 'pct' => round($pct, 1), 'got_norm' => $g, 'expect_norm' => $e];
+        return ['ok' => true, 'direction' => 'exact', 'contains' => true, 'length_ratio' => 1.0, 'pct' => $pct, 'got_norm' => $g, 'expect_norm' => $e];
     }
 
-    $short = mb_strlen($g) <= mb_strlen($e) ? $g : $e;
-    $long  = mb_strlen($g) <= mb_strlen($e) ? $e : $g;
-    $contains = mb_strpos($long, $short) !== false;
-    $ratio = mb_strlen($long) > 0 ? mb_strlen($short) / mb_strlen($long) : 0.0;
-    $ok = $contains && $ratio > 0.5;
+    // 読み過ぎ: 期待が読みに丸ごと含まれる。ラベルは読めている
+    if (mb_strlen($e) >= 5 && mb_strpos($g, $e) !== false) {
+        $ratio = mb_strlen($g) > 0 ? mb_strlen($e) / mb_strlen($g) : 0.0;
+        return ['ok' => true, 'direction' => 'expect_in_got', 'contains' => true, 'length_ratio' => round($ratio, 3), 'pct' => $pct, 'got_norm' => $g, 'expect_norm' => $e];
+    }
 
-    return ['ok' => $ok, 'contains' => $contains, 'length_ratio' => round($ratio, 3), 'pct' => round($pct, 1), 'got_norm' => $g, 'expect_norm' => $e];
+    // 読み落とし: 読みが期待に含まれる。断片。半分を超えて読めていれば当たり
+    if (mb_strpos($e, $g) !== false) {
+        $ratio = mb_strlen($e) > 0 ? mb_strlen($g) / mb_strlen($e) : 0.0;
+        $ok = $ratio > 0.5;
+        return ['ok' => $ok, 'direction' => 'got_in_expect', 'contains' => true, 'length_ratio' => round($ratio, 3), 'pct' => $pct, 'got_norm' => $g, 'expect_norm' => $e];
+    }
+
+    return ['ok' => false, 'direction' => 'none', 'contains' => false, 'length_ratio' => 0.0, 'pct' => $pct, 'got_norm' => $g, 'expect_norm' => $e];
 }
 
 /**
@@ -146,31 +172,63 @@ foreach ($argv as $a) {
     if (str_starts_with($a, '--note=')) { $note = substr($a, strlen('--note=')); }
 }
 
+$rescoreIdx = array_search('--rescore', $argv, true);
+$rescoreFile = ($rescoreIdx !== false && isset($argv[$rescoreIdx + 1])) ? $argv[$rescoreIdx + 1] : null;
+if ($rescoreIdx !== false && $rescoreFile === null) {
+    fwrite(STDERR, "使い方: php tests/eval/run_eval.php --rescore <result-*.jsonのパス>\n");
+    exit(2);
+}
+
 $spec = json_decode(file_get_contents(__DIR__ . '/../../data/sample/expected.json'), true);
 $catalog = reco_catalog();
 $styles  = reco_style_catalog();
 $styleNameById = [];
 foreach ($styles as $s) { $styleNameById[$s['StyleID']] = $s['StyleName']; }
 
-if (!$replay) {
+// --rescore: 過去の実行が残した素の応答(raw_response)をファイル名で引けるようにしておく。
+// APIは一切呼ばない
+$rawByFile = [];
+if ($rescoreFile !== null) {
+    if (!is_file($rescoreFile)) {
+        fwrite(STDERR, "見つかりません: {$rescoreFile}\n");
+        exit(2);
+    }
+    $old = json_decode(file_get_contents($rescoreFile), true);
+    foreach ($old['rows'] ?? [] as $row) {
+        if (($row['status'] ?? null) === 'evaluated' && isset($row['raw_response'])) {
+            $rawByFile[$row['file']] = $row['raw_response'];
+        }
+    }
+    echo "--rescore: {$rescoreFile} の素の応答(" . count($rawByFile) . "件)を採点し直します。APIは呼びません。\n\n";
+}
+
+if (!$replay && $rescoreFile === null) {
     fwrite(STDERR, "*** 実課金の呼び出しです。15枚 × 約0.8円 = 約12円かかります。***\n");
     fwrite(STDERR, "*** 利用者の確認を得てから実行してください。 ***\n\n");
 }
 
 // transport をラップして、識別ロジックには手を入れずに「素の応答」を毎回拾っておく
 // (結果JSONに残し、人が採点を検算できるようにするため)。
+// --rescore のときは $rawByFile から返すだけで、API もfixtureも呼ばない
 $lastRaw = null;
-$transport = $replay
-    ? function (string $path, string $prompt) use (&$lastRaw): array {
+$transport = match (true) {
+    $replay => function (string $path, string $prompt) use (&$lastRaw): array {
         $res = json_decode(file_get_contents(__DIR__ . '/../fixtures/identify/high.json'), true);
         $lastRaw = $res;
         return $res;
-      }
-    : function (string $path, string $prompt) use (&$lastRaw): array {
+    },
+    $rescoreFile !== null => function (string $path, string $prompt) use (&$lastRaw, $rawByFile): array {
+        $file = basename($path);
+        $res = $rawByFile[$file] ?? ['type' => 'error', 'error' => ['message' => 'rescore: raw_response が無い']];
+        $lastRaw = $res;
+        return $res;
+    },
+    default => function (string $path, string $prompt) use (&$lastRaw): array {
         $res = identify_transport_anthropic($path, $prompt);
         $lastRaw = $res;
         return $res;
-      };
+    },
+};
 
 $rows = [];
 $hitBeer = 0; $total = 0;
@@ -182,7 +240,18 @@ $brandByFile = [];
 
 foreach ($spec['cases'] as $c) {
     $path = __DIR__ . '/../../data/sample/' . $c['file'];
-    if (!is_file($path)) {
+
+    // --rescore のときは画像は要らない(transportはraw_responseを返すだけで$pathを読まない)。
+    // 代わりに、元の実行結果に素の応答が残っているかを見る
+    if ($rescoreFile !== null) {
+        if (!isset($rawByFile[$c['file']])) {
+            $missing++;
+            $missingFiles[] = $c['file'];
+            $rows[] = ['file' => $c['file'], 'status' => 'missing_raw_response'];
+            echo "rescore対象外(素の応答が無い): {$c['file']}\n";
+            continue;
+        }
+    } elseif (!is_file($path)) {
         $missing++;
         $missingFiles[] = $c['file'];
         $rows[] = ['file' => $c['file'], 'status' => 'missing_file'];
@@ -251,7 +320,7 @@ foreach ($spec['cases'] as $c) {
         ($prod !== null && !$prod['ok']) ? "  (期待銘柄 {$c['product']} / 実際 {$r['brand_text']})" : ''
     );
 
-    if (!$replay) { sleep(1); }
+    if (!$replay && $rescoreFile === null) { sleep(1); }
 }
 
 // IMG_4816 / IMG_4817 は同一銘柄の表裏。2枚が同じ銘柄に読めているかの参考チェック
@@ -276,10 +345,33 @@ if ($pairMatch !== null) {
     printf("IMG_4816/IMG_4817(同一銘柄の表裏)の brand_text 一致: %s\n", $pairMatch['ok'] ? 'ok' : 'NG');
 }
 
-$out = __DIR__ . '/result-' . date('Ymd') . '.json';
-file_put_contents($out, json_encode([
+$mode = $replay ? 'replay' : ($rescoreFile !== null ? 'rescore' : 'real');
+
+// 出力ファイル名はモードごとに分ける。**実行ごとの事故で過去の記録(特に課金を伴う
+// real の素の応答)を黙って踏み潰さないため**(修正ラウンド2の作業中、--replay が
+// real と同じ result-YYYYMMDD.json に書いていたために、その日の実測の素の応答を
+// 上書きして失う事故が実際に起きた。詳細は task-9-report.md 参照)。
+if ($rescoreFile !== null) {
+    $srcStem = pathinfo($rescoreFile, PATHINFO_FILENAME);
+    $out = __DIR__ . '/result-' . date('Ymd') . '-rescored-from-' . $srcStem . '.json';
+} elseif ($replay) {
+    $out = __DIR__ . '/result-' . date('Ymd') . '-replay.json';
+} else {
+    $out = __DIR__ . '/result-' . date('Ymd') . '.json';
+}
+// さらに、同名ファイルが既にあるときは**黙って上書きしない**。連番を振って必ず残す
+if (is_file($out)) {
+    $base = substr($out, 0, -strlen('.json'));
+    $i = 2;
+    while (is_file($base . '-take' . $i . '.json')) { $i++; }
+    $collided = $out;
+    $out = $base . '-take' . $i . '.json';
+    fwrite(STDERR, "*** {$collided} は既にあるため上書きしません。{$out} に書きます ***\n");
+}
+
+$outData = [
     'model'         => IDENTIFY_MODEL,
-    'mode'          => $replay ? 'replay' : 'real',
+    'mode'          => $mode,
     'ran_at'        => date('c'),
     'is_beer'       => "$hitBeer/$total",
     'product'       => "$hitProduct/$beerTotal",
@@ -291,19 +383,25 @@ file_put_contents($out, json_encode([
     'missing_files' => $missingFiles,
     'pair_match_4816_4817' => $pairMatch,
     'rows'          => $rows,
-], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+];
+if ($rescoreFile !== null) { $outData['rescored_from'] = $rescoreFile; }
+
+file_put_contents($out, json_encode($outData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
 echo "結果: $out\n";
 
-// 履歴(素の応答は含めずサマリだけ)。--replay の数字は意味が無いので書かない
+// 履歴(素の応答は含めずサマリだけ)。--replay の数字は意味が無いので書かない。
+// --rescore は課金を伴わないが、採点を変えたときの比較対象として残す価値があるので書く
 if (!$replay) {
     $historyPath = __DIR__ . '/history.tsv';
     if (!is_file($historyPath)) {
         file_put_contents($historyPath, "実行日時\tモデル\tビール判定\t銘柄同定\tstyleがID形式\t救済\t備考\n");
     }
+    $autoNote = $rescoreFile !== null ? 'rescore(' . basename($rescoreFile) . ')' : '';
+    $noteCol = trim($autoNote . ' ' . $note);
     $line = implode("\t", [
         date('c'), IDENTIFY_MODEL,
         "$hitBeer/$total", "$hitProduct/$beerTotal", "$styleIdHit/$total",
-        (string)$rescueHit, str_replace(["\t", "\n"], ' ', $note),
+        (string)$rescueHit, str_replace(["\t", "\n"], ' ', $noteCol),
     ]) . "\n";
     file_put_contents($historyPath, $line, FILE_APPEND);
     echo "履歴: $historyPath に追記しました\n";
