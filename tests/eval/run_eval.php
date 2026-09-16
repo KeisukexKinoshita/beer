@@ -25,6 +25,10 @@ declare(strict_types=1);
  *   php tests/eval/run_eval.php --note="..." history.tsv の備考列に残すメモ(省略可。
  *                                          --rescore のときは自動メモの後ろに付く)
  *
+ * **`require`/`require_once` で読み込んでも本体は走らない**(採点関数の定義の直後にある
+ * 「直接実行チェック」参照)。採点関数(reco_eval_text_match 等)だけを使いたいときは
+ * 素直に require してよい
+ *
  * 採点方針(このファイルで決めたこと。詳細は各関数のコメントを参照):
  *   - is_beer: 期待値と単純一致。ビールでない2件はここだけを見る(銘柄は問わない)
  *   - 銘柄(DBにある4件): matched_product_id の一致で判定する。テキスト一致より厳格で、
@@ -191,6 +195,17 @@ function reco_eval_product(array $case, array $r, array $otherNames = []): array
     }
     $m = reco_eval_text_match($r['brand_text'], $case['product'], $otherNames);
     return ['ok' => $m['ok'], 'method' => 'text_match', 'detail' => $m];
+}
+
+/*
+ * このファイルは `php tests/eval/run_eval.php` として**直接実行されたときだけ**走る。
+ *
+ * 理由: 採点関数だけを使いたくて require した人が、本体を走らせて実課金してしまう事故が
+ * 2回起きた(15枚ぶんと2枚ぶん)。「require するな」という注意書きでは防げなかったので、
+ * 構造で防ぐ。require した側からは、関数定義だけが見える。
+ */
+if (PHP_SAPI !== 'cli' || realpath($argv[0] ?? '') !== realpath(__FILE__)) {
+    return;   // require された場合は、関数を定義するだけで何もしない
 }
 
 // ---- 本体 ---------------------------------------------------------------
