@@ -3,7 +3,7 @@
   "created": "2026-09-16",
   "purpose": "写真からの銘柄同定の精度を測る。設計書 §10(テスト方針)の『同定精度を測る検証』の入力",
   "note": "画像は data/sample/ に置く(gitignore。個人の写真であり26MBあるため)。この正解データだけを追跡する",
-  "grading": "brewery と product の一致を見る。is_beer=false の2件は『ビールでないと判定できたか』だけを見る",
+  "grading": "product の一致を見る(DBにある4件は matched_product_id の厳密一致、それ以外9件は brand_text の文字一致)。brewery は参考値として記録するのみで合否には使わない(ラベルの言語とDB表記が食い違う場合があり、これを合否に含めると読み取れているケースまで不合格になるため)。is_beer=false の2件は『ビールでないと判定できたか』だけを見る。db_issue_type: typo の1件(IMG_1455)は、ID不一致でも正しい表記に近い文字が読めていれば合格に倒す(tests/eval/run_eval.php 参照)",
   "db_snapshot": "prod / products 200件 / 2026-09-16 時点",
   "cases": [
     {
@@ -36,6 +36,7 @@
       "style_on_label": "Hazy IPA",
       "in_db": "product", "expected_product_id": "pr0151",
       "db_issue": "DBの登録名が『有頂点エイリアンズ』と誤記されている(正しくは有頂天)",
+      "db_issue_type": "typo",
       "difficulty": ["銘柄名の左端が缶の曲面で切れている", "背景が派手で文字とコントラストが低い"],
       "source": "https://yonasato.com/ec/product/detail/uchotenaliens/"
     },
@@ -53,6 +54,7 @@
       "style_on_label": "PALE ALE",
       "in_db": "product", "expected_product_id": "pr0084",
       "db_issue": "DBの登録名は『ペールエール（缶）』。表記ゆれの吸収が要る",
+      "db_issue_type": "name_variant",
       "difficulty": ["蔵名がロゴ(角のマーク)主体", "ISEKADO のラテン表記から蔵を引く必要がある"],
       "source": "label"
     },
