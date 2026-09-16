@@ -28,8 +28,8 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
     <div class="f-chips">
       <button class="f-chip on" data-group="all">すべて</button>
       <?php /* 定義は helpers.php の group_map() が単一の出所。手で並べない */ ?>
-      <?php foreach (group_map() as $gk => $gv): ?>
-      <button class="f-chip" data-group="<?= e($gk) ?>"><?= e($gv[1]) ?></button>
+      <?php foreach (group_map() as $gk => $gv): list(, $glabel) = group_meta($gk); ?>
+      <button class="f-chip" data-group="<?= e($gk) ?>"><?= e($glabel) ?></button>
       <?php endforeach; ?>
     </div>
     <div class="f-right">
