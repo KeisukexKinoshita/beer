@@ -28,7 +28,22 @@ function identify_parse(array $res): array
     if ($text === null) { return array_merge($empty, ['error' => true]); }
 
     $j = json_decode($text, true);
-    if (!is_array($j)) { return array_merge($empty, ['error' => true]); }
+    // JSON として妥当でも、期待した形でなければ失敗として扱う。
+    // `{}` や `[1,2,3]` を「判定できた(全項目 null)」と読むと、
+    // 利用者に「ビールではない」と誤って伝え、DB にも誤った記録が残る。
+    if (!is_array($j) || !array_key_exists('is_beer', $j)) {
+        return array_merge($empty, ['error' => true]);
+    }
+
+    // スキーマ側で範囲を縛れないことが分かった(API が integer の minimum/maximum を拒否する)。
+    // 範囲外はモデルの誤りなので、嘘の値を DB に入れるより「未取得」にする。
+    $inRange = function ($v, int $lo, int $hi) {
+        if ($v === null || $v === '') { return null; }
+        $n = (int)$v;
+        return ($n >= $lo && $n <= $hi) ? $n : null;
+    };
+    $conf = isset($j['confidence']) ? (float)$j['confidence'] : null;
+    if ($conf !== null && ($conf < 0 || $conf > 1)) { $conf = null; }
 
     return [
         'is_beer'            => isset($j['is_beer']) ? (bool)$j['is_beer'] : null,
@@ -36,9 +51,9 @@ function identify_parse(array $res): array
         'brewery_text'       => $j['brewery_text']       ?? null,
         'matched_product_id' => $j['matched_product_id'] ?? null,
         'style_guess'        => $j['style_guess']        ?? null,
-        'color'              => isset($j['color'])      ? (int)$j['color']   : null,
-        'clarity'            => isset($j['clarity'])    ? (int)$j['clarity'] : null,
-        'confidence'         => isset($j['confidence']) ? (float)$j['confidence'] : null,
+        'color'              => $inRange($j['color']   ?? null, 1, 10),
+        'clarity'            => $inRange($j['clarity'] ?? null, 1, 4),
+        'confidence'         => $conf,
         'error'              => false,
     ];
 }
@@ -98,8 +113,97 @@ function identify_call(string $imagePath, array $catalog, ?callable $transport =
     return $last;
 }
 
-/** 本物のAPI。SDK の導入は Task 6 で行う */
+/**
+ * 本物のAPI。SDK の呼び出し方は php/claude-api の作法に従う。
+ *
+ * キー名(outputConfig / mediaType / cacheControl 等)は Task 6 の Step 2 で
+ * `vendor/anthropic-ai/sdk/` の実物(examples・src の型定義)を確認して決めた。
+ * 推測ではなく SDK 付属の値オブジェクト(::with() 静的コンストラクタ、
+ * README が推奨する書き方)をそのまま使うことで、キー名の綴り違いを避けている。
+ */
 function identify_transport_anthropic(string $imagePath, string $prompt): array
 {
-    throw new RuntimeException('identify_transport_anthropic は Task 6 で実装する');
+    require_once __DIR__ . '/../../vendor/autoload.php';
+    $cfg = require __DIR__ . '/../../api_config.local.php';
+
+    $client = new \Anthropic\Client(apiKey: $cfg['anthropic_api_key']);
+
+    $shrunk = sys_get_temp_dir() . '/reco_' . bin2hex(random_bytes(8)) . '.jpg';
+    identify_shrink($imagePath, $shrunk);
+    $b64 = base64_encode(file_get_contents($shrunk));
+    @unlink($shrunk);
+
+    // 返させる項目は構造化出力で固定する(設計書 §6)。
+    $schema = ['type' => 'object', 'additionalProperties' => false,
+        'required' => ['is_beer','brand_text','brewery_text','matched_product_id',
+                       'style_guess','color','clarity','confidence'],
+        'properties' => [
+            'is_beer'            => ['type' => 'boolean'],
+            'brand_text'         => ['type' => ['string','null']],
+            'brewery_text'       => ['type' => ['string','null']],
+            'matched_product_id' => ['type' => ['string','null']],
+            'style_guess'        => ['type' => ['string','null']],
+            // 構造化出力の JSON Schema は 'integer'/'number' 型に minimum/maximum を
+            // サポートしない(API から invalid_request_error で拒否されたため確認済み)。
+            // 範囲はプロンプト文と identify_parse() 側のチェックで担保する。
+            'color'              => ['type' => ['integer','null']],
+            'clarity'            => ['type' => ['integer','null']],
+            'confidence'         => ['type' => 'number'],
+        ]];
+
+    $message = $client->messages->create(
+        model: IDENTIFY_MODEL,
+        maxTokens: 1024,
+        outputConfig: \Anthropic\Messages\OutputConfig::with(
+            format: \Anthropic\Messages\JSONOutputFormat::with(schema: $schema)
+        ),
+        system: [
+            // 銘柄一覧は毎回同じなのでキャッシュに載せる。呼ぶたびに送り直さない
+            \Anthropic\Messages\TextBlockParam::with(
+                text: $prompt,
+                cacheControl: \Anthropic\Messages\CacheControlEphemeral::with()
+            ),
+        ],
+        messages: [[
+            'role' => 'user',
+            'content' => [
+                \Anthropic\Messages\ImageBlockParam::with(
+                    source: \Anthropic\Messages\Base64ImageSource::with(
+                        data: $b64,
+                        mediaType: 'image/jpeg'
+                    )
+                ),
+                \Anthropic\Messages\TextBlockParam::with(text: 'この写真のビールを判定してください。'),
+            ],
+        ]],
+    );
+
+    // SDK のオブジェクトを identify_parse が読める素の配列に均す
+    $content = [];
+    foreach ($message->content as $b) {
+        if ($b->type === 'text') { $content[] = ['type' => 'text', 'text' => $b->text]; }
+    }
+    return ['id' => $message->id, 'model' => $message->model,
+            'stop_reason' => $message->stopReason, 'content' => $content];
+}
+
+/** 長辺を 1568px に縮める。大きい写真をそのまま送ると入力トークンが無駄に増える */
+function identify_shrink(string $src, string $dst): void
+{
+    $info = getimagesize($src);
+    if ($info === false) { throw new RuntimeException('画像として読めません'); }
+
+    $im = match ($info[2]) {
+        IMAGETYPE_JPEG => imagecreatefromjpeg($src),
+        IMAGETYPE_PNG  => imagecreatefrompng($src),
+        IMAGETYPE_WEBP => imagecreatefromwebp($src),
+        default        => throw new RuntimeException('対応していない形式です'),
+    };
+    $im = imagescale($im, ...(
+        $info[0] >= $info[1]
+            ? [min($info[0], IDENTIFY_MAX_EDGE), -1]
+            : [(int)round($info[0] * min($info[1], IDENTIFY_MAX_EDGE) / $info[1]), -1]
+    ));
+    imagejpeg($im, $dst, 82);
+    imagedestroy($im);
 }

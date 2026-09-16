@@ -23,7 +23,12 @@
 #   sql.php / *.js / pages.*) も外す。**特に common/sql_POST.php は、
 #   直接 GET されると rate_user に空行を1件 INSERT してしまう**
 #   (フォーム経由の変数が無いまま後段の INSERT に到達する)。
-#   新サイトが必要とするのは common/nebula/ だけ。
+#   新サイトが必要とするのは common/nebula/ と common/reco/ (写真判定・設計書 §6) だけ。
+#
+# **vendor/ (Composer 依存。anthropic-ai/sdk 等) も含める。** git archive は追跡している
+#   ファイルしか含めないため、写真判定機能が動くには vendor/ 自体をリポジトリに追跡させる
+#   必要がある。api_config.local.php (APIキー) は gitignore 済みなので、
+#   ここで明示的に列挙しなくても archive には含まれない (サーバ内で別途注入する)。
 set -euo pipefail
 cd "$(dirname "$0")/.."
 OUT="${1:-/tmp/claude-0/beer-deploy.tar.gz}"
@@ -31,6 +36,6 @@ mkdir -p "$(dirname "$OUT")"
 git archive --format=tar.gz --prefix=html/ -o "$OUT" HEAD \
   index.php style.css chartjs-plugin-datalabels.min.js googlebb691fb861bc6308.html \
   robots.txt ads.txt sitemap.php privacy.php about.php \
-  common/nebula style brewery beer assets \
+  common/nebula common/reco style brewery beer assets vendor \
   $(git ls-files img | grep -v '^img/product/' | tr '\n' ' ')
 echo "archive: $OUT ($(du -h "$OUT" | cut -f1))"
