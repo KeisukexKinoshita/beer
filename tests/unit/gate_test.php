@@ -50,3 +50,28 @@ eq(gate_check(ctx(['not_beer_streak' => 5, 'visitor_today' => 4])),
 // 停止フラグは他のどの理由よりも先に見る
 eq(gate_check(ctx(['enabled' => false, 'global_month' => 9999])),
    ['ok' => false, 'reason' => 'disabled'], '停止フラグが最優先');
+
+// --- 必須キーが欠けたら弾く(fail-closed)。上限が素通りしないことの担保 ---
+foreach (['enabled','mime','bytes','seconds_since','visitor_today',
+          'global_today','global_month','hash_seen','not_beer_streak'] as $missing) {
+    $c = ctx();
+    unset($c[$missing]);
+    eq(gate_check($c), ['ok' => false, 'reason' => 'bad_context'],
+       "必須キー {$missing} が欠けたら弾く");
+}
+
+// --- 停止フラグは他のどの拒否理由よりも先に見る ---
+$others = [
+    'bad_type'      => ['mime' => 'image/gif'],
+    'too_large'     => ['bytes' => 20 * 1024 * 1024],
+    'cached'        => ['hash_seen' => true],
+    'burst'         => ['seconds_since' => 1],
+    'visitor_daily' => ['visitor_today' => 999],
+    'global_daily'  => ['global_today' => 999],
+];
+foreach ($others as $reason => $over) {
+    eq(gate_check(ctx($over)), ['ok' => false, 'reason' => $reason],
+       "単独なら {$reason} で弾く");
+    eq(gate_check(ctx($over + ['enabled' => false])), ['ok' => false, 'reason' => 'disabled'],
+       "{$reason} と同時でも停止フラグが勝つ");
+}
