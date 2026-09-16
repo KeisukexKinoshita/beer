@@ -165,17 +165,24 @@ $seedGroup = ($view === 'result' && !empty($seed))
       <?php if (!empty($seed['StyleName'])): ?> · <?= e($seed['StyleName']) ?><?php endif; ?>
     </div>
 
-    <?php if (identify_branch($result) === 'confirm' || $result['matched_product_id']): ?>
-      <?php /* 確度ではなく「DBに銘柄があるか」で文言を決める。確度が中くらいでも
-               matched_product_id が入っていれば実在の銘柄に一致しているので、
-               「登録されていません」は事実と異なる(修正ラウンド1)。 */ ?>
+    <?php if (!$result['matched_product_id']): ?>
+      <?php /* DBに無いことは、確度によらず必ず伝える。
+               確度が高くても未登録の銘柄はある(ラベルははっきり読めたが、うちに登録が無い)。
+               (修正ラウンド2: ラウンド1の elseif が「確認を求める」と排他にしてしまい、
+               確度0.8以上でDBに無いときに「登録されていません」が出ない嘘が残っていた) */ ?>
+      <p class="ex-sub">この銘柄はまだ登録されていません。読み取れた特徴から探しました。</p>
+    <?php endif; ?>
+
+    <?php if ($result['matched_product_id'] || $result['brand_text']): ?>
+      <?php /* 確認は「読み取りが合っているか」を聞くもの。DBにあるかとは別の話なので、
+               読めた文字があるなら未登録でも聞く。未登録銘柄の確認結果は unknown_beer の
+               信頼度そのものになるので、むしろ価値が高い。読めた文字も無ければ聞くことが
+               無いので出さない。 */ ?>
       <form class="ex-ask" method="post" action="/try.php">
         <input type="hidden" name="upload_id" value="<?= (int)$uploadId ?>">
         <button class="ex-btn yes" name="confirm" value="yes">これで合っている</button>
         <button class="ex-btn"     name="confirm" value="no">ちがう</button>
       </form>
-    <?php else: ?>
-      <p class="ex-sub">この銘柄はまだ登録されていません。読み取れた特徴から探しました。</p>
     <?php endif; ?>
 
     <div class="ex-lbl">Similar</div>
