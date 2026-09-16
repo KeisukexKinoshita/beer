@@ -9,3 +9,8 @@ beer-data-work/
 
 # 参考用のスクリーンショット(他社サイトの画面・商品画像を含むため公開もcommitもしない)
 ref/
+
+# 評価用の写真(個人の写真・約26MB)。正解データ expected.json だけを追跡する
+data/sample/*.jpeg
+data/sample/*.jpg
+data/sample/*.png

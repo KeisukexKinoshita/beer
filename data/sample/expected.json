@@ -1,0 +1,143 @@
+{
+  "name": "画像判定の正解データ",
+  "created": "2026-09-16",
+  "purpose": "写真からの銘柄同定の精度を測る。設計書 §10(テスト方針)の『同定精度を測る検証』の入力",
+  "note": "画像は data/sample/ に置く(gitignore。個人の写真であり26MBあるため)。この正解データだけを追跡する",
+  "grading": "brewery と product の一致を見る。is_beer=false の2件は『ビールでないと判定できたか』だけを見る",
+  "db_snapshot": "prod / products 200件 / 2026-09-16 時点",
+  "cases": [
+    {
+      "file": "IMG_1006.jpeg", "is_beer": true,
+      "brewery": "オリオンビール", "product": "75BEER AMERICAN PALE ALE",
+      "style_on_label": "American Pale Ale",
+      "in_db": "none",
+      "difficulty": ["缶が斜め", "光の反射", "和文と英文が混在"],
+      "source": "https://www.orionbeer.co.jp/utility/history/h2024/0718.html"
+    },
+    {
+      "file": "IMG_1016.jpeg", "is_beer": true,
+      "brewery": "BREWDOG", "product": "HAZY JANE",
+      "style_on_label": "New England IPA",
+      "in_db": "product", "expected_product_id": "pr0013",
+      "difficulty": ["銘柄名が缶の側面に回り込んで一部見えない"],
+      "source": "label"
+    },
+    {
+      "file": "IMG_1189.jpeg", "is_beer": false,
+      "brewery": "コカ・コーラ", "product": "ご当地檸檬堂 檸檬道 しそレモン(北海道限定)",
+      "in_db": "n_a",
+      "difficulty": ["酒類だがビールではない(レモンサワー)", "罠のケース"],
+      "why_hard": "アルコール5%でラベルも缶。『酒だからビール』と誤らないかを見る",
+      "source": "label"
+    },
+    {
+      "file": "IMG_1455.jpeg", "is_beer": true,
+      "brewery": "ヤッホーブルーイング", "product": "有頂天エイリアンズ",
+      "style_on_label": "Hazy IPA",
+      "in_db": "product", "expected_product_id": "pr0151",
+      "db_issue": "DBの登録名が『有頂点エイリアンズ』と誤記されている(正しくは有頂天)",
+      "difficulty": ["銘柄名の左端が缶の曲面で切れている", "背景が派手で文字とコントラストが低い"],
+      "source": "https://yonasato.com/ec/product/detail/uchotenaliens/"
+    },
+    {
+      "file": "IMG_1738.jpeg", "is_beer": true,
+      "brewery": "伊勢角屋麦酒", "product": "Neko Nihiki",
+      "style_on_label": "New England IPA",
+      "in_db": "product", "expected_product_id": "pr0029",
+      "difficulty": ["瓶", "暗所", "ラベルが小さい", "蔵名が読み取りにくい"],
+      "source": "https://www.biyagura.jp/blog/neko-nihiki-%E3%81%8C%E6%AD%A2%E3%81%BE%E3%82%8A%E3%81%BE%E3%81%9B%E3%82%93%EF%BC%81/"
+    },
+    {
+      "file": "IMG_1765.jpeg", "is_beer": true,
+      "brewery": "伊勢角屋麦酒", "product": "ペールエール",
+      "style_on_label": "PALE ALE",
+      "in_db": "product", "expected_product_id": "pr0084",
+      "db_issue": "DBの登録名は『ペールエール（缶）』。表記ゆれの吸収が要る",
+      "difficulty": ["蔵名がロゴ(角のマーク)主体", "ISEKADO のラテン表記から蔵を引く必要がある"],
+      "source": "label"
+    },
+    {
+      "file": "IMG_2173.jpeg", "is_beer": true,
+      "brewery": "BREWDOG", "product": "HOP TIGER",
+      "style_on_label": "New England Double IPA",
+      "abv_on_label": 7.5,
+      "in_db": "maker_only",
+      "difficulty": [],
+      "why_useful": "蔵はDBにあるが銘柄が無い。unknown_beer に落ちる経路のテスト",
+      "source": "label"
+    },
+    {
+      "file": "IMG_2238.jpeg", "is_beer": true,
+      "brewery": "奥入瀬ビール", "product": "青天の霹靂",
+      "style_on_label": "Kölsch",
+      "in_db": "none",
+      "difficulty": ["銘柄名が縦書きの明朝", "蔵名がラテン表記(OIRASE BEER)のみ"],
+      "source": "https://oirase.beer/news/20231201.html"
+    },
+    {
+      "file": "IMG_2315.jpeg", "is_beer": true,
+      "brewery": "Paulaner", "product": "Hefe-Weißbier Naturtrüb",
+      "style_on_label": "Hefeweizen",
+      "in_db": "none",
+      "difficulty": ["ドイツ語", "ß などの特殊文字"],
+      "source": "label"
+    },
+    {
+      "file": "IMG_2441.jpeg", "is_beer": true,
+      "brewery": "UCHU BREWING", "product": "EQUANIMITY",
+      "style_on_label": "HDHC DIPA",
+      "in_db": "maker_only",
+      "difficulty": ["銘柄名の先頭文字が缶の曲面で隠れている(『QUANIMITY』としか読めない)"],
+      "source": "https://my-beers.com/beers/4387"
+    },
+    {
+      "file": "IMG_4684.jpeg", "is_beer": true,
+      "brewery": "Heineken", "product": "Heineken Original",
+      "style_on_label": "Malt Lager",
+      "in_db": "none",
+      "difficulty": ["瓶", "背景が明るく雑多"],
+      "source": "label"
+    },
+    {
+      "file": "IMG_4756.jpeg", "is_beer": true,
+      "brewery": "UCHU BREWING", "product": "AUSMA",
+      "style_on_label": "Tropical Smoothie Sour",
+      "collab": "Ārpus Brewing Co.(ラトビア)との共同醸造",
+      "in_db": "maker_only",
+      "difficulty": ["暗所", "手持ちで傾いている", "黒缶に白文字で露出が難しい"],
+      "source": "https://www.arome.jp/products/detail.php?product_id=7884"
+    },
+    {
+      "file": "IMG_4816.jpeg", "is_beer": true,
+      "brewery": "UCHU BREWING", "product": "ASTRO AURA",
+      "style_on_label": "TDH DIPA",
+      "in_db": "maker_only",
+      "difficulty": [],
+      "source": "label"
+    },
+    {
+      "file": "IMG_4817.jpeg", "is_beer": true,
+      "brewery": "UCHU BREWING", "product": "ASTRO AURA",
+      "style_on_label": "TDH DIPA",
+      "in_db": "maker_only",
+      "barcode": "4589842377809",
+      "difficulty": ["缶の裏面。表ラベルが写っていない", "銘柄名は本文コピーの中にしか出てこない"],
+      "why_useful": "IMG_4816 と同一銘柄。裏面からでも同定できるか、および同一銘柄を2枚から一致させられるかのテスト",
+      "source": "label"
+    },
+    {
+      "file": "IMG_4818.jpeg", "is_beer": false,
+      "brewery": "Red Bull", "product": "Red Bull エナジードリンク",
+      "in_db": "n_a",
+      "difficulty": ["ビールではない", "意図的に入れた罠"],
+      "source": "label"
+    }
+  ],
+  "distribution": {
+    "DBに銘柄がある": 4,
+    "蔵はあるが銘柄が無い": 5,
+    "蔵も無い": 4,
+    "ビールではない": 2,
+    "合計": 15
+  }
+}
