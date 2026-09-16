@@ -91,3 +91,27 @@ $sid = function (string $v): array {
 eq(identify_parse($sid('st0007'))['style_guess'], 'st0007', '正しいIDはそのまま通す');
 eq(identify_parse($sid('st007'))['style_guess'],  null,     '桁が足りないIDは受け取らない');
 eq(identify_parse($sid('pr0007'))['style_guess'], null,     '銘柄IDは受け取らない');
+
+// --- 銘柄IDも形式を検査する(style_guess と同じ理由) ---
+$pidOf = function ($v): array {
+    return ['content' => [['type' => 'text',
+        'text' => json_encode(['is_beer' => true, 'matched_product_id' => $v])]]];
+};
+eq(identify_parse($pidOf('pr0013'))['matched_product_id'], 'pr0013', '正しい銘柄IDは通す');
+eq(identify_parse($pidOf('HAZY JANE'))['matched_product_id'], null,  '銘柄名は受け取らない');
+eq(identify_parse($pidOf('pr013'))['matched_product_id'],  null,     '桁が足りないIDは受け取らない');
+eq(identify_parse($pidOf('st0007'))['matched_product_id'], null,     'スタイルIDは受け取らない');
+
+// --- 一覧に無いIDは、形式が正しくても受け取らない ---
+$known = [['ProductID' => 'pr0013', 'ProductName' => 'HAZY JANE', 'MakerName' => 'BREWDOG']];
+$styles = [['StyleID' => 'st0007', 'StyleName' => 'New England IPA', 'FamilyName' => 'IPA']];
+$ghost = function (string $pid) {
+    return function (string $path, string $prompt) use ($pid): array {
+        return ['model' => 'claude-sonnet-5', 'content' => [['type' => 'text',
+            'text' => json_encode(['is_beer' => true, 'matched_product_id' => $pid])]]];
+    };
+};
+eq(identify_call('/dev/null', $known, $styles, $ghost('pr9999'))['matched_product_id'], null,
+   '一覧に無い銘柄IDは受け取らない');
+eq(identify_call('/dev/null', $known, $styles, $ghost('pr0013'))['matched_product_id'], 'pr0013',
+   '一覧にある銘柄IDは通す');

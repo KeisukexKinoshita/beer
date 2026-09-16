@@ -50,11 +50,16 @@ function identify_parse(array $res): array
     $sid = $j['style_guess'] ?? null;
     if ($sid !== null && !preg_match('/^st\d{4}$/', (string)$sid)) { $sid = null; }
 
+    // 銘柄IDも char(6)。形が違うものを通すと、6文字に切り詰められて
+    // 無関係な実在の銘柄と偶然一致し、まったく違うビールを「これですね」と見せてしまう。
+    $pid = $j['matched_product_id'] ?? null;
+    if ($pid !== null && !preg_match('/^pr\d{4}$/', (string)$pid)) { $pid = null; }
+
     return [
         'is_beer'            => isset($j['is_beer']) ? (bool)$j['is_beer'] : null,
         'brand_text'         => $j['brand_text']         ?? null,
         'brewery_text'       => $j['brewery_text']       ?? null,
-        'matched_product_id' => $j['matched_product_id'] ?? null,
+        'matched_product_id' => $pid,
         'style_guess'        => $sid,
         'color'              => $inRange($j['color']   ?? null, 1, 10),
         'clarity'            => $inRange($j['clarity'] ?? null, 1, 4),
@@ -119,6 +124,15 @@ function identify_call(string $imagePath, array $catalog, array $styles, ?callab
             $res = $send($imagePath, $prompt);
             $r = identify_parse($res);
             $r['model'] = $res['model'] ?? IDENTIFY_MODEL;
+            // 一覧に無いIDは受け取らない。形式が正しくても実在しなければ、
+            // 後段が銘柄を引けずに落ちる。
+            if ($r['matched_product_id'] !== null) {
+                $known = false;
+                foreach ($catalog as $c) {
+                    if (($c['ProductID'] ?? null) === $r['matched_product_id']) { $known = true; break; }
+                }
+                if (!$known) { $r['matched_product_id'] = null; }
+            }
             if (!$r['error']) { return $r; }
             $last = $r;
         } catch (Throwable $e) {
@@ -147,9 +161,12 @@ function identify_transport_anthropic(string $imagePath, string $prompt): array
     $client = new \Anthropic\Client(apiKey: $cfg['anthropic_api_key']);
 
     $shrunk = sys_get_temp_dir() . '/reco_' . bin2hex(random_bytes(8)) . '.jpg';
-    identify_shrink($imagePath, $shrunk);
-    $b64 = base64_encode(file_get_contents($shrunk));
-    @unlink($shrunk);
+    try {
+        identify_shrink($imagePath, $shrunk);
+        $b64 = base64_encode(file_get_contents($shrunk));
+    } finally {
+        @unlink($shrunk);
+    }
 
     // 返させる項目は構造化出力で固定する(設計書 §6)。
     $schema = ['type' => 'object', 'additionalProperties' => false,
