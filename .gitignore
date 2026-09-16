@@ -17,3 +17,6 @@ data/sample/*.png
 
 # subagent-driven-development の作業領域(台帳・ブリーフ・レビュー資材)
 .superpowers/
+
+# Anthropic の APIキー。db_config.local.php と同じ方式で、実値はリポジトリに置かない
+api_config.local.php
