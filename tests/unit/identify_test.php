@@ -6,10 +6,11 @@ $fx = function (string $name): array {
 };
 
 // --- 応答の読み取り ---
+// high.json は本物のAPI応答(2026-09-16 実測)。記録が正なので期待値も実測に合わせる。
 $r = identify_parse($fx('high'));
 eq($r['is_beer'], true,                'ビールだと判定できている');
 eq($r['matched_product_id'], 'pr0013', 'DBの銘柄に結びついている');
-eq($r['confidence'], 0.92,             '確度が取れている');
+eq($r['confidence'], 0.95,             '確度が取れている');
 
 $r = identify_parse($fx('low'));
 eq($r['matched_product_id'], null, '一覧に無い銘柄は matched_product_id が null');
@@ -43,21 +44,24 @@ $transport = function (string $path, string $prompt) use ($fx, &$calls): array {
     return $fx('high');
 };
 $catalog = [['ProductID' => 'pr0013', 'ProductName' => 'HAZY JANE', 'MakerName' => 'BREWDOG']];
-$r = identify_call('/dev/null', $catalog, $transport);
+$styles  = [['StyleID' => 'st0007', 'StyleName' => 'New England IPA', 'FamilyName' => 'IPA']];
+$r = identify_call('/dev/null', $catalog, $styles, $transport);
 eq($calls, 1,                          'transport がちょうど1回呼ばれる');
 eq($r['matched_product_id'], 'pr0013', '差し替えた経路でも結果が取れる');
 
 // --- API が失敗したとき ---
 $boom = function (string $path, string $prompt): array { throw new RuntimeException('500'); };
-$r = identify_call('/dev/null', $catalog, $boom);
+$r = identify_call('/dev/null', $catalog, $styles, $boom);
 eq($r['error'], true,                  '例外を投げずにエラーとして返す');
 eq($r['is_beer'], null,                'エラー時は判定を作らない');
 
 // --- プロンプトの固定部分 ---
-$p = identify_prompt($catalog);
+$p = identify_prompt($catalog, $styles);
 ok(strpos($p, 'pr0013') !== false,     '銘柄一覧がプロンプトに入っている');
 ok(strpos($p, 'HAZY JANE') !== false,  '銘柄名も入っている');
-eq(identify_prompt($catalog), $p,      '同じ入力なら同じ文字列(キャッシュが効く条件)');
+ok(strpos($p, 'st0007') !== false,     'スタイル一覧がプロンプトに入っている');
+ok(strpos($p, 'New England IPA') !== false, 'スタイル名も入っている');
+eq(identify_prompt($catalog, $styles), $p, '同じ入力なら同じ文字列(キャッシュが効く条件)');
 
 // --- 範囲外の値は「未取得」に落とす(スキーマで縛れないぶんをここで受ける) ---
 $withVals = function (array $over): array {
@@ -73,3 +77,17 @@ eq(identify_parse($withVals(['clarity' => 5]))['clarity'],   null, 'clarity 5 �
 eq(identify_parse($withVals(['clarity' => 4]))['clarity'],   4,    'clarity 4 は範囲内');
 eq(identify_parse($withVals(['confidence' => 1.5]))['confidence'], null, '確度 1.5 は範囲外なので null');
 eq(identify_parse($withVals(['confidence' => 1.0]))['confidence'], 1.0,  '確度 1.0 は範囲内');
+
+// --- スタイルはIDでしか受け取らない ---
+// high.json は、プロンプトにスタイル一覧を渡していなかった頃の**本物の応答**で、
+// style_guess に "New England IPA" というスタイル名が入っている。
+// 名前で来たら null に落とすことを、この実物で固定する。
+eq(identify_parse($fx('high'))['style_guess'], null, 'スタイル名で返されたら受け取らない');
+
+$sid = function (string $v): array {
+    return ['content' => [['type' => 'text',
+        'text' => json_encode(['is_beer' => true, 'style_guess' => $v])]]];
+};
+eq(identify_parse($sid('st0007'))['style_guess'], 'st0007', '正しいIDはそのまま通す');
+eq(identify_parse($sid('st007'))['style_guess'],  null,     '桁が足りないIDは受け取らない');
+eq(identify_parse($sid('pr0007'))['style_guess'], null,     '銘柄IDは受け取らない');

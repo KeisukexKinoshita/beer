@@ -1,11 +1,11 @@
 {
-  "id": "msg_test_high",
-  "model": "claude-sonnet-5",
-  "stop_reason": "end_turn",
-  "content": [
-    {
-      "type": "text",
-      "text": "{\"is_beer\":true,\"brand_text\":\"HAZY JANE\",\"brewery_text\":\"BREWDOG\",\"matched_product_id\":\"pr0013\",\"style_guess\":\"st0007\",\"color\":4,\"clarity\":3,\"confidence\":0.92}"
-    }
-  ]
+    "id": "msg_011Cf7Eh9kdxKL6cMwrFEheA",
+    "model": "claude-sonnet-5",
+    "stop_reason": "end_turn",
+    "content": [
+        {
+            "type": "text",
+            "text": "{\"is_beer\": true, \"brand_text\": \"HAZY JANE\", \"brewery_text\": \"BREWDOG\", \"matched_product_id\": \"pr0013\", \"style_guess\": \"New England IPA\", \"color\": 6, \"clarity\": 2, \"confidence\": 0.95}"
+        }
+    ]
 }

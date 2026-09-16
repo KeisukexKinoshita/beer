@@ -45,12 +45,17 @@ function identify_parse(array $res): array
     $conf = isset($j['confidence']) ? (float)$j['confidence'] : null;
     if ($conf !== null && ($conf < 0 || $conf > 1)) { $conf = null; }
 
+    // スタイルはIDで答えてもらう約束。名前や自由文が来たら受け取らない。
+    // char(6) の列に入らず、黙って切り詰められて後段の推薦が狂うため。
+    $sid = $j['style_guess'] ?? null;
+    if ($sid !== null && !preg_match('/^st\d{4}$/', (string)$sid)) { $sid = null; }
+
     return [
         'is_beer'            => isset($j['is_beer']) ? (bool)$j['is_beer'] : null,
         'brand_text'         => $j['brand_text']         ?? null,
         'brewery_text'       => $j['brewery_text']       ?? null,
         'matched_product_id' => $j['matched_product_id'] ?? null,
-        'style_guess'        => $j['style_guess']        ?? null,
+        'style_guess'        => $sid,
         'color'              => $inRange($j['color']   ?? null, 1, 10),
         'clarity'            => $inRange($j['clarity'] ?? null, 1, 4),
         'confidence'         => $conf,
@@ -69,19 +74,32 @@ function identify_branch(array $r): string
 }
 
 /**
- * プロンプトの固定部分。**銘柄一覧を先頭に置いてキャッシュに載せる**ので、
+ * プロンプトの固定部分。**銘柄一覧とスタイル一覧を先頭に置いてキャッシュに載せる**ので、
  * 同じ入力からは必ず同じ文字列が出なければならない(1バイト違うとキャッシュが外れる)。
+ *
+ * スタイルは**IDで答えてもらう**。名前で答えられると char(6) の列に入らない。
+ *
+ * @param array $catalog [['ProductID','ProductName','MakerName'], ...]
+ * @param array $styles  [['StyleID','StyleName','FamilyName'], ...]
  */
-function identify_prompt(array $catalog): string
+function identify_prompt(array $catalog, array $styles): string
 {
-    $lines = [];
+    $beerLines = [];
     foreach ($catalog as $c) {
-        $lines[] = $c['ProductID'] . "\t" . $c['ProductName'] . "\t" . ($c['MakerName'] ?? '');
+        $beerLines[] = $c['ProductID'] . "\t" . $c['ProductName'] . "\t" . ($c['MakerName'] ?? '');
+    }
+    $styleLines = [];
+    foreach ($styles as $s) {
+        $styleLines[] = $s['StyleID'] . "\t" . $s['StyleName'] . "\t" . ($s['FamilyName'] ?? '');
     }
     return "次はこのサイトに登録されているビールの一覧です。ID・銘柄名・醸造所の順にタブ区切りで並んでいます。\n\n"
-         . implode("\n", $lines)
+         . implode("\n", $beerLines)
+         . "\n\n次はスタイルの一覧です。ID・スタイル名・系統の順です。\n\n"
+         . implode("\n", $styleLines)
          . "\n\n写真を見て、次をJSONで答えてください。"
          . "一覧にない銘柄なら matched_product_id を null にし、読み取れた文字は brand_text に入れてください。"
+         . "style_guess には**スタイル一覧のID(st で始まる6文字)をそのまま**入れてください。"
+         . "スタイル名や自由な文字列を入れないでください。当てはまるものが無ければ null にしてください。"
          . "ビール以外の飲み物(チューハイ・エナジードリンク等)は is_beer を false にしてください。";
 }
 
@@ -90,9 +108,9 @@ function identify_prompt(array $catalog): string
  * @param callable|null $transport fn(string $imagePath, string $prompt): array
  *                                 null なら本物のAPIを呼ぶ
  */
-function identify_call(string $imagePath, array $catalog, ?callable $transport = null): array
+function identify_call(string $imagePath, array $catalog, array $styles, ?callable $transport = null): array
 {
-    $prompt = identify_prompt($catalog);
+    $prompt = identify_prompt($catalog, $styles);
     $send   = $transport ?? 'identify_transport_anthropic';
 
     $last = null;
