@@ -14,3 +14,6 @@ ref/
 data/sample/*.jpeg
 data/sample/*.jpg
 data/sample/*.png
+
+# subagent-driven-development の作業領域(台帳・ブリーフ・レビュー資材)
+.superpowers/

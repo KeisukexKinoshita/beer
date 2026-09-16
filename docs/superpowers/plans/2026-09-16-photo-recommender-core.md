@@ -325,7 +325,7 @@ function group_map_js() {
 - [ ] **Step 5: テストが通ることを確かめる**
 
 Run: `php tests/unit/run.php group`
-Expected: `13 pass / 0 fail`
+Expected: `12 pass / 0 fail`
 
 - [ ] **Step 6: 既存ページが壊れていないことを確かめる**
 
@@ -800,6 +800,10 @@ eq($r['is_beer'], true,                'ビールだと判定できている');
 eq($r['matched_product_id'], 'pr0013', 'DBの銘柄に結びついている');
 eq($r['confidence'], 0.92,             '確度が取れている');
 
+$r = identify_parse($fx('low'));
+eq($r['matched_product_id'], null, '一覧に無い銘柄は matched_product_id が null');
+ok($r['brand_text'] !== null,      '一覧に無くても読み取った文字は残る');
+
 $r = identify_parse($fx('not_beer'));
 eq($r['is_beer'], false,               'ビール以外を見分けている');
 eq($r['matched_product_id'], null,     'ビール以外は銘柄に結びつけない');
@@ -1015,7 +1019,7 @@ function identify_transport_anthropic(string $imagePath, string $prompt): array
 - [ ] **Step 5: テストが通ることを確かめる**
 
 Run: `php tests/unit/run.php identify`
-Expected: `16 pass / 0 fail`
+Expected: `19 pass / 0 fail`
 
 - [ ] **Step 6: APIキーの置き方の見本を作る**
 
@@ -1193,7 +1197,7 @@ Expected: `{"is_beer":true,...,"matched_product_id":"pr0013",...}`。**手で書
 - [ ] **Step 5: 記録を置き換えてもテストが通ることを確かめる**
 
 Run: `php tests/unit/run.php identify`
-Expected: `16 pass / 0 fail`。もし `confidence` の期待値 `0.92` で落ちたら、**テスト側を実測値に合わせる**(記録は本物が正)。
+Expected: `19 pass / 0 fail`。もし `confidence` の期待値 `0.92` で落ちたら、**テスト側を実測値に合わせる**(記録は本物が正)。
 
 - [ ] **Step 6: 配布物に含める**
 
