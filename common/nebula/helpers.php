@@ -92,28 +92,48 @@ function style_group($family, $name) {
  * 絞り込みチップもこの配列から生成する。**足すときはこの1箇所だけ**。
  * 表示順は凡例・チップの並び順になる。
  */
+
+/**
+ * スタイルグループの定義。**色とラベルの単一の出所はここ。**
+ *
+ * 値は [通常色, 強調色, ラベル] の3つ組。
+ * - 通常色(減彩): 一覧・推薦リスト・凡例など、色が並ぶところ全部
+ * - 強調色(現行値): 次の3か所だけ。同定された1本のハロー /
+ *   一覧で絞り込み中・選択中 / スタイル詳細ページのそのページ自身のスタイル
+ *
+ * 黒地に現行のネオンを並べると駄菓子的に見えるため二段にした(設計書 §11)。
+ * 足すときはここだけを直す。表示順は凡例・チップの並び順になる。
+ */
 function group_map() {
     static $m = [
-        'ipa'   => ['#5fd0ff', 'IPA系'],
-        'stout' => ['#b98cff', 'Stout / 黒'],
-        'sour'  => ['#ff6fb0', 'Sour'],
-        'pale'  => ['#ffd06b', 'Pale / Amber'],
-        'wheat' => ['#c8e86a', '小麦 / Weizen'],
-        'other' => ['#5cf0c2', 'Lager / その他'],
+        'ipa'   => ['#86adbd', '#5fd0ff', 'IPA系'],
+        'stout' => ['#a396b8', '#b98cff', 'Stout / 黒'],
+        'sour'  => ['#bf96a8', '#ff6fb0', 'Sour'],
+        'pale'  => ['#c0b088', '#ffd06b', 'Pale / Amber'],
+        'wheat' => ['#aeb890', '#c8e86a', '小麦 / Weizen'],
+        'other' => ['#88b8ab', '#5cf0c2', 'Lager / その他'],
     ];
     return $m;
 }
 
-/** グループ→ {color,label} */
+/** グループ→ [通常色, ラベル]。**既存の呼び出し9箇所はこの形に依存している** */
 function group_meta($g) {
     $m = group_map();
-    return $m[$g] ?? $m['other'];
+    $v = $m[$g] ?? $m['other'];
+    return [$v[0], $v[2]];
 }
 
-/** JS へ渡す形 {key: {c: 色, l: ラベル}} */
+/** グループ→ 強調色 */
+function group_hi($g) {
+    $m = group_map();
+    $v = $m[$g] ?? $m['other'];
+    return $v[1];
+}
+
+/** JS へ渡す形 {key: {c: 通常色, h: 強調色, l: ラベル}} */
 function group_map_js() {
     $out = [];
-    foreach (group_map() as $k => $v) { $out[$k] = ['c' => $v[0], 'l' => $v[1]]; }
+    foreach (group_map() as $k => $v) { $out[$k] = ['c' => $v[0], 'h' => $v[1], 'l' => $v[2]]; }
     return $out;
 }
 
