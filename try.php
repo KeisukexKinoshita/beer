@@ -7,6 +7,7 @@ require_once __DIR__ . '/common/reco/repo.php';
 require_once __DIR__ . '/common/reco/gate.php';
 require_once __DIR__ . '/common/reco/identify.php';
 require_once __DIR__ . '/common/reco/cascade.php';
+require_once __DIR__ . '/common/reco/handle.php';
 
 $visitorId = visitor_current();
 $view = 'intake';   // intake / result / error
@@ -24,74 +25,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm'])) {
     exit;
 }
 
+// 門番・判定・保存・記録の判断は common/reco/handle.php の reco_handle_upload() に
+// 切り出してある(最終レビュー指摘: ここに金・嘘・写真の判断が全部あるのに
+// テストが無かった)。本物のHTTPアップロードかどうかの検査(is_uploaded_file())だけは
+// ここに残す。reco_handle_upload() に含めると、単体テストで作る $_FILES はどれも
+// 本物のHTTPアップロードではないので is_uploaded_file() が常に偽になり、
+// 金・嘘・写真の判断を一切テストできなくなる
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['photo'])) {
     $f = $_FILES['photo'];
     if ($f['error'] !== UPLOAD_ERR_OK || !is_uploaded_file($f['tmp_name'])) {
         $view = 'error'; $msg = '写真を受け取れませんでした。';
     } else {
-        $hash = hash_file('sha256', $f['tmp_name']);
-        $mime = mime_content_type($f['tmp_name']);
-        $g = gate_check(gate_context($visitorId, $mime, (int)$f['size'], $hash));
-
-        // reco_record() は (upload_id, position) に一意制約(uq_reco_pos)がある。
-        // 新規に判定した upload_id のときだけ記録してよい。キャッシュ経路(同じ写真の
-        // 再送)は既存の upload_id を再利用するので、ここで再度書くと制約違反で落ちる。
-        $isFreshIdentify = false;
-
-        if (!$g['ok'] && $g['reason'] === 'cached') {
-            // 同じ写真。APIを呼ばずに前回の結果を使う
-            $prev = upload_by_hash($hash);
-            $imageWebPath = $prev['image_path'] ? '/' . $prev['image_path'] : null;
-            $result = ['is_beer' => (bool)$prev['is_beer'], 'matched_product_id' => $prev['product_id'],
-                       'brand_text' => $prev['brand_text'], 'brewery_text' => $prev['brewery_text'],
-                       'style_guess' => $prev['style_guess'], 'color' => $prev['color'],
-                       'clarity' => $prev['clarity'],
-                       'confidence' => $prev['confidence'] !== null ? (float)$prev['confidence'] : null,
-                       'error' => false];
-            $uploadId = (int)$prev['upload_id'];
-            $view = 'result';
-        } elseif (!$g['ok']) {
-            $view = 'error'; $msg = gate_message($g['reason']);
-        } else {
-            $result = identify_call($f['tmp_name'], reco_catalog(), reco_style_catalog());
-            // API失敗(is_beer=null, error=true)と「ビール以外」(is_beer=false, error=false)
-            // を取り違えない。$result['error'] を先に見る。identify_branch() は両方とも
-            // 'not_beer' として畳んでしまうので、ここでは使わない。
-            if (!empty($result['error'])) {
-                $view = 'error'; $msg = 'いま混み合っています。しばらくしてからお試しください。';
-            } else {
-                // ビール以外は画像を保存しない(設計書 §9)
-                $path = null;
-                if ($result['is_beer'] === true) {
-                    $path = 'img/upload/' . $hash . '.jpg';
-                    identify_shrink($f['tmp_name'], __DIR__ . '/' . $path);
-                    $imageWebPath = '/' . $path;
-                }
-                $uploadId = upload_record($visitorId, $result, $hash, $path);
-                if ($result['is_beer'] === true && !$result['matched_product_id'] && $result['brand_text']) {
-                    unknown_bump($result['brand_text'], $result['brewery_text']);
-                }
-                $isFreshIdentify = true;
-                $view = 'result';
-            }
-        }
-
-        if ($view === 'result' && $result['is_beer'] === true) {
-            $seed = $result['matched_product_id']
-                ? beer_by_id($result['matched_product_id'])
-                : ['ProductID' => null, 'StyleID' => $result['style_guess'],
-                   'FamilyName' => '', 'StyleName' => '', 'MakerID' => null, 'Alcohol' => null];
-            if (!$result['matched_product_id'] && $result['style_guess']) {
-                $s = style_by_id($result['style_guess']);
-                $seed['FamilyName'] = $s['FamilyName'] ?? '';
-                $seed['StyleName']  = $s['StyleName'] ?? '';
-            }
-            $picked = reco_pick($seed, reco_pool());
-            if ($isFreshIdentify) {
-                reco_record($uploadId, $picked);
-            }
-            event_record($visitorId, 'reco_view', $result['matched_product_id'], $uploadId);
-        }
+        $h = reco_handle_upload($visitorId, $f);
+        $view         = $h['view'];
+        $msg          = $h['msg'];
+        $result       = $h['result'];
+        $picked       = $h['picked'];
+        $uploadId     = $h['uploadId'];
+        $imageWebPath = $h['imageWebPath'];
+        $seed         = $h['seed'];
     }
 }
 
@@ -165,6 +117,8 @@ $seedGroup = ($view === 'result' && !empty($seed))
       <?php if (!empty($seed['StyleName'])): ?> · <?= e($seed['StyleName']) ?><?php endif; ?>
     </div>
 
+    <?php $branch = identify_branch($result); ?>
+
     <?php if (!$result['matched_product_id']): ?>
       <?php /* DBに無いことは、確度によらず必ず伝える。
                確度が高くても未登録の銘柄はある(ラベルははっきり読めたが、うちに登録が無い)。
@@ -173,17 +127,19 @@ $seedGroup = ($view === 'result' && !empty($seed))
       <p class="ex-sub">この銘柄はまだ登録されていません。読み取れた特徴から探しました。</p>
     <?php endif; ?>
 
-    <?php if ($result['matched_product_id'] || $result['brand_text']): ?>
-      <?php /* 確認は「読み取りが合っているか」を聞くもの。DBにあるかとは別の話なので、
-               読めた文字があるなら未登録でも聞く。未登録銘柄の確認結果は unknown_beer の
-               信頼度そのものになるので、むしろ価値が高い。読めた文字も無ければ聞くことが
-               無いので出さない。 */ ?>
-      <form class="ex-ask" method="post" action="/try.php">
-        <input type="hidden" name="upload_id" value="<?= (int)$uploadId ?>">
-        <button class="ex-btn yes" name="confirm" value="yes">これで合っている</button>
-        <button class="ex-btn"     name="confirm" value="no">ちがう</button>
-      </form>
-    <?php endif; ?>
+    <?php /* is_beer なら必ず確認を求める。外したときに黙って誤った推薦を出さないのが
+             この画面の肝(設計書 §3)。銘柄名が読めなかったときこそ確認が要る
+             (最終レビュー C-3: 読めなかったときにだけ確認が出ない嘘が残っていた) */ ?>
+    <form class="ex-ask" method="post" action="/try.php">
+      <input type="hidden" name="upload_id" value="<?= (int)$uploadId ?>">
+      <?php if ($branch === 'unknown' && !$result['brand_text']): ?>
+        <span class="ex-sub" style="flex:1 1 100%">
+          銘柄名は読み取れませんでした。<?= !empty($seed['StyleName']) ? e($seed['StyleName']) . ' に見えます。' : '' ?>合っていますか?
+        </span>
+      <?php endif; ?>
+      <button class="ex-btn yes" name="confirm" value="yes">これで合っている</button>
+      <button class="ex-btn"     name="confirm" value="no">ちがう</button>
+    </form>
 
     <div class="ex-lbl">Similar</div>
     <?php foreach ($picked as $p): $r = $p['row'];
