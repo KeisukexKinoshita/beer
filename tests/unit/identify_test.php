@@ -115,3 +115,13 @@ eq(identify_call('/dev/null', $known, $styles, $ghost('pr9999'))['matched_produc
    '一覧に無い銘柄IDは受け取らない');
 eq(identify_call('/dev/null', $known, $styles, $ghost('pr0013'))['matched_product_id'], 'pr0013',
    '一覧にある銘柄IDは通す');
+
+// --- 自由文は VARCHAR(191) に収める(黙って切り詰められるのを防ぐ) ---
+$longText = function (string $key, int $len): array {
+    return ['content' => [['type' => 'text',
+        'text' => json_encode(['is_beer' => true, $key => str_repeat('あ', $len)])]]];
+};
+eq(mb_strlen(identify_parse($longText('brand_text', 300))['brand_text']),   191, '長い銘柄名は191文字に丸める');
+eq(mb_strlen(identify_parse($longText('brewery_text', 300))['brewery_text']), 191, '長い蔵名は191文字に丸める');
+eq(mb_strlen(identify_parse($longText('brand_text', 191))['brand_text']),   191, 'ちょうど191文字はそのまま');
+eq(identify_parse($longText('brand_text', 0))['brand_text'], null, '空文字は null にする');

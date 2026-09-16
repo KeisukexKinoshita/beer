@@ -45,6 +45,14 @@ function identify_parse(array $res): array
     $conf = isset($j['confidence']) ? (float)$j['confidence'] : null;
     if ($conf !== null && ($conf < 0 || $conf > 1)) { $conf = null; }
 
+    // brand_text / brewery_text は VARCHAR(191)。dev の sql_mode に STRICT_TRANS_TABLES が
+    // 無いため、超過しても例外にならず黙って切り詰められる。切り詰められた銘柄名は
+    // unknown_beer(次のデータ投入の優先リスト)に載るので、ここで明示的に丸める。
+    $text191 = function ($v) {
+        if ($v === null || $v === '') { return null; }
+        return mb_substr((string)$v, 0, 191);
+    };
+
     // スタイルはIDで答えてもらう約束。名前や自由文が来たら受け取らない。
     // char(6) の列に入らず、黙って切り詰められて後段の推薦が狂うため。
     $sid = $j['style_guess'] ?? null;
@@ -57,8 +65,8 @@ function identify_parse(array $res): array
 
     return [
         'is_beer'            => isset($j['is_beer']) ? (bool)$j['is_beer'] : null,
-        'brand_text'         => $j['brand_text']         ?? null,
-        'brewery_text'       => $j['brewery_text']       ?? null,
+        'brand_text'         => $text191($j['brand_text']   ?? null),
+        'brewery_text'       => $text191($j['brewery_text'] ?? null),
         'matched_product_id' => $pid,
         'style_guess'        => $sid,
         'color'              => $inRange($j['color']   ?? null, 1, 10),
