@@ -1,0 +1,11 @@
+<?php
+/*
+ * Anthropic の APIキー。db_config.local.php と同じ方式で、
+ * **実値はリポジトリに置かない**。サーバ内で注入する。
+ * コピーして api_config.local.php を作り、キーを入れる。
+ */
+return [
+    'anthropic_api_key' => 'sk-ant-xxxxxxxxxxxxxxxxxxxx',
+    'reco_enabled'      => true,   // false にすると機能全体が止まる(設計書 §9)
+    'daily_cap'         => 200,    // dev では 30 にする
+];

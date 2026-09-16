@@ -1,0 +1,11 @@
+{
+  "id": "msg_test_low",
+  "model": "claude-sonnet-5",
+  "stop_reason": "end_turn",
+  "content": [
+    {
+      "type": "text",
+      "text": "{\"is_beer\":true,\"brand_text\":\"青天の霹靂\",\"brewery_text\":\"OIRASE BEER\",\"matched_product_id\":null,\"style_guess\":\"st0045\",\"color\":3,\"clarity\":2,\"confidence\":0.35}"
+    }
+  ]
+}
