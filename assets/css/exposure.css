@@ -1,0 +1,70 @@
+@charset "UTF-8";
+/* 露光案(設計書 §11)。地は純黒。写真が主役。色はスタイル分類だけが持つ。
+   参照モック: docs/design-mocks/D_exposure.html */
+
+:root{
+  --bg:#000; --ink:#fff; --dim:#9d9d9d; --faint:#6a6a6a;
+  --line:rgba(255,255,255,.1); --line2:rgba(255,255,255,.07);
+  --f-ja:"Zen Kaku Gothic New",-apple-system,BlinkMacSystemFont,
+         "Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  --f-mo:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --maxw:560px;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-ja);line-height:1.8;
+     -webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+
+.ex-wrap{max-width:var(--maxw);margin:0 auto;padding:0 18px}
+.ex-bar{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 6px;
+        max-width:var(--maxw);margin:0 auto}
+.ex-mark{font-size:11px;letter-spacing:.3em;font-weight:400}
+.ex-tabs{display:flex;max-width:var(--maxw);margin:0 auto;padding:0 18px 10px}
+.ex-tabs a{padding:9px 0;margin-right:18px;font-size:12.5px;color:var(--faint);
+           border-bottom:2px solid transparent}
+.ex-tabs a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.ex-lbl{font-family:var(--f-mo);font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+        color:var(--faint);margin-bottom:9px}
+
+/* 受け取り画面 */
+.ex-intake{display:grid;place-items:center;gap:26px;padding:54px 18px 0;text-align:center}
+.ex-ring{width:190px;height:190px;border-radius:50%;border:1px solid rgba(255,255,255,.18);
+         display:grid;place-items:center;position:relative;
+         background:radial-gradient(60% 60% at 50% 50%,rgba(255,255,255,.05),transparent 72%)}
+.ex-ring::after{content:"";position:absolute;inset:-22px;border-radius:50%;
+                border:1px solid rgba(255,255,255,.06)}
+.ex-ring span{font-size:30px;color:#c9c9c9;line-height:1}
+.ex-intake h1{font-size:16px;font-weight:500;letter-spacing:.02em}
+.ex-intake p{font-size:12.5px;color:var(--dim);max-width:24ch}
+.ex-acts{display:flex;flex-direction:column;gap:9px;width:100%;max-width:250px}
+.ex-btn{font:inherit;font-size:14px;padding:12px;border-radius:3px;cursor:pointer;
+        background:var(--ink);color:#000;border:1px solid var(--ink);width:100%}
+.ex-btn.ghost{background:transparent;color:var(--ink);border-color:rgba(255,255,255,.2)}
+.ex-meta{font-family:var(--f-mo);font-size:10.5px;color:#4f4f4f;letter-spacing:.12em}
+
+/* 結果画面。写真は画面幅いっぱい。背後のハローだけが強調色 */
+.ex-shot{aspect-ratio:1/1;display:grid;place-items:center;position:relative;overflow:hidden;
+         background:radial-gradient(70% 70% at 50% 42%,#26262a,#000 74%);margin-bottom:16px}
+.ex-shot img{max-height:100%;width:auto;position:relative;z-index:1}
+.ex-halo{position:absolute;width:56%;padding-top:56%;border-radius:50%;filter:blur(48px);opacity:.34}
+.ex-hit{display:flex;align-items:baseline;gap:8px}
+.ex-hit b{font-size:23px;font-weight:700;letter-spacing:.01em}
+.ex-conf{font-family:var(--f-mo);font-size:11px;color:var(--faint);font-variant-numeric:tabular-nums}
+.ex-sub{font-size:12.5px;color:var(--dim);margin-bottom:14px}
+.ex-ask{display:flex;gap:9px;margin-bottom:26px}
+.ex-ask .ex-btn{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.16);color:var(--ink)}
+.ex-ask .ex-btn.yes{background:var(--ink);color:#000;border-color:var(--ink)}
+
+/* 推薦リスト。左は● 。色は通常(減彩) */
+.ex-rec{display:flex;gap:12px;padding:12px 0;align-items:center;border-bottom:1px solid var(--line2)}
+.ex-dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
+.ex-nm{flex:1;min-width:0}
+.ex-nm b{display:block;font-size:14.5px;font-weight:500;
+         white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ex-nm span{font-size:11.5px;color:var(--faint)}
+.ex-abv{font-family:var(--f-mo);font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums}
+
+.ex-msg{padding:40px 0;text-align:center;color:var(--dim);font-size:14px}
+@media (max-width:400px){ .ex-ring{width:160px;height:160px} }
