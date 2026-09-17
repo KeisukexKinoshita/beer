@@ -157,3 +157,17 @@ function event_record(string $visitorId, string $kind, ?string $target, ?int $up
     $st->execute([':v' => $visitorId,
                   ':k' => $kind, ':t' => $target, ':u' => $uploadId]);
 }
+
+/**
+ * その upload がこの訪問者のものか確かめて返す。他人のものなら null。
+ *
+ * 写真は公開面に出さない約束(設計書 §4)なので、配信の前に必ずここを通す。
+ */
+function upload_owned_by(int $uploadId, string $visitorId): ?array
+{
+    $st = db()->prepare(
+        "SELECT * FROM upload WHERE upload_id = :u AND visitor_id = :v LIMIT 1");
+    $st->execute([':u' => $uploadId, ':v' => $visitorId]);
+    $row = $st->fetch();
+    return $row ?: null;
+}

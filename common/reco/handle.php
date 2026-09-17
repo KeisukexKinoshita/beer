@@ -49,14 +49,14 @@ function reco_handle_upload(string $visitorId, array $file, ?callable $transport
     if (!$g['ok'] && $g['reason'] === 'cached') {
         // 同じ写真。APIを呼ばずに前回の結果を使う
         $prev = upload_by_hash($hash);
-        $imageWebPath = $prev['image_path'] ? '/' . $prev['image_path'] : null;
+        $uploadId = (int)$prev['upload_id'];
+        $imageWebPath = $prev['image_path'] ? '/photo.php?u=' . $uploadId : null;
         $result = ['is_beer' => (bool)$prev['is_beer'], 'matched_product_id' => $prev['product_id'],
                    'brand_text' => $prev['brand_text'], 'brewery_text' => $prev['brewery_text'],
                    'style_guess' => $prev['style_guess'], 'color' => $prev['color'],
                    'clarity' => $prev['clarity'],
                    'confidence' => $prev['confidence'] !== null ? (float)$prev['confidence'] : null,
                    'error' => false];
-        $uploadId = (int)$prev['upload_id'];
         $view = 'result';
     } elseif (!$g['ok']) {
         $view = 'error'; $msg = gate_message($g['reason']);
@@ -78,17 +78,20 @@ function reco_handle_upload(string $visitorId, array $file, ?callable $transport
         } else {
             // ビール以外は画像を保存しない(設計書 §9)
             $path = null;
+            $saved = false;
             if ($result['is_beer'] === true) {
                 $path = 'img/upload/' . $hash . '.jpg';
                 $saved = identify_shrink($f['tmp_name'], dirname(__DIR__, 2) . '/' . $path);
-                if ($saved) {
-                    $imageWebPath = '/' . $path;
-                } else {
+                if (!$saved) {
                     // 保存に失敗した。存在しないファイルを指す行を DB に作らない
                     $path = null;
                 }
             }
             $uploadId = upload_record($visitorId, $result, $hash, $path);
+            // 画像を保存できた場合のみ、本人が見るための経路を用意する
+            if ($result['is_beer'] === true && $saved) {
+                $imageWebPath = '/photo.php?u=' . $uploadId;
+            }
             if ($result['is_beer'] === true && !$result['matched_product_id'] && $result['brand_text']) {
                 unknown_bump($result['brand_text'], $result['brewery_text']);
             }

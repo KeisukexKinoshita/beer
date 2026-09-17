@@ -191,6 +191,25 @@ eq(count($calls), 2, '再試行は最大2回: transport がちょうど2回呼�
 $total = (int)db()->query('SELECT COUNT(*) FROM products')->fetchColumn();
 eq(count(reco_pool()), $total, 'reco_pool() は products の全件数と一致する(絞り込まない)');
 
+// --- 写真は本人にしか配らない ---
+$owner  = 'own' . str_repeat('0', 29);
+$other  = 'oth' . str_repeat('0', 29);
+foreach ([$owner, $other] as $v) {
+    db()->prepare("INSERT INTO visitor (visitor_id, first_seen, last_seen) VALUES (:v, NOW(), NOW())
+                   ON DUPLICATE KEY UPDATE last_seen = NOW()")->execute([':v' => $v]);
+}
+db()->prepare("INSERT INTO upload (visitor_id, created_at, image_hash, is_beer, status, image_path)
+               VALUES (:v, NOW(), :h, 1, 'ok', 'img/upload/" . str_repeat('a', 64) . ".jpg')")
+   ->execute([':v' => $owner, ':h' => str_repeat('f', 64)]);
+$uid = (int)db()->lastInsertId();
+
+ok(upload_owned_by($uid, $owner) !== null, '本人なら取り出せる');
+eq(upload_owned_by($uid, $other), null,    '他人のものは取り出せない');
+eq(upload_owned_by(999999, $owner), null,  '存在しない upload は取り出せない');
+
+db()->prepare("DELETE FROM upload WHERE upload_id = :u")->execute([':u' => $uid]);
+db()->prepare("DELETE FROM visitor WHERE visitor_id IN (:a, :b)")->execute([':a' => $owner, ':b' => $other]);
+
 // ---- 後始末。使い捨てのテストデータなので残さない ----------------------------
 // is_beer=true の分岐は identify_shrink() で img/upload/ に実ファイルを書く。
 // DBの行を消す前に、このテストが作った画像も消す(残すと実行のたびに増える)。

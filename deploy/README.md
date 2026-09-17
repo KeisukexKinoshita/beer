@@ -16,8 +16,10 @@
 1. レイアウト作成: `/srv/beer/{deploy,prod/html,dev/html}`。この deploy/ 一式を `/srv/beer/deploy/` へ
 2. compose: `/srv/seisan3/deploy/docker-compose.yml` の services に
    `compose-snippet.yml` の beer-prod / beer-dev を追記、proxy の depends_on にも追加
-3. nginx: `nginx/beer.conf` を `/srv/seisan3/deploy/nginx/conf.d/` に配置
-   (BEER_DOMAIN を実ドメインに置換。default_server は seisan3 のまま)
+3. nginx: **`nginx/drtbeer.conf` を `/srv/seisan3/deploy/nginx/conf.d/` に配置**
+   (BEER_DOMAIN は既に実ドメイン(drtbeer.com)に設定済み。default_server は seisan3 のまま。
+   `img/upload/` / `vendor/` / `*.local.php` の遮断が含まれているため、
+   これを使わないと公開面が無防備になります。`nginx/beer.conf` は使わないこと)
 4. `db_config.local.php` を `/srv/beer/{prod,dev}/html/` 直下に配置
    (実パスワードはサーバ内でのみ記入。**UID 33 (www-data) 所有・640**)
    - prod: `$db_name='beer'` / dev: `$db_name='beer_dev'`
