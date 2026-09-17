@@ -1,16 +1,21 @@
 # beer コンテナ定義 — サーバの /srv/seisan3/deploy/docker-compose.yml の services: に追記する
-# (seisan3-php イメージを再利用: php:8.5-apache + mysqli/pdo_mysql, display_errors=Off)
 # コードは /srv/beer/{prod,dev}/html にバインドマウント (デプロイ=ファイル置換のみ)
+#
+# image は `beer-php` (seisan3-php ではない)。写真リコメンド機能が GD 拡張を要る
+# (common/reco/identify.php の identify_shrink) が、seisan3-php は seisan3 と共用の
+# イメージなので GD を足すために作り直すと seisan3 を壊す危険がある。
+# そのため beer 専用に `deploy/beer-php/Dockerfile` (seisan3-php を土台に GD だけ追加) を
+# ビルドして使う。dev サーバでの GD 不在を確認した上での変更 (2026-09-17, task-2)。
 
   beer-prod:
-    image: seisan3-php
+    image: beer-php
     container_name: beer-prod
     volumes:
       - /srv/beer/prod/html:/var/www/html
     restart: always
 
   beer-dev:
-    image: seisan3-php
+    image: beer-php
     container_name: beer-dev
     volumes:
       - /srv/beer/dev/html:/var/www/html

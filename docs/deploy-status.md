@@ -92,3 +92,62 @@ ALB のホスト名で **dev サイトが認証なしに閲覧できる**一時�
 
 nginx の reload 直後と ALB の証明書追加直後に、**毎回 `https://seisan3.com` が 200 を
 返すことを確認**した。共用の ALB を触るときはこれを省かない。
+
+---
+
+## 写真リコメンド機能を dev に配布 (2026-09-17, task-2)
+
+### Step 1 の確認結果
+
+| 確認 | 結果 |
+|---|---|
+| (a) GD 拡張 | **無し**(`beer-dev` = `seisan3-php` そのまま) → Step 2b (beer専用イメージ) へ |
+| (b) `img/upload` 所有者 | ディレクトリ無し(デプロイ未実施の段階) |
+| (c) Apache `Options` | `Options FollowSymLinks` が有効、`Options Indexes FollowSymLinks` はコメントアウト側にも存在。**mod_autoindex 対策は nginx 側の `return 404` に一本化**(Apache 側の Options 設定に依存しない) |
+
+### Step 2b: `beer-php` イメージを新設
+
+`deploy/beer-php/Dockerfile` を新設(`seisan3-php` を土台に GD だけ追加。`seisan3-php` 自体は無改変)。
+`deploy/compose-snippet.yml` の `beer-prod` / `beer-dev` の `image:` を `beer-php` に変更。
+
+**ブリーフ記載の Dockerfile 案には実機で1回踏んだバグがあった**: `apt-get purge` の直後に
+`apt-get autoremove -y` を走らせると、`-dev` パッケージの自動インストール依存だった
+ランタイム共有ライブラリ(`libpng16` 等)まで「もう要らない」と判定されて一緒に消え、
+`gd.so` が `libpng16.so.16: cannot open shared object file` でロード不能になった。
+`autoremove` の行を削除して解決(サイズ増は約2.8MB分の `-dev` ヘッダ程度)。
+
+サーバでの実施: `beer-php` をビルド → `gd_info()` で JPEG/PNG/WebP 対応を確認 →
+`docker-compose.yml` の **`beer-dev` の `image:` 行(41行目)だけ** `beer-php` に変更
+(`beer-prod` はtask-10の担当なので未変更)→ `docker compose up -d beer-dev` で入替。
+**毎ステップ後に `https://seisan3.com` が 200 であることを確認済み。**
+
+### Step 3-4: nginx / コードの配布
+
+- `deploy/nginx/drtbeer.conf` をサーバへ配置(`nginx -t` OK → `nginx -s reload`)。reload後も
+  `seisan3.com` は 200
+- `deploy/deploy.sh` が**サーバ側で旧版のままだった**(task-1 のローカル修正が未反映で、
+  `img/upload` の chown が無く、初回デプロイで `img/upload` が root 所有のまま作られた)。
+  最新の `deploy.sh` をサーバへ同期し、再デプロイして `img/upload` が UID 33 所有になることを確認
+- `api_config.local.php` を `db_config.local.php` と同じ方式(UID33・640)でサーバへ注入
+  (中身は表示していない)
+
+### Step 5: 遮断の確認
+
+`/img/upload/` `/vendor/` `/api_config.local.php` `/vendor/anthropic-ai/sdk/examples/messages.php`
+の4パスすべてが **404**(`/` は 401 で通常通り)。公開ドメイン経由(`https://dev.drtbeer.com`)でも
+同じ結果。**Basic認証の資格情報を持たない状態で確認できた** — `return 404` は nginx の
+rewriteフェーズで auth_basic より先に評価されるため、未認証でも該当パスは404になる
+(認証情報が無くても遮断の有無自体は検証できる)。
+
+### Step 6: 実機での通し試験
+
+**未実施(BLOCKED)。** Anthropic API を実際に呼ぶ `try.php` への写真アップロード
+(`curl -F photo=@...`)は、このセッションの権限で**拒否**された(計画1の `git push` /
+API呼び出しと同じ拒否パターン)。1回の失敗後、迂回せずに停止した。
+`upload` テーブルは0行、`img/upload/` は空、`beer-dev` のログにも POST の形跡は無く、
+課金や中途半端な状態は発生していない。ユーザーに以下のいずれかを依頼する必要がある:
+- ブラウザで `https://dev.drtbeer.com/try.php` を開いて実機で1枚上げる(Basic認証は
+  dev/prod共通で利用者が把握している前提)
+- またはこのセッションに実行許可を与えて再試行させる
+
+その他の確認項目(GD/写真保存/DB行/PHP警告)は、実機試験ができ次第あわせて見ること。
