@@ -32,7 +32,9 @@ for f in sql_POST.php sql.php header.php check_control.js upimg_filename.js \
     sudo rm -f "${DEST:?}/common/${f:?}"
   fi
 done
-# アップロード先ディレクトリ (img/tmp, img/product) を apache(UID 33) 書込可能にする
-sudo mkdir -p "$DEST/img/tmp" "$DEST/img/product"
-sudo chown -R 33:33 "$DEST/img/tmp" "$DEST/img/product"
+# アップロード先ディレクトリを apache(UID 33) 書込可能にする。
+# img/upload は写真リコメンド機能の保存先。**ここが root 所有のままだと
+# 写真の保存が必ず失敗し、DB には保存したという行だけが残る**(計画1のレビュー I-4)。
+sudo mkdir -p "$DEST/img/tmp" "$DEST/img/product" "$DEST/img/upload"
+sudo chown -R 33:33 "$DEST/img/tmp" "$DEST/img/product" "$DEST/img/upload"
 echo "deployed to $DEST ($(sudo find "$DEST" -type f | wc -l) files)"
