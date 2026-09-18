@@ -210,6 +210,21 @@ eq(upload_owned_by(999999, $owner), null,  '存在しない upload は取り出�
 db()->prepare("DELETE FROM upload WHERE upload_id = :u")->execute([':u' => $uid]);
 db()->prepare("DELETE FROM visitor WHERE visitor_id IN (:a, :b)")->execute([':a' => $owner, ':b' => $other]);
 
+// --- 確認のあとの印は、実際に起きたことから決まる ---
+// (過去に2度、事実と違うことを言った箇所。検査で固定する)
+eq(reco_confirm_flash(true,  ['product_id' => 'pr0013', 'brand_text' => 'HAZY JANE']), 'confirmed_known',
+   'DBにある銘柄なら「記録しました」');
+eq(reco_confirm_flash(true,  ['product_id' => null, 'brand_text' => 'SUPERFLUX']), 'confirmed_queued',
+   '銘柄名が読めてDBに無ければ「控えておきます」(unknown_bump が呼ばれている)');
+eq(reco_confirm_flash(true,  ['product_id' => null, 'brand_text' => null]), 'confirmed_unread',
+   '銘柄名が読めていなければ「控えておきます」と言わない');
+eq(reco_confirm_flash(true,  ['product_id' => null, 'brand_text' => '']), 'confirmed_unread',
+   '空文字も「読めていない」扱い(unknown_bump は呼ばれない)');
+eq(reco_confirm_flash(false, ['product_id' => 'pr0013', 'brand_text' => 'HAZY JANE']), 'corrected',
+   '「ちがう」なら、DBにあっても corrected');
+eq(reco_confirm_flash(false, ['product_id' => null, 'brand_text' => null]), 'corrected',
+   '「ちがう」なら、何も読めていなくても corrected');
+
 // ---- 後始末。使い捨てのテストデータなので残さない ----------------------------
 // is_beer=true の分岐は identify_shrink() で img/upload/ に実ファイルを書く。
 // DBの行を消す前に、このテストが作った画像も消す(残すと実行のたびに増える)。

@@ -27,21 +27,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm'])) {
         $yes = ($_POST['confirm'] === 'yes');
         event_record($visitorId, $yes ? 'confirm_yes' : 'confirm_no', null, $uid);
 
-        // 実際に何が起きたかを見て印を決める(修正ラウンド3: C-2)。
-        // unknown_bump() は brand_text が空でないときしか呼ばれない(handle.php)。
-        // ここを product_id の有無だけで判定すると、銘柄名が読めなかった(brand_text も
-        // 空)ケースで product_id も当然 null になり「控えておきます」と出てしまうが、
-        // 何も控えていない(嘘になる)。brand_text の有無まで見て区別する。
-        if (!$yes) {
-            $flash = 'corrected';
-        } elseif (!empty($own['product_id'])) {
-            $flash = 'confirmed_known';     // DBにある銘柄
-        } elseif (!empty($own['brand_text'])) {
-            $flash = 'confirmed_queued';    // 銘柄名は読めた → unknown_beer に載っている
-        } else {
-            $flash = 'confirmed_unread';    // 銘柄名が読めなかった → 何も控えていない
-        }
-        visitor_flash_set($visitorId, $flash);
+        // 実際に何が起きたかを見て印を決める(修正ラウンド3: C-2)。判定は
+        // common/reco/repo.php の reco_confirm_flash() に切り出してあり、検査対象になっている
+        // (修正ラウンド4: ここに埋め込んだままだと単体テストできない、という指摘への対応)。
+        visitor_flash_set($visitorId, reco_confirm_flash($yes, $own));
     }
     header('Location: /try.php');
     exit;
@@ -114,7 +103,13 @@ $exposureVer = @filemtime($_SERVER['DOCUMENT_ROOT'] . $exposureCss) ?: time();
   // 記録していないのに記録したと伝えていた嘘を直した)
   $flash = ($view === 'intake') ? visitor_flash_take($visitorId) : null;
   ?>
-  <?php if ($flash): ?>
+  <?php
+  // 想定外の値(通常の経路では起きないが、知らない状態では何も言わないほうが
+  // この画面の設計意図に忠実。修正ラウンド4: Important指摘)なら枠ごと出さない。
+  // 4値のどれでもなければ in_array が false になり、div自体が描画されない。
+  $flashKnown = ['confirmed_queued', 'confirmed_known', 'confirmed_unread', 'corrected'];
+  ?>
+  <?php if ($flash !== null && in_array($flash, $flashKnown, true)): ?>
     <div class="ex-wrap ex-thanks">
       <?php if ($flash === 'confirmed_queued'): ?>
         <p><b>ありがとうございます。</b></p>
@@ -128,7 +123,7 @@ $exposureVer = @filemtime($_SERVER['DOCUMENT_ROOT'] . $exposureCss) ?: time();
                  (修正ラウンド3: C-2 の本体) */ ?>
         <p><b>ありがとうございます。</b></p>
         <p>ラベルの銘柄名までは読み取れませんでした。読み取りの改善に使わせていただきます。</p>
-      <?php else: ?>
+      <?php elseif ($flash === 'corrected'): ?>
         <p><b>教えていただきありがとうございます。</b></p>
         <p>読み取りを外していたことを記録しました。<b>読み取りの改善に使わせていただきます。</b></p>
       <?php endif; ?>

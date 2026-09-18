@@ -197,3 +197,23 @@ function visitor_flash_take(string $visitorId): ?string
     db()->prepare("UPDATE visitor SET flash = NULL WHERE visitor_id = :v")->execute([':v' => $visitorId]);
     return (string)$f;
 }
+
+/**
+ * 確認のあとに出す印を、**実際に起きたこと**から決める。
+ *
+ * ここを間違えると画面が嘘をつく。過去に2度間違えた:
+ *  - URL の値だけで「記録しました」と言っていた
+ *  - 何も控えていないのに「控えておきます」と言っていた
+ *
+ * @param bool  $yes    「これで合っている」なら true
+ * @param array $upload upload テーブルの行
+ */
+function reco_confirm_flash(bool $yes, array $upload): string
+{
+    if (!$yes) { return 'corrected'; }
+    if (!empty($upload['product_id'])) { return 'confirmed_known'; }
+    // brand_text があるときだけ unknown_bump() が呼ばれている(handle.php)。
+    // 無いのに「控えておきます」と言ってはいけない
+    if (!empty($upload['brand_text'])) { return 'confirmed_queued'; }
+    return 'confirmed_unread';
+}
