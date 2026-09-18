@@ -31,7 +31,12 @@ if ($canonHost !== '') : ?>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+1:wght@400;500;700;800&family=Noto+Sans+JP:wght@300;400;500;700&display=swap">
-<link rel="stylesheet" href="/assets/css/nebula.css">
+<?php /* 内容が変わったら必ず読み直させる(修正ラウンド3。exposure.css で古いCSSが
+         残って事故った件と同じことが nebula.css でも起きうるため、ここにも足す) */
+$nebulaCss = '/assets/css/nebula.css';
+$nebulaVer = @filemtime($_SERVER['DOCUMENT_ROOT'] . $nebulaCss) ?: time();
+?>
+<link rel="stylesheet" href="<?= e($nebulaCss) ?>?v=<?= (int)$nebulaVer ?>">
 <?php
 /* Google AdSense。**本番ホストでのみ読み込む。**
    dev (dev.drtbeer.com) や内部名 (beer.local) で読み込むと、開発中の閲覧が

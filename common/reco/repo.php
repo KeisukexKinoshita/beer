@@ -171,3 +171,29 @@ function upload_owned_by(int $uploadId, string $visitorId): ?array
     $row = $st->fetch();
     return $row ?: null;
 }
+
+/**
+ * 次の表示で1度だけ見せる印を立てる(確認を処理したときだけ呼ぶ)。
+ *
+ * お礼の文言を $_GET で渡すと、URL を打つだけで「記録しました」が出てしまい、
+ * 実際には何も記録していないのに記録したと伝えることになる(レビュー指摘 C-1)。
+ * 訪問者の行に印を持たせ、実際に確認を処理した経路だけが立てられるようにする。
+ */
+function visitor_flash_set(string $visitorId, string $flash): void
+{
+    $st = db()->prepare("UPDATE visitor SET flash = :f WHERE visitor_id = :v");
+    $st->execute([':f' => $flash, ':v' => $visitorId]);
+}
+
+/**
+ * 印を取り出して消す。**1度しか読めない**ので、URL を共有されても再現しない。
+ */
+function visitor_flash_take(string $visitorId): ?string
+{
+    $st = db()->prepare("SELECT flash FROM visitor WHERE visitor_id = :v");
+    $st->execute([':v' => $visitorId]);
+    $f = $st->fetchColumn();
+    if ($f === false || $f === null || $f === '') { return null; }
+    db()->prepare("UPDATE visitor SET flash = NULL WHERE visitor_id = :v")->execute([':v' => $visitorId]);
+    return (string)$f;
+}

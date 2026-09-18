@@ -33,6 +33,17 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 OUT="${1:-/tmp/claude-0/beer-deploy.tar.gz}"
 mkdir -p "$(dirname "$OUT")"
+
+# git archive は HEAD(=直近コミット)しか見ない。未コミットの変更があると、
+# 変更前の内容がそのまま配られて「直したのに反映されない」事故になる
+# (修正ラウンド1・前の計画でそれぞれ1度ずつ踏んでいる)。ここで必ず止める。
+if [ -n "$(git status --porcelain)" ]; then
+  echo "ERROR: 未コミットの変更があります。git archive は追跡ファイルしか含めないため、" >&2
+  echo "       このまま作ると変更が反映されません。先に commit してください。" >&2
+  git status --short >&2
+  exit 1
+fi
+
 git archive --format=tar.gz --prefix=html/ -o "$OUT" HEAD \
   index.php try.php photo.php style.css chartjs-plugin-datalabels.min.js googlebb691fb861bc6308.html \
   robots.txt ads.txt sitemap.php privacy.php about.php \

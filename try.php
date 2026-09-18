@@ -26,12 +26,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm'])) {
     if ($own) {
         $yes = ($_POST['confirm'] === 'yes');
         event_record($visitorId, $yes ? 'confirm_yes' : 'confirm_no', null, $uid);
-        // 登録の有無で返す言葉を変えるため、そのまま渡す
-        $known = !empty($own['product_id']) ? '1' : '0';
-        header('Location: /try.php?done=' . ($yes ? 'yes' : 'no') . '&known=' . $known);
-    } else {
-        header('Location: /try.php');
+
+        // 実際に何が起きたかを見て印を決める(修正ラウンド3: C-2)。
+        // unknown_bump() は brand_text が空でないときしか呼ばれない(handle.php)。
+        // ここを product_id の有無だけで判定すると、銘柄名が読めなかった(brand_text も
+        // 空)ケースで product_id も当然 null になり「控えておきます」と出てしまうが、
+        // 何も控えていない(嘘になる)。brand_text の有無まで見て区別する。
+        if (!$yes) {
+            $flash = 'corrected';
+        } elseif (!empty($own['product_id'])) {
+            $flash = 'confirmed_known';     // DBにある銘柄
+        } elseif (!empty($own['brand_text'])) {
+            $flash = 'confirmed_queued';    // 銘柄名は読めた → unknown_beer に載っている
+        } else {
+            $flash = 'confirmed_unread';    // 銘柄名が読めなかった → 何も控えていない
+        }
+        visitor_flash_set($visitorId, $flash);
     }
+    header('Location: /try.php');
     exit;
 }
 
@@ -96,21 +108,26 @@ $exposureVer = @filemtime($_SERVER['DOCUMENT_ROOT'] . $exposureCss) ?: time();
     <div class="ex-wrap"><p class="ex-msg"><?= e($msg) ?></p></div>
   <?php endif; ?>
   <?php
-  // 確認への回答直後、フォームの上にお礼を出す(修正ラウンド2)。
-  // 黙ってトップへ戻すだけだったのを直した。書いてあるのは事実:
-  // unknown_beer は次のデータ投入の優先リスト、confirm_no は読み取り精度の材料になる
-  $done  = $_GET['done']  ?? '';
-  $known = ($_GET['known'] ?? '') === '1';
+  // 確認への回答直後、フォームの上にお礼を出す(修正ラウンド2→3)。
+  // URLの $_GET ではなく、確認を実際に処理したときだけ立つ visitor.flash を見る
+  // (修正ラウンド3: C-1。URLを打つだけで「記録しました」が出て、実際には何も
+  // 記録していないのに記録したと伝えていた嘘を直した)
+  $flash = ($view === 'intake') ? visitor_flash_take($visitorId) : null;
   ?>
-  <?php if ($view === 'intake' && ($done === 'yes' || $done === 'no')): ?>
+  <?php if ($flash): ?>
     <div class="ex-wrap ex-thanks">
-      <?php if ($done === 'yes' && !$known): ?>
+      <?php if ($flash === 'confirmed_queued'): ?>
         <p><b>ありがとうございます。</b></p>
         <p>この銘柄はまだ登録がありません。<b>追加する候補として控えておきます。</b></p>
         <p class="ex-sub">よく上がる銘柄から順に、実際の情報を調べて載せています。</p>
-      <?php elseif ($done === 'yes'): ?>
+      <?php elseif ($flash === 'confirmed_known'): ?>
         <p><b>ありがとうございます。</b>記録しました。</p>
         <p class="ex-sub">こうした答えが積み重なるほど、薦める精度が上がります。</p>
+      <?php elseif ($flash === 'confirmed_unread'): ?>
+        <?php /* 銘柄名が読めていないので、控えるものがない。控えると言ってはいけない
+                 (修正ラウンド3: C-2 の本体) */ ?>
+        <p><b>ありがとうございます。</b></p>
+        <p>ラベルの銘柄名までは読み取れませんでした。読み取りの改善に使わせていただきます。</p>
       <?php else: ?>
         <p><b>教えていただきありがとうございます。</b></p>
         <p>読み取りを外していたことを記録しました。<b>読み取りの改善に使わせていただきます。</b></p>
