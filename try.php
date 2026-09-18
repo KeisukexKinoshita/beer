@@ -80,18 +80,44 @@ $seedGroup = ($view === 'result' && !empty($seed))
   <?php if ($view === 'error'): ?>
     <div class="ex-wrap"><p class="ex-msg"><?= e($msg) ?></p></div>
   <?php endif; ?>
-  <form class="ex-intake" method="post" enctype="multipart/form-data">
+  <form class="ex-intake" method="post" enctype="multipart/form-data" id="intake">
     <div class="ex-ring"><span>◎</span></div>
     <h1>飲んだビールの写真から</h1>
     <p>ラベルが写っていれば、似た一本を探します</p>
     <div class="ex-acts">
-      <input id="photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp"
-             capture="environment" hidden onchange="this.form.submit()">
-      <button class="ex-btn" type="button" onclick="document.getElementById('photo').click()">写真をえらぶ</button>
+      <?php /*
+        accept は image/* にする。**iPhone の写真は HEIC** で、jpeg/png/webp に絞ると
+        アルバムから選んでも黙って弾かれ、画面が何も反応しない(実機で発生)。
+        image/* にしておくと iOS が JPEG に変換して渡してくれる。
+        変換されずに来た場合も、門番(gate_check)が bad_type で弾き、
+        「JPEG・PNG・WebP の写真をお選びください」と**画面に出る**。沈黙よりよい。
+
+        capture は付けない。カメラに固定され、アルバムから選べない端末がある。
+
+        input は label で開く。JS に頼らないので、JS が転んでも選択画面は出る。
+        送信ボタンも常に出しておく(JS が動けば自動で送信するが、動かなくても押せる)。
+      */ ?>
+      <input id="photo" name="photo" type="file" accept="image/*" class="ex-file">
+      <label class="ex-btn" for="photo">写真をえらぶ</label>
+      <button class="ex-btn" type="submit" id="go">この写真でさがす</button>
       <a class="ex-btn ghost" href="/beer/products.php">名前でさがす</a>
     </div>
     <div class="ex-meta"><?= count(reco_pool()) ?> BEERS</div>
   </form>
+  <script>
+  (function () {
+    var f = document.getElementById('photo');
+    var form = document.getElementById('intake');
+    var go = document.getElementById('go');
+    if (!f || !form || !go) { return; }
+    function waiting() { go.textContent = '判定しています…'; }
+    // 選んだ時点で送る。判定に数秒かかるので、待っていることを必ず見せる
+    f.addEventListener('change', function () {
+      if (f.files && f.files.length) { waiting(); form.submit(); }
+    });
+    form.addEventListener('submit', waiting);
+  })();
+  </script>
 
 <?php elseif ($result['is_beer'] !== true): ?>
   <div class="ex-wrap">

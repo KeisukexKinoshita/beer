@@ -44,6 +44,12 @@ img{max-width:100%;display:block}
 .ex-btn.ghost{background:transparent;color:var(--ink);border-color:rgba(255,255,255,.2)}
 .ex-meta{font-family:var(--f-mo);font-size:10.5px;color:#4f4f4f;letter-spacing:.12em}
 
+/* ファイル選択は label から開く。display:none にすると label が効かない端末があるので、
+   画面から追い出すだけにして、キーボード操作でも到達できるようにしておく */
+.ex-file{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;
+         clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
+.ex-acts label.ex-btn{display:block;text-align:center;cursor:pointer}
+
 /* 結果画面。写真は画面幅いっぱい。背後のハローだけが強調色 */
 .ex-shot{aspect-ratio:1/1;display:grid;place-items:center;position:relative;overflow:hidden;
          background:radial-gradient(70% 70% at 50% 42%,#26262a,#000 74%);margin-bottom:16px}
