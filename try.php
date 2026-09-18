@@ -18,10 +18,20 @@ $imageWebPath = null;   // 表示部が参照する。保存しなかったと�
 
 // 確認の答え(confirm)を受け取る分岐。POST処理の先頭に置く
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm'])) {
-    event_record($visitorId,
-        $_POST['confirm'] === 'yes' ? 'confirm_yes' : 'confirm_no',
-        null, (int)($_POST['upload_id'] ?? 0));
-    header('Location: /try.php');
+    $uid = (int)($_POST['upload_id'] ?? 0);
+    // 他人の upload に投票できないようにする。この記録は unknown_beer の信頼度になり、
+    // ゆくゆくは蔵へ渡す数字の根拠になるので、持ち主だけが答えられること
+    // (前の計画のレビューで指摘され、繰り延べていたもの。修正ラウンド2で対応)
+    $own = $uid > 0 ? upload_owned_by($uid, $visitorId) : null;
+    if ($own) {
+        $yes = ($_POST['confirm'] === 'yes');
+        event_record($visitorId, $yes ? 'confirm_yes' : 'confirm_no', null, $uid);
+        // 登録の有無で返す言葉を変えるため、そのまま渡す
+        $known = !empty($own['product_id']) ? '1' : '0';
+        header('Location: /try.php?done=' . ($yes ? 'yes' : 'no') . '&known=' . $known);
+    } else {
+        header('Location: /try.php');
+    }
     exit;
 }
 
@@ -58,7 +68,12 @@ $seedGroup = ($view === 'result' && !empty($seed))
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="/assets/css/exposure.css">
+<?php /* 内容が変わったら必ず読み直させる。
+         古い CSS が残っていて、隠すはずの入力欄が見えたままだった(実機で発生) */
+$exposureCss = '/assets/css/exposure.css';
+$exposureVer = @filemtime($_SERVER['DOCUMENT_ROOT'] . $exposureCss) ?: time();
+?>
+<link rel="stylesheet" href="<?= e($exposureCss) ?>?v=<?= (int)$exposureVer ?>">
 <?php /* スタイル色の出所は group_map() 一つ。CSS に直値を書かず、ここで流し込む */ ?>
 <style>:root{
 <?php foreach (group_map() as $k => $v): ?>
@@ -80,6 +95,28 @@ $seedGroup = ($view === 'result' && !empty($seed))
   <?php if ($view === 'error'): ?>
     <div class="ex-wrap"><p class="ex-msg"><?= e($msg) ?></p></div>
   <?php endif; ?>
+  <?php
+  // 確認への回答直後、フォームの上にお礼を出す(修正ラウンド2)。
+  // 黙ってトップへ戻すだけだったのを直した。書いてあるのは事実:
+  // unknown_beer は次のデータ投入の優先リスト、confirm_no は読み取り精度の材料になる
+  $done  = $_GET['done']  ?? '';
+  $known = ($_GET['known'] ?? '') === '1';
+  ?>
+  <?php if ($view === 'intake' && ($done === 'yes' || $done === 'no')): ?>
+    <div class="ex-wrap ex-thanks">
+      <?php if ($done === 'yes' && !$known): ?>
+        <p><b>ありがとうございます。</b></p>
+        <p>この銘柄はまだ登録がありません。<b>追加する候補として控えておきます。</b></p>
+        <p class="ex-sub">よく上がる銘柄から順に、実際の情報を調べて載せています。</p>
+      <?php elseif ($done === 'yes'): ?>
+        <p><b>ありがとうございます。</b>記録しました。</p>
+        <p class="ex-sub">こうした答えが積み重なるほど、薦める精度が上がります。</p>
+      <?php else: ?>
+        <p><b>教えていただきありがとうございます。</b></p>
+        <p>読み取りを外していたことを記録しました。<b>読み取りの改善に使わせていただきます。</b></p>
+      <?php endif; ?>
+    </div>
+  <?php endif; ?>
   <form class="ex-intake" method="post" enctype="multipart/form-data" id="intake">
     <div class="ex-ring"><span>◎</span></div>
     <h1>飲んだビールの写真から</h1>
@@ -95,27 +132,30 @@ $seedGroup = ($view === 'result' && !empty($seed))
         capture は付けない。カメラに固定され、アルバムから選べない端末がある。
 
         input は label で開く。JS に頼らないので、JS が転んでも選択画面は出る。
-        送信ボタンも常に出しておく(JS が動けば自動で送信するが、動かなくても押せる)。
+        送信ボタンは <noscript> の中にだけ置く(修正ラウンド2: 選んだ瞬間に送るので、
+        普段の利用者には出さない。JS が動かない端末のためだけの逃げ道)。
       */ ?>
       <input id="photo" name="photo" type="file" accept="image/*" class="ex-file">
       <label class="ex-btn" for="photo">写真をえらぶ</label>
-      <button class="ex-btn" type="submit" id="go">この写真でさがす</button>
+      <noscript>
+        <button class="ex-btn" type="submit">この写真でさがす</button>
+      </noscript>
       <a class="ex-btn ghost" href="/beer/products.php">名前でさがす</a>
     </div>
+    <p class="ex-status" id="status" hidden>判定しています…</p>
     <div class="ex-meta"><?= count(reco_pool()) ?> BEERS</div>
   </form>
   <script>
   (function () {
     var f = document.getElementById('photo');
     var form = document.getElementById('intake');
-    var go = document.getElementById('go');
-    if (!f || !form || !go) { return; }
-    function waiting() { go.textContent = '判定しています…'; }
-    // 選んだ時点で送る。判定に数秒かかるので、待っていることを必ず見せる
+    var status = document.getElementById('status');
+    if (!f || !form) { return; }
+    // 選んだ時点で送る。ボタンが無いぶん、待っていることは画面のテキストで示す
+    function waiting() { if (status) { status.hidden = false; } }
     f.addEventListener('change', function () {
       if (f.files && f.files.length) { waiting(); form.submit(); }
     });
-    form.addEventListener('submit', waiting);
   })();
   </script>
 

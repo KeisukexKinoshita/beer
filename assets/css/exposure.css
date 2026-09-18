@@ -50,6 +50,14 @@ img{max-width:100%;display:block}
          clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
 .ex-acts label.ex-btn{display:block;text-align:center;cursor:pointer}
 
+/* 選択中の待機表示。ボタンを消したぶん、テキストで「待っている」ことを示す(修正ラウンド2) */
+.ex-status{font-size:12.5px;color:var(--dim);text-align:center;margin-top:-6px}
+
+/* 確認への回答直後のお礼(修正ラウンド2)。露光案の作法どおり地味に、フォームの上に出す */
+.ex-thanks{padding:22px 0 0;text-align:center;color:var(--dim);font-size:13px;line-height:1.7}
+.ex-thanks b{color:var(--ink);font-weight:500}
+.ex-thanks .ex-sub{font-size:12px;color:var(--faint);margin-top:2px}
+
 /* 結果画面。写真は画面幅いっぱい。背後のハローだけが強調色 */
 .ex-shot{aspect-ratio:1/1;display:grid;place-items:center;position:relative;overflow:hidden;
          background:radial-gradient(70% 70% at 50% 42%,#26262a,#000 74%);margin-bottom:16px}
