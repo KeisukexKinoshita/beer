@@ -1719,3 +1719,136 @@ function fmt_num($v) {
 - TC-SEL-BEERDETAIL-01を含めた最終結果: PASS **26件** / 仕様不一致 **0件** / FAIL **0件**
   (§11.4から仕様不一致0件は変わらず、TC-SEL-BEERDETAIL-01の期待値更新は「表示整形が意図通りに
   変わった」ことの確認であり、不一致には分類しない)。
+
+## 13. ゴールデン取り直し(2026-09-19、計画2タスク6)
+
+### 13.1 なぜ取り直したか
+
+**§6〜§12の「PASS 26件」は、2026-08-22 時点のコードの凍結写しを検査した結果であり、
+その後の現在のコードを1行も検査していなかった。** 原因は `tests/runner/run_all.sh` が
+`tests/runner/make_sandbox.sh` を呼んでいなかったこと。`tests/sandbox/` は
+2026-08-22 に一度手動で作られたきり更新されておらず(例: `tests/sandbox/beer/products.php`
+が2009 byte、現在の `beer/products.php` は3932 byte で別物)、`run_case.sh` は
+毎回この古い sandbox に対して実行していた。
+
+修正: `tests/runner/run_all.sh` の先頭で `make_sandbox.sh` を呼ぶようにした
+(sandbox を毎回原本から作り直す)。
+
+### 13.2 sandbox 再構築で新たに露出したハーネスの不備(2件、あわせて修正)
+
+sandbox を作り直したところ、現在のコード(index.php / beer/ / brewery/ / style/ が
+`common/nebula/` ベースにリニューアル済み)を初めて検査することになり、**ページ自体の
+不具合ではない2つのハーネス側の不備**が露出したため、あわせて直した(`tests/runner/`
+配下でありページコードではないため、タスク6の裁量範囲として対応):
+
+1. **`$_SERVER['DOCUMENT_ROOT']` 未設定**: リニューアル後のページは
+   `require $_SERVER['DOCUMENT_ROOT'].'/common/nebula/helpers.php'` の形で共通部品を読むが、
+   `tests/runner/exec_page.php` はCLI実行でこれを設定していなかったため、
+   `require('/common/nebula/helpers.php')`(ファイルシステムのルート直下)を開こうとして
+   全滅していた。`exec_page.php` で `$_SERVER['DOCUMENT_ROOT'] = $sandbox;` を設定して修正。
+2. **`assets/` が sandbox にコピーされていない**: `make_sandbox.sh` のコピー対象リストが
+   リニューアルで新設された `assets/`(`assets/css/nebula.css` 等)を含んでおらず、
+   `common/nebula/head.php` の `filemtime($_SERVER['DOCUMENT_ROOT'].'/assets/css/nebula.css')`
+   が失敗して `?: time()` にフォールバックしていた。**これは出力に時刻が混入し、
+   ゴールデン比較が2回連続で緑にならない原因になる**(brief Step4 が警告する「揺れるもの」に
+   該当)。`make_sandbox.sh` のコピー対象に `assets` を追加して修正。
+
+これらはいずれも `tests/runner/` 配下のテスト実行器の不備であり、対象ページ
+(index.php 等)のコードは一切変更していない。
+
+### 13.3 見つかった不具合(修正せず報告): fixtures.sql のスキーマが現在のマイグレーションに追いついていない
+
+上記2件を直したうえで再実行したところ、**9ケースが Fatal error または Warning で
+止まる**ことを確認した。原因は共通で、**`tests/fixtures/fixtures.sql` の DDL が
+`db/migrations/001_renewal_columns.sql`〜`004_recommender.sql` で追加された列を
+反映していない**こと。具体的に欠けている列:
+
+- `products`: `source_url` / `image_rights` / `official_url` / `estimated_fields`
+  (`003_content_rights.sql`)
+- `maker`: `country_code` / `latitude` / `longitude` / `logo_path`
+  (`001_renewal_columns.sql`) / `source_url` / `logo_rights`(`003_content_rights.sql`)
+- `style`: `catchcopy`(`001_renewal_columns.sql`)
+
+影響を受けたケース(golden は更新していない。旧デザインのページ用の値のままなので、
+今後 fixtures.sql のスキーマを同期したうえで**改めて取り直す必要がある**):
+
+| ケース | 症状 |
+|---|---|
+| TC-SEL-IDX-01 | Fatal error: Unknown column 'p.estimated_fields'(`common/nebula/helpers.php:213`) |
+| TC-SEL-BEERPRODUCTS-01 | 同上 |
+| TC-SEL-BEERDETAIL-01 | Fatal error: Unknown column 's.catchcopy'(`helpers.php:225`) |
+| TC-SEL-BRWMAKER-01 | Fatal error: Unknown column 'p.estimated_fields'(`helpers.php:213`) |
+| TC-SEL-STYDETAIL-01 | Fatal error: Unknown column 'm.country_code'(`helpers.php:268`) |
+| TC-SEL-STYSTYLES-01 | Fatal error: Unknown column 's.catchcopy'(`helpers.php:274`) |
+| TC-POST-THANK-NEW-01 | Fatal error: Unknown column 'source_url' in INSERT INTO(`php/sql_POST.php:72`) |
+| TC-POST-THANK-NEW-02 | 同上 |
+| TC-SEL-BRWMAKERS-01 | Fatal ではないが `Warning: Undefined array key "country_code"` が
+  `brewery/makers.php` 25行目・27行目で計6件混入(国旗が🏳️になり、国名が欠落する)。
+  これも同じスキーマ差分が原因 |
+
+**現在の出力をそのままゴールデンにしなかった理由**: これらは「いまのページとして正しい」
+とは言えない(Warning/Fatal が混ざっている=brief が明示的に不具合とする状態)。かといって
+2026-08-22 の旧デザインの golden をそのまま残しても、比較対象として意味を持たない
+(すでに存在しないページの値と比較し続けるだけになる)。**判断として、この9件は
+「未確認」のまま golden を更新せず、fixtures.sql のスキーマ同期を別タスクとして
+提案する**(本タスクの担当範囲外。`ALTER TABLE` 相当の列追加は機械的だが、
+`SELECT *` に依存する既存の16ケース(php/sql.php・common/sql.php 経由)の JSON 出力に
+新しい列が波及するため、それらの期待値の再計算まで含めた別作業になる)。
+
+### 13.4 確認して golden を更新したケース
+
+- **TC-SEL-EVAL-01**: 差分は `Deprecated: Using null as an array offset is deprecated` の
+  1行のみ。この環境の PHP は 8.3.6(2026-08-22 時点は 8.5.9 で記録)で、バージョン差により
+  この Deprecated メッセージが出なくなっている。ページの表示内容・他の Warning・exit コードは
+  無変化。**アプリのコード変更ではなく実行環境のPHPバージョン差**と判断し、golden を現在の
+  出力で更新した。
+- **上記以外の16ケース**(TC-CORE-01/02/03、TC-POST-THANK-UPDATE-01、TC-SEL-ADDP-01、
+  TC-SEL-CHECK-NEW-01、TC-SEL-CHECK-UPDATE-01、TC-SEL-LMAK-01、TC-SEL-LSTY-01、TC-SEL-MAK-01、
+  TC-SEL-MAKERS-01、TC-SEL-PHPCHECK-NEW-01、TC-SEL-POSTADDP-01、TC-SEL-POSTEVAL-01、
+  TC-SEL-POSTPRD-01、TC-SEL-PRD-01)は、sandbox 再構築後も**旧 golden と byte-identical**
+  だった(= 対象の `php/`・`post/` 配下のページ・共通SQL層はリニューアルで一切変更されて
+  いない)。1ページずつ開いて Warning・表示内容を目視確認し、内容は§3の既存記載どおりで
+  あることを確認したうえで、golden は据え置き(変更不要)とした。
+
+### 13.5 決定性の確認
+
+`bash tests/runner/run_all.sh && bash tests/runner/compare_golden.sh` を2回連続実行し、
+`tests/out/` の全ファイルが1回目と2回目で完全一致(`diff -rq` で差分なし)することを確認した。
+`compare_golden.sh` 自体は§13.3の9件について両回とも同じ内容の `DIFF` を報告する
+(fixtures.sql 未同期による既知の differences。regressionではない)。それ以外の17件は
+両回とも golden と完全一致した。
+
+### 13.6 副作用として発見した重大な問題: ローカルテストDBが単体テスト用の実データを失った
+
+`tests/runner/run_case.sh` は**毎回** `mysql beer < tests/fixtures/fixtures.sql` を実行し、
+`products`/`maker`/`style`/`clarity`/`fruity`/`rate_user` を `DROP TABLE` → 合成3件の
+フィクスチャで `CREATE TABLE` し直す(この挙動自体は本タスクで変更していない、既存の
+`run_case.sh` の仕様どおり)。
+
+一方 `tests/unit/handle_test.php`(コメントに明記)は**同じローカルDB
+(`db_config.local.php` は特性テスト・単体テストどちらからも同じ `127.0.0.1` の `beer` を指す)**
+に投入済みの「実データ(products 200 / maker 40 / style 102、マイグレーション001・003適用済み)」
+に依存している。本タスクの Step 2 (`bash tests/runner/run_all.sh` を複数回実行)により、
+**その実データが合成3件のフィクスチャ(旧スキーマ)で上書きされ、失われた**。結果、
+`php tests/unit/run.php` が `common/nebula/helpers.php` の `estimated_fields` 列不足で
+Fatal error になり、`handle_test.php` の途中で停止していた(§13.3と同根)。
+
+**応急処置として実施したこと**: `db/migrations/001_renewal_columns.sql` と
+`003_content_rights.sql`(いずれも適用済み・冪等なADD COLUMN)をローカルDBに再適用し、
+スキーマだけは復元した。これにより Fatal error は解消し、`php tests/unit/run.php` は
+**178 pass / 1 fail** まで回復した。唯一の FAIL(`DBにある銘柄: matched_product_id が立つ`、
+期待値 `pr0013`)は、実データ200件そのものが失われたことによるもの(ロジックの不具合ではない、
+`pr0013`という実商品がもうDBに存在しないため)。
+
+**このスキーマ復元はマイグレーションファイルをそのまま流しただけで新規のDDLは書いていない。
+ただし失われた実データ(products 200 / maker 40 / style 102の中身)そのものは復元できていない**
+(このリポジトリ・コンテナ内にバックアップが見つからなかった)。しかも **この状態は
+characterization テストを次に走らせた瞬間にまた失われる**(`run_case.sh` が毎回
+`fixtures.sql` で `DROP`/`CREATE` するため)。
+
+**報告・提案**: 特性テスト(`tests/runner/`)と単体テスト(`tests/unit/`)が同じローカルDBを
+共有しており、前者が後者の前提データを恒常的に破壊しうる構造になっている。恒久対応としては
+(a) 実データ(200/40/102、マイグレーション適用済み)を別スキーマ(例 `beer_dev_local`)に
+退避し `tests/unit/` はそちらを見るようにする、または (b) 実データそのものを再投入できる
+手段(ダンプ・再取得スクリプト等)を用意しておく、のいずれかが要る。**これは本タスクの
+範囲外の別問題として報告するのみとし、実データの再構築は行っていない。**

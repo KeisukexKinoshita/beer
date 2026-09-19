@@ -30,5 +30,13 @@ if ($argc >= 3) {
     $_REQUEST = array_merge($_GET, $_POST);
 }
 
+// リニューアル後のページ (index.php, beer/, brewery/, style/ 等) は
+// `$_SERVER['DOCUMENT_ROOT'] . '/common/nebula/...'` の形で共通部品を読む。
+// 本番のWebサーバではDOCUMENT_ROOTが公開ルートに設定されるが、CLI実行では
+// 未設定(空文字列)のため、絶対パス `/common/nebula/helpers.php` を
+// ファイルシステムのルート直下に対して開こうとして Fatal error になる。
+// sandbox 自体がその公開ルートに相当するので、ここで明示的に合わせる。
+$_SERVER['DOCUMENT_ROOT'] = $sandbox;
+
 chdir(dirname($page));
 require basename($page);
