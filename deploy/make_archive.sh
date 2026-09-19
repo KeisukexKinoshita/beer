@@ -45,7 +45,7 @@ if [ -n "$(git status --porcelain)" ]; then
 fi
 
 git archive --format=tar.gz --prefix=html/ -o "$OUT" HEAD \
-  index.php try.php photo.php style.css chartjs-plugin-datalabels.min.js googlebb691fb861bc6308.html \
+  index.php try.php photo.php agecheck.php style.css chartjs-plugin-datalabels.min.js googlebb691fb861bc6308.html \
   robots.txt ads.txt sitemap.php privacy.php about.php terms.php \
   common/nebula common/reco line style brewery beer assets vendor \
   $(git ls-files img | grep -v '^img/product/' | tr '\n' ' ')

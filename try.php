@@ -8,8 +8,15 @@ require_once __DIR__ . '/common/reco/gate.php';
 require_once __DIR__ . '/common/reco/identify.php';
 require_once __DIR__ . '/common/reco/cascade.php';
 require_once __DIR__ . '/common/reco/handle.php';
+require_once __DIR__ . '/common/reco/age.php';
 
 $visitorId = visitor_current();
+
+// 酒類を扱うので、写真の受付より前に年齢を確認する(設計書 §12)
+if (!age_confirmed($visitorId)) {
+    header('Location: /agecheck.php?next=/try.php');
+    exit;
+}
 $view = 'intake';   // intake / result / error
 $msg  = '';
 $result = $picked = $seed = [];
