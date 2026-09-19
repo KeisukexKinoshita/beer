@@ -29,3 +29,5 @@ img/upload/*
 # 素の応答まで含む生成物で、--replay の動作確認でも同名パターンで作られるため追跡しない。
 # 比較用のサマリは docs/data-log/ に人が残す
 tests/eval/result-*.json
+
+line_config.local.php
