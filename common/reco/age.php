@@ -18,7 +18,7 @@ function age_confirmed(string $visitorId): bool
 
 function age_confirm(string $visitorId): void
 {
-    $st = db()->prepare("UPDATE visitor SET age_confirmed = 1 WHERE visitor_id = :v");
+    $st = db()->prepare("UPDATE visitor SET age_confirmed = 1, age_confirmed_at = NOW() WHERE visitor_id = :v");
     $st->execute([':v' => $visitorId]);
 }
 

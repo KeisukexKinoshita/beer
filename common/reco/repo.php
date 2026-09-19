@@ -217,3 +217,31 @@ function reco_confirm_flash(bool $yes, array $upload): string
     if (!empty($upload['brand_text'])) { return 'confirmed_queued'; }
     return 'confirmed_unread';
 }
+
+/**
+ * 画面を表示したときに合言葉を発行し、その訪問者の行に持たせる。
+ *
+ * 外部サイトからの POST だけで話が進むのを防ぐためのもの。
+ * 画面を**見た人**にしか合言葉は渡らない。
+ */
+function csrf_issue(string $visitorId): string
+{
+    $t = bin2hex(random_bytes(32));
+    db()->prepare("UPDATE visitor SET csrf_token = :t WHERE visitor_id = :v")
+        ->execute([':t' => $t, ':v' => $visitorId]);
+    return $t;
+}
+
+/** 合言葉を照合して、使い捨てる。合っていたときだけ true */
+function csrf_check(string $visitorId, $token): bool
+{
+    if (!is_string($token) || $token === '') { return false; }
+    $st = db()->prepare("SELECT csrf_token FROM visitor WHERE visitor_id = :v");
+    $st->execute([':v' => $visitorId]);
+    $stored = $st->fetchColumn();
+    if (!is_string($stored) || $stored === '') { return false; }
+    if (!hash_equals($stored, $token)) { return false; }
+    db()->prepare("UPDATE visitor SET csrf_token = NULL WHERE visitor_id = :v")
+        ->execute([':v' => $visitorId]);
+    return true;
+}

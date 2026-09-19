@@ -4,16 +4,24 @@ declare(strict_types=1);
 require_once __DIR__ . '/common/nebula/helpers.php';
 require_once __DIR__ . '/common/reco/visitor.php';
 require_once __DIR__ . '/common/reco/age.php';
+require_once __DIR__ . '/common/reco/repo.php';
 
 $visitorId = visitor_current();
 
-// "はい" ボタンが押された
+// "はい" ボタンが押された（CSRF対策：画面を見た人だけが答えられる）
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm'])) {
-    age_confirm($visitorId);
+    // いちばん先に合言葉を確認。合わなければ画面をもう一度見せ直す
+    if (!csrf_check($visitorId, $_POST['csrf'] ?? null)) {
+        // 外部サイトからの POST を防ぐ。正規の利用者が時間を置いて送った場合にも起きるので、
+        // エラーにせず、黙ってやり直させる（親切なUI）
+        // （年齢確認画面をもう一度出す）
+    } else {
+        age_confirm($visitorId);
 
-    // next パラメータへ安全にリダイレクト（許可したパスだけを受け付ける）
-    header('Location: ' . age_next($_GET['next'] ?? null));
-    exit;
+        // next パラメータへ安全にリダイレクト（許可したパスだけを受け付ける）
+        header('Location: ' . age_next($_GET['next'] ?? null));
+        exit;
+    }
 }
 
 // "いいえ" の選択
@@ -53,6 +61,7 @@ require __DIR__ . '/common/nebula/head.php';
         </p>
       </div>
       <form class="ex-acts" method="POST">
+        <input type="hidden" name="csrf" value="<?= e(csrf_issue($visitorId)) ?>">
         <button type="submit" name="confirm" value="yes" class="ex-btn">はい</button>
         <button type="submit" name="declined" value="yes" class="ex-btn ghost">いいえ</button>
       </form>
