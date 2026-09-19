@@ -18,6 +18,7 @@ $urls = [
     ['/style/styles.php',    '0.8', 'weekly'],
     ['/about.php',           '0.3', 'yearly'],
     ['/privacy.php',         '0.3', 'yearly'],
+    ['/terms.php',           '0.3', 'yearly'],
 ];
 foreach (all_beers() as $b) {
     $urls[] = ['/beer/detail/product.php?ProductID=' . rawurlencode($b['ProductID']), '0.7', 'monthly'];
