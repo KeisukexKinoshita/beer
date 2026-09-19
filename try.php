@@ -25,6 +25,13 @@ $imageWebPath = null;   // 表示部が参照する。保存しなかったと�
 
 // 確認の答え(confirm)を受け取る分岐。POST処理の先頭に置く
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm'])) {
+    // CSRF対策：外部サイトからの POST だけで投票が記録されるのを防ぐ
+    if (!csrf_check($visitorId, $_POST['csrf'] ?? null)) {
+        // 合言葉が無い、または合わない。何も記録せずトップへ戻す
+        header('Location: /index.php');
+        exit;
+    }
+
     $uid = (int)($_POST['upload_id'] ?? 0);
     // 他人の upload に投票できないようにする。この記録は unknown_beer の信頼度になり、
     // ゆくゆくは蔵へ渡す数字の根拠になるので、持ち主だけが答えられること
@@ -217,6 +224,7 @@ $exposureVer = @filemtime($_SERVER['DOCUMENT_ROOT'] . $exposureCss) ?: time();
              (最終レビュー C-3: 読めなかったときにだけ確認が出ない嘘が残っていた) */ ?>
     <form class="ex-ask" method="post" action="/try.php">
       <input type="hidden" name="upload_id" value="<?= (int)$uploadId ?>">
+      <input type="hidden" name="csrf" value="<?= e(csrf_issue($visitorId)) ?>">
       <?php if ($branch === 'unknown' && !$result['brand_text']): ?>
         <span class="ex-sub" style="flex:1 1 100%">
           銘柄名は読み取れませんでした。<?= !empty($seed['StyleName']) ? e($seed['StyleName']) . ' に見えます。' : '' ?>合っていますか?
