@@ -21,3 +21,17 @@ function age_confirm(string $visitorId): void
     $st = db()->prepare("UPDATE visitor SET age_confirmed = 1 WHERE visitor_id = :v");
     $st->execute([':v' => $visitorId]);
 }
+
+/**
+ * 年齢確認のあとに戻す先。**許可した内部のパスだけ**を受け付ける。
+ *
+ * 以前は「/ で始まり // でない」という形の検査だったが、`/\evil.com` が通ってしまった。
+ * ブラウザは URL の中の `\` を `/` として扱うので、それは `//evil.com`(外部サイト)と同じ。
+ * タブや改行を混ぜる細工もある。**形で見るのをやめ、名前で許す。**
+ */
+const AGE_NEXT_ALLOWED = ['/', '/index.php', '/try.php'];
+
+function age_next($next): string
+{
+    return (is_string($next) && in_array($next, AGE_NEXT_ALLOWED, true)) ? $next : '/index.php';
+}

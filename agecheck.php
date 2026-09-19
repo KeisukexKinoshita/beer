@@ -11,13 +11,8 @@ $visitorId = visitor_current();
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm'])) {
     age_confirm($visitorId);
 
-    // next パラメータへ安全にリダイレクト
-    $next = $_GET['next'] ?? '/index.php';
-    // 先頭が / で、// で始まらないもの(相対パスのみ許可)
-    if (!preg_match('~^/[^/]~', $next)) {
-        $next = '/index.php';
-    }
-    header('Location: ' . $next);
+    // next パラメータへ安全にリダイレクト（許可したパスだけを受け付ける）
+    header('Location: ' . age_next($_GET['next'] ?? null));
     exit;
 }
 
