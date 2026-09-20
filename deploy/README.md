@@ -32,13 +32,36 @@ RDS内で `beer` スキーマを `beer_dev` に複製する (mysqldump | mysql)�
 
 ## デプロイフロー (dev → ユーザー確認 → prod)
 
+`db/` は配布物(tarball)に含まれない(意図通り。サーバ側で直接 SQL を当てる)。
+一方 `try.php` は 007(`visitor.flash`)・008(`visitor.csrf_token`)の**両方**が無いと
+落ち、`agecheck.php` も 008 が無いと落ちる。**マイグレーションを当てずにコードだけ
+デプロイすると、写真機能が丸ごと 500 になる**(dev で実際に踏みかけた)。
+コードを展開する前に、必ず対象環境の DB へ未適用の `db/migrations/*.sql` を当てること。
+
 ```bash
 bash deploy/make_archive.sh            # コンテナ内で tarball 作成
 IP=$(aws ec2 describe-instances --instance-ids i-0985dcea2eb68ed56 \
   --query 'Reservations[0].Instances[0].PublicIpAddress' --output text)
 scp -i /root/.ssh/warikan_key.pem /tmp/claude-0/beer-deploy.tar.gz ec2-user@$IP:/tmp/
+scp -i /root/.ssh/warikan_key.pem db/migrations/*.sql ec2-user@$IP:/tmp/beer-migrations/  # 事前に mkdir しておく
+
+# 未適用の db/migrations/*.sql を番号順に dev へ当てる (apply_sql.php が
+# schema_migrations で適用済みを見ているので、二重に流しても安全)。
+# ALTER TABLE (DDL) なので --allow-ddl が要る。*_rollback.sql は当てない。
+ssh -i /root/.ssh/warikan_key.pem ec2-user@$IP '
+for f in $(ls /tmp/beer-migrations/[0-9]*.sql | grep -v _rollback); do
+  sudo docker run --rm -v /srv:/srv -v /tmp/beer-migrations:/tmp/beer-migrations seisan3-php \
+    php /srv/beer/deploy/apply_sql.php dev "$f" --allow-ddl
+done'
 ssh -i /root/.ssh/warikan_key.pem ec2-user@$IP 'sudo bash /srv/beer/deploy/deploy.sh dev /tmp/beer-deploy.tar.gz'
 # dev URL (Basic認証) でユーザー確認 → OK後:
+
+# prod にも同じ SQL を当ててからコードを展開する
+ssh -i /root/.ssh/warikan_key.pem ec2-user@$IP '
+for f in $(ls /tmp/beer-migrations/[0-9]*.sql | grep -v _rollback); do
+  sudo docker run --rm -v /srv:/srv -v /tmp/beer-migrations:/tmp/beer-migrations seisan3-php \
+    php /srv/beer/deploy/apply_sql.php prod "$f" --allow-ddl
+done'
 ssh -i /root/.ssh/warikan_key.pem ec2-user@$IP 'sudo bash /srv/beer/deploy/deploy.sh prod /tmp/beer-deploy.tar.gz'
 ```
 
@@ -50,7 +73,8 @@ ssh -i /root/.ssh/warikan_key.pem ec2-user@$IP 'sudo bash /srv/beer/deploy/deplo
 
 ## 検証チェックリスト
 
-- [ ] dev URL で全ページ応答 + 投稿フルフロー動作
+- [ ] dev URL で全ページ応答
+- [ ] 007 / 008 が適用済みであること (agecheck.php と try.php が 500 にならないことで確認できる)
 - [ ] prod URL 到達 (HTTPS を選んだ場合は証明書有効)
 - [ ] seisan3.com に影響なし
 - [ ] reboot 後にコンテナ自動復帰
