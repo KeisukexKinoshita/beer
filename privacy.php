@@ -47,6 +47,12 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
         <td>アップロードされた写真そのもの</td>
         <td>写真に写っているビールの銘柄・スタイル・色を読み取るため</td>
       </tr>
+      <tr>
+        <td>LINE株式会社<br>（LINEログイン）</td>
+        <td>LINEでログインしたとき</td>
+        <td>IPアドレス、ブラウザの種類とバージョン、OSの種類。連携が完了すると、LINEの利用者ID（表示名・アイコンは取得しません）が当サイトに送られます</td>
+        <td>端末をまたいで同じ利用者として記録を引き継ぐため</td>
+      </tr>
     </tbody>
   </table>
   </div>
