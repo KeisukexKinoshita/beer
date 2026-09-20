@@ -29,14 +29,23 @@ $declined = $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['declined']);
 
 $title = '年齢確認';
 $desc  = 'Darth Beer.com は酒類に関する情報を扱っています。20歳以上であることをご確認ください。';
+// この画面は ex-wrap / ex-intake / ex-ring / ex-btn などを使うが、nebula.css には無い
+// (exposure.css にしかない)。head.php が読むのは nebula.css だけなので、ここで足す
+// (バージョン付与は try.php の exposureCss と同じ流儀: filemtime でキャッシュ回避)
+$exposureCss = '/assets/css/exposure.css';
+$exposureVer = @filemtime($_SERVER['DOCUMENT_ROOT'] . $exposureCss) ?: time();
+$extraCss = [$exposureCss . '?v=' . (int)$exposureVer];
 require __DIR__ . '/common/nebula/head.php';
 ?>
 <body>
+<?php if (!$declined): ?>
 <?php require __DIR__ . '/common/nebula/header.php'; ?>
+<?php endif; ?>
 
 <div class="ex-wrap" style="padding:0 18px">
   <?php if ($declined): ?>
-    <!-- "いいえ" を選んだ後の画面。戻るボタンはない -->
+    <!-- "いいえ" を選んだ後の画面。戻るボタンはない。header.php のナビも footer.php の
+         ブランドリンクも出さないため、この画面から銘柄一覧へ進む導線も無い -->
     <div class="ex-intake" style="padding-top:90px;padding-bottom:90px">
       <div>
         <h1 style="font-size:18px;margin-bottom:12px">ご利用いただけません</h1>
@@ -69,6 +78,9 @@ require __DIR__ . '/common/nebula/head.php';
   <?php endif; ?>
 </div>
 
-<?php require __DIR__ . '/common/nebula/footer.php'; ?>
+<?php if ($declined): ?>
 </body>
 </html>
+<?php else: ?>
+<?php require __DIR__ . '/common/nebula/footer.php'; ?>
+<?php endif; ?>
