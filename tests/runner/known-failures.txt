@@ -1,0 +1,33 @@
+# 既知の失敗一覧(compare_golden.sh が読む)。1行1ファイル名。# で始まる行はコメント。
+#
+# 原因: tests/fixtures/fixtures.sql のスキーマが db/migrations/001〜004 で追加された
+# 列に追いついていない(tests/cases.md §13.3)。fixtures.sql の同期は本ラウンドの
+# 対象外として見送り済み。fixtures.sql を直したら、この一覧からその行を消すこと
+# (compare_golden.sh は、一覧にあるのに一致してしまったファイルを STALE として失敗にする)。
+#
+# 2026-09-20、bash tests/runner/run_all.sh && bash tests/runner/compare_golden.sh を
+# 実行して確認した実際の DIFF (18件)をそのまま列挙している。
+
+# TC-SEL-IDX-01 は .exit は golden と一致している(golden 側も既に Fatal=255 のため)。
+# .html だけが既知の DIFF。
+TC-SEL-IDX-01.html
+TC-SEL-BEERPRODUCTS-01.html
+TC-SEL-BEERPRODUCTS-01.exit
+TC-SEL-BEERDETAIL-01.html
+TC-SEL-BEERDETAIL-01.exit
+TC-SEL-BRWMAKER-01.html
+TC-SEL-BRWMAKER-01.exit
+TC-SEL-STYDETAIL-01.html
+TC-SEL-STYDETAIL-01.exit
+TC-SEL-STYSTYLES-01.html
+TC-SEL-STYSTYLES-01.exit
+TC-POST-THANK-NEW-01.html
+TC-POST-THANK-NEW-01.exit
+TC-POST-THANK-NEW-01.db.txt
+TC-POST-THANK-NEW-02.html
+TC-POST-THANK-NEW-02.exit
+TC-POST-THANK-NEW-02.db.txt
+
+# Fatal ではなく Warning (Undefined array key "country_code") が混入するだけなので
+# exit code は golden と一致している(このファイルは .html のみ)
+TC-SEL-BRWMAKERS-01.html
