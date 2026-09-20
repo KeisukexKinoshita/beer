@@ -4,10 +4,16 @@ declare(strict_types=1);
  * common/reco/handle.php の reco_handle_upload() を検査する(最終レビュー指摘:
  * 金・嘘・写真の判断がすべてそこにあるのに、検査がゼロだった)。
  *
- * ローカルのテストDB(products 200 / maker 40 / style 102)を使う。db() が
- * $_SERVER['DOCUMENT_ROOT']/db_config.local.php を見るので、ここで先に設定する。
+ * db() が $_SERVER['DOCUMENT_ROOT']/db_config.local.php を見るので、ここで先に設定する。
  * upload/recommendation/event/unknown_beer/visitor は使い捨てのテスト用データなので、
  * このファイルの実行のたびに空にしてから始める(再実行しても結果が変わらないように)。
+ *
+ * **products/maker/style の実データには依存しない。** 以前は「DBにある銘柄」の検査に
+ * 実データの pr0013(BREWDOG HAZY JANE)が存在する前提だったが、
+ * `tests/runner/`(特性テスト)が products/maker/style を合成フィクスチャで
+ * 上書きすると前提が消えて落ちていた(実行する順番でこのテストの結果が変わっていた、
+ * という状態そのものが不具合)。「DBにある銘柄」の検査に必要な1行は
+ * このテストが reco_ht_seed_beer() で自分で作り、reco_ht_unseed_beer() で必ず消す。
  */
 
 $_SERVER['DOCUMENT_ROOT'] = dirname(__DIR__, 2);
@@ -72,6 +78,34 @@ function reco_ht_reco_count(int $uploadId): int
     return (int)$st->fetchColumn();
 }
 
+// ---- このテストが必要とする銘柄を、自分で用意する ------------------------
+// 特性テスト(tests/runner/)が走ると products/maker/style が3件のフィクスチャに
+// 置き換わる。**実データがあることを前提にすると、走らせる順番で落ちる**。
+// このテストは「DBに在る銘柄」と「DBに無い銘柄」の振る舞いを見るものなので、
+// 在ることが必要な1件を自分で作り、後始末する。
+//
+// **ID は `identify_parse()` の形式検査(`^pr\d{4}$`)に合わせる。** 最初 zz9999 で
+// 試したところ、この検査で常に matched_product_id が null に落とされて気づいた
+// (catalog に載っているかどうかの前に、形が違うものはここで弾かれる)。
+// pr9999/mk9999/st9999 は実データ(2026-09-20時点 MAX: pr0202/mk0039/st0107)にも
+// 特性テストの合成フィクスチャ(101-104等の裸の整数)にも衝突しない。
+function reco_ht_seed_beer(): string
+{
+    $pid = 'pr9999';
+    reco_ht_unseed_beer(); // 前回の異常終了で残った同名行があれば先に消す(ON DUPLICATE KEYは主キーが無く効かないため)
+    db()->prepare("INSERT INTO maker (MakerID, MakerName) VALUES ('mk9999', 'テスト醸造所')")->execute();
+    db()->prepare("INSERT INTO style (StyleID, FamilyName, StyleName) VALUES ('st9999', 'IPA', 'テストIPA')")->execute();
+    db()->prepare("INSERT INTO products (ProductID, MakerID, ProductName, StyleID, Alcohol)
+                   VALUES (:p, 'mk9999', 'テスト銘柄', 'st9999', 6.0)")->execute([':p' => $pid]);
+    return $pid;
+}
+function reco_ht_unseed_beer(): void
+{
+    db()->exec("DELETE FROM products WHERE ProductID = 'pr9999'");
+    db()->exec("DELETE FROM style    WHERE StyleID   = 'st9999'");
+    db()->exec("DELETE FROM maker    WHERE MakerID   = 'mk9999'");
+}
+
 // ---- API失敗 ---------------------------------------------------------------
 // upload に行が1つ増える(status='api_error')。画面は「混み合っています」で、
 // 「ビールの写真に見えませんでした」ではない(取り違え防止。修正ラウンド1の再発防止)。
@@ -114,13 +148,15 @@ eq($row['image_path'], null, 'ビール以外: upload.image_path も null');
 // ---- DBにある銘柄 -----------------------------------------------------------
 // recommendation に3行入る。「登録されていません」が出ない
 // (try.php のテンプレートはこの $result['matched_product_id'] の有無だけで出し分ける)
+// このテストが必要とする1件を自分で用意する(実データにも合成フィクスチャにも依存しない)。
+$recoTestPid = reco_ht_seed_beer();
 $visitor = reco_ht_visitor();
 $calls = [];
 $h = reco_handle_upload($visitor, reco_ht_file('IMG_1455.jpeg'),
     reco_ht_transport(reco_ht_resp([
-        'matched_product_id' => 'pr0013', 'brand_text' => 'HAZY JANE', 'brewery_text' => 'BREWDOG',
+        'matched_product_id' => $recoTestPid, 'brand_text' => 'HAZY JANE', 'brewery_text' => 'BREWDOG',
     ]), $calls));
-eq($h['result']['matched_product_id'], 'pr0013',
+eq($h['result']['matched_product_id'], $recoTestPid,
    'DBにある銘柄: matched_product_id が立つ(「登録されていません」を出さない条件)');
 eq(count($h['picked']), 3, 'DBにある銘柄: 推薦が3件返る');
 eq(reco_ht_reco_count($h['uploadId']), 3, 'DBにある銘柄: recommendation に3行入る');
@@ -145,7 +181,7 @@ eq((int)$row->fetchColumn(), 1, 'DBに無い銘柄: unknown_beer に行が入る
 $visitor = reco_ht_visitor();
 $calls1 = [];
 $h1 = reco_handle_upload($visitor, reco_ht_file('IMG_1765.jpeg'),
-    reco_ht_transport(reco_ht_resp(['matched_product_id' => 'pr0013',
+    reco_ht_transport(reco_ht_resp(['matched_product_id' => $recoTestPid,
         'brand_text' => 'HAZY JANE', 'brewery_text' => 'BREWDOG']), $calls1));
 eq(count($calls1), 1, '同じ写真の再送: 1回目はAPIが呼ばれる');
 $calls2 = [];
@@ -164,7 +200,7 @@ eq($h1['view'], 'error', '失敗した記録は再利用しない: 1回目は失
 reco_ht_unburst($visitor);
 $calls2 = [];
 $h2 = reco_handle_upload($visitor, reco_ht_file('IMG_2173.jpeg'),
-    reco_ht_transport(reco_ht_resp(['matched_product_id' => 'pr0013',
+    reco_ht_transport(reco_ht_resp(['matched_product_id' => $recoTestPid,
         'brand_text' => 'HAZY JANE', 'brewery_text' => 'BREWDOG']), $calls2));
 eq(count($calls2), 1, '失敗した記録は再利用しない: 同じ写真でも2回目はAPIが呼ばれる');
 eq($h2['view'], 'result', '失敗した記録は再利用しない: 2回目は成功として扱われる');
@@ -236,3 +272,4 @@ foreach ($paths as $p) {
 foreach (['event', 'recommendation', 'unknown_beer', 'upload', 'visitor'] as $t) {
     db()->exec("DELETE FROM {$t}");
 }
+reco_ht_unseed_beer(); // このテストが自分で作った products/maker/style の1件を消す

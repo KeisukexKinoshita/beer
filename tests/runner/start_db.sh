@@ -23,12 +23,20 @@ fi
 mysqladmin --socket=$SOCK ping
 
 # コード直書きのプレースホルダ認証情報でローカル接続できるようにする
+# `beer` は tests/unit/ が前提とする実データ用(このスクリプトは作るだけで中身には触らない)。
+# `beer_characterization` は特性テスト(tests/runner/)専用のスキーマ。
+# 特性テストはケースごとに tests/fixtures/fixtures.sql で丸ごと作り直すため、
+# 実データの入った `beer` と分けないと、実行するたびに実データを壊してしまう
+# (tests/cases.md §13.6)。
 mysql --socket=$SOCK -e "
 CREATE DATABASE IF NOT EXISTS beer CHARACTER SET utf8mb4;
+CREATE DATABASE IF NOT EXISTS beer_characterization CHARACTER SET utf8mb4;
 CREATE USER IF NOT EXISTS 'admin'@'127.0.0.1' IDENTIFIED BY 'REDACTED_DB_PASSWORD';
 CREATE USER IF NOT EXISTS 'admin'@'localhost' IDENTIFIED BY 'REDACTED_DB_PASSWORD';
 GRANT ALL ON beer.* TO 'admin'@'127.0.0.1';
 GRANT ALL ON beer.* TO 'admin'@'localhost';
+GRANT ALL ON beer_characterization.* TO 'admin'@'127.0.0.1';
+GRANT ALL ON beer_characterization.* TO 'admin'@'localhost';
 FLUSH PRIVILEGES;"
 
 php -r "new PDO('mysql:dbname=beer;host=$RDS_HOST','admin','REDACTED_DB_PASSWORD'); echo 'PDO-CONNECT-OK', PHP_EOL;"

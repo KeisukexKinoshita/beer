@@ -5,6 +5,11 @@ set -eu
 cd "$(dirname "$0")/../.."
 
 SOCK=/run/mariadb/mariadb.sock
+# 特性テスト専用のスキーマ。**実DB(`beer`)とは別にする。**
+# 以前はここで `beer` を直接使っており、tests/unit/ が前提とする実データ
+# (products 200 / maker 40 / style 102、マイグレーション適用済み)を
+# 毎ケースのフィクスチャ再投入で上書きして壊していた(tests/cases.md §13.6)。
+DB=beer_characterization
 CASE_FILE="$1"
 
 eval "$(python3 - "$CASE_FILE" <<'PYEOF'
@@ -21,7 +26,7 @@ PYEOF
 mkdir -p tests/out
 
 # フィクスチャ再投入 (毎ケース、クリーンな状態から)
-mysql --socket=$SOCK beer < tests/fixtures/fixtures.sql
+mysql --socket=$SOCK $DB < tests/fixtures/fixtures.sql
 
 # 画像rename用ダミーの用意と、前ケースの残骸掃除
 rm -f tests/sandbox/img/product/*.png tests/sandbox/img/tmp/*.png
@@ -55,7 +60,7 @@ if [ -n "$DUMP_TABLES" ]; then
   for t in $DUMP_TABLES; do
     {
       echo "== $t =="
-      mysql --socket=$SOCK beer -e "SELECT * FROM $t"
+      mysql --socket=$SOCK $DB -e "SELECT * FROM $t"
     } >> "tests/out/$ID.db.txt"
   done
   # rename() の結果 (img/product の中身) も記録

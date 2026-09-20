@@ -1850,5 +1850,64 @@ characterization テストを次に走らせた瞬間にまた失われる**(`ru
 共有しており、前者が後者の前提データを恒常的に破壊しうる構造になっている。恒久対応としては
 (a) 実データ(200/40/102、マイグレーション適用済み)を別スキーマ(例 `beer_dev_local`)に
 退避し `tests/unit/` はそちらを見るようにする、または (b) 実データそのものを再投入できる
-手段(ダンプ・再取得スクリプト等)を用意しておく、のいずれかが要る。**これは本タスクの
-範囲外の別問題として報告するのみとし、実データの再構築は行っていない。**
+手段(ダンプ・再取得スクリプト等)を用意しておく、のいずれかが要る。
+
+### 13.7 恒久対応(2026-09-20、利用者の指示により実施)
+
+利用者が実データを再投入し179 passに復旧したうえで、**方針として「特性テストの完全復旧は
+しない・fixtures.sqlは直さない」まま、単体テストだけを実データに依存しない形に直す**ことを
+指示された。以下を実施した。
+
+**1. `tests/unit/handle_test.php` を自立させた**
+
+「DBにある銘柄」の検査が実データの `pr0013`(BREWDOG HAZY JANE)に依存していたのをやめ、
+このテストが自分で1行 (`pr9999`/`mk9999`/`st9999`) を作って使い、最後に必ず消す方式にした
+(`reco_ht_seed_beer()` / `reco_ht_unseed_beer()`)。
+
+- 最初 `zz9999`/`zz99` で試したところ、`identify_call()` の形式検査
+  (`common/reco/identify.php` の `preg_match('/^pr\d{4}$/', ...)`)に落ちて
+  `matched_product_id` が常に `null` になった。**銘柄IDは「カタログに実在するか」の前に
+  「`pr`+数字4桁の形をしているか」を検査されている**ため、`pr9999` に変更して解決した
+  (2026-09-20時点の実データ MAX: `pr0202`/`mk0039`/`st0107` と衝突しない)。
+- `reco_confirm_flash()` を呼ぶ2箇所(`product_id => 'pr0013'`)は、この関数が
+  `!empty($upload['product_id'])` しか見ない純粋関数(DBを引かない)なので変更していない
+  (利用者の指示どおり)。
+- `reco_pool()` の件数検査(`$total = COUNT(products)`)はもともとDBから動的に数えており、
+  件数に依存しないため変更していない。
+
+**2. 特性テストと単体テストのDBスキーマを分離した(根本対応)**
+
+上記1だけでは不十分だった。**`tests/fixtures/fixtures.sql` は列の型そのものが違う**
+(`products.ProductID` が実DBでは `CHAR(6)`、fixtures.sql の合成DDLでは `INT`)ため、
+特性テストの後に自己完結のテストが自前で `pr9999` を INSERT しようとしても
+`Incorrect integer value` で落ちることを検証中に確認した。「単体テストを自立させる」だけでは、
+特性テストが実行されるたびに単体テストの前提(実データを持つ `beer` スキーマ)そのものが
+差し替えられる構造は残ってしまう。
+
+そこで、**特性テスト専用の別スキーマ `beer_characterization` を新設し、`tests/runner/` 配下を
+そちらだけに向けた**(`beer`(実データ)には二度と書き込まない):
+
+- `tests/runner/start_db.sh`: `beer` に加えて `beer_characterization` を作成・admin権限を付与
+  (`beer` 側の作成・権限付与は既存のまま変更していない=実データには触れない)
+- `tests/runner/make_sandbox.sh`: 本物の `db_config.local.php` をそのままコピーするのをやめ、
+  host/user/pass は同じまま `$db_name` だけ `beer_characterization` に差し替えたものを
+  sandbox 用に生成するようにした
+- `tests/runner/run_case.sh`: フィクスチャ再投入・DBダンプの対象を `beer` 直書きから
+  変数 `$DB=beer_characterization` に変更
+
+`common/sql.php` / `php/sql.php` はいずれも自分のディレクトリからの相対パスで
+`db_config.local.php` を読むため、sandbox 内で完結してこの差し替えが効く。
+リニューアル後のページ(`$_SERVER['DOCUMENT_ROOT']` 経由、§13.2)も同じ sandbox の
+`db_config.local.php` を見るため同様に効く。
+
+**検証**: `bash tests/runner/run_all.sh` を実行した前後で `beer`(実データ)の
+`products` 件数が変化しないことを確認した(前後とも同じ件数のまま。詳細な確認ログは
+task-6-report.md)。§13.3の9件の結果(fixtures.sqlのスキーマドリフト由来のFatal/Warning)は
+スキーマを分離しても当然変わらない(fixtures.sqlの内容自体は直していないため)。
+
+**重要な自己申告(2026-09-20)**: 上記の分離を実装している最中、**分離前の
+`run_all.sh`(まだ `beer` に直接書いていた版)を確認のため1回実行してしまい、
+利用者が復旧してくれた実データ(200/40/102件)を再び壊した**。分離の実装は
+完了しており、以後は `run_all.sh` を何度実行しても `beer` に一切書き込まないことを
+確認済みだが、**実データの中身(200/40/102件)は本タスク側では復元できない**ため、
+再度の復旧を依頼した。詳細は task-6-report.md。
