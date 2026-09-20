@@ -223,16 +223,33 @@ function reco_confirm_flash(bool $yes, array $upload): string
  *
  * 外部サイトからの POST だけで話が進むのを防ぐためのもの。
  * 画面を**見た人**にしか合言葉は渡らない。
+ *
+ * **既に合言葉があればそれを返す(使い捨てない)。** 外部サイトは合言葉を読めないので、
+ * CSRF の防御はこれで成立する。以前は呼ぶたびに発行し直していたため、同じ画面を
+ * 別タブで2回開く・戻るボタンで開き直すと、先に見ていたタブの合言葉が上書きされて
+ * 無効になっていた(修正ラウンド: try.php の投票が黙って消える不具合の原因)。
  */
 function csrf_issue(string $visitorId): string
 {
+    $st = db()->prepare("SELECT csrf_token FROM visitor WHERE visitor_id = :v");
+    $st->execute([':v' => $visitorId]);
+    $existing = $st->fetchColumn();
+    if (is_string($existing) && $existing !== '') {
+        return $existing;
+    }
     $t = bin2hex(random_bytes(32));
     db()->prepare("UPDATE visitor SET csrf_token = :t WHERE visitor_id = :v")
         ->execute([':t' => $t, ':v' => $visitorId]);
     return $t;
 }
 
-/** 合言葉を照合して、使い捨てる。合っていたときだけ true */
+/**
+ * 合言葉を照合する。合っていたときだけ true。
+ *
+ * **使い捨てない(NULL に戻さない)。** 使い捨ては再送の防止であって、ここで守りたいのは
+ * 外部サイトからの POST を防ぐことだけ。訪問者ごとに1本の合言葉が生き続けるほうが、
+ * タブや戻るボタンで壊れない。
+ */
 function csrf_check(string $visitorId, $token): bool
 {
     if (!is_string($token) || $token === '') { return false; }
@@ -240,8 +257,5 @@ function csrf_check(string $visitorId, $token): bool
     $st->execute([':v' => $visitorId]);
     $stored = $st->fetchColumn();
     if (!is_string($stored) || $stored === '') { return false; }
-    if (!hash_equals($stored, $token)) { return false; }
-    db()->prepare("UPDATE visitor SET csrf_token = NULL WHERE visitor_id = :v")
-        ->execute([':v' => $visitorId]);
-    return true;
+    return hash_equals($stored, $token);
 }

@@ -38,16 +38,17 @@ eq(csrf_check($vid, 'なにか'), false, '発行していない合言葉は通�
 eq(csrf_check($vid, null),     false, '空でも通らない');
 eq(csrf_check($vid, ''),       false, '空文字でも通らない');
 
+// --- 合言葉は使い捨てない(タブ・戻るボタンで黙って消えない) ---
 $t = csrf_issue($vid);
 eq(strlen($t), 64,             '合言葉は64文字');
+eq(csrf_issue($vid), $t,       'csrf_issue を2回呼んでも同じ合言葉が返る(上書きしない)');
 eq(csrf_check($vid, $t . 'x'), false, '1文字違えば通らない');
 eq(csrf_check($vid, $t),       true,  '正しい合言葉は通る');
-eq(csrf_check($vid, $t),       false, '**同じ合言葉は2度使えない**');
+eq(csrf_check($vid, $t),       true,  '2度目も通る(使い捨てない)');
 
-$t2 = csrf_issue($vid);
 $other = 'oth' . str_repeat('0', 29);
 db()->prepare("INSERT INTO visitor (visitor_id, first_seen, last_seen) VALUES (:v, NOW(), NOW())
                ON DUPLICATE KEY UPDATE csrf_token = NULL")->execute([':v' => $other]);
-eq(csrf_check($other, $t2),    false, '他人の合言葉は使えない');
+eq(csrf_check($other, $t),     false, '他人の合言葉は通らない');
 
 db()->prepare("DELETE FROM visitor WHERE visitor_id IN (:a, :b)")->execute([':a' => $vid, ':b' => $other]);
