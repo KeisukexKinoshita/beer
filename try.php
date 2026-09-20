@@ -27,8 +27,12 @@ $imageWebPath = null;   // 表示部が参照する。保存しなかったと�
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm'])) {
     // CSRF対策：外部サイトからの POST だけで投票が記録されるのを防ぐ
     if (!csrf_check($visitorId, $_POST['csrf'] ?? null)) {
-        // 合言葉が無い、または合わない。何も記録せずトップへ戻す
-        header('Location: /index.php');
+        // 合言葉が無い、または合わない。この投票は unknown_beer の信頼度の根拠になるので、
+        // 何も言わずに飛ばすと「押したのに戻された」だけが利用者に伝わり、記録が消えたこと
+        // に気づけない。起きたことだけを一言残して /try.php へ戻す
+        // (agecheck.php:14-17 は画面を出し直すだけで失われる記録が無いので、そのままでよい)
+        visitor_flash_set($visitorId, 'expired');
+        header('Location: /try.php');
         exit;
     }
 
@@ -142,6 +146,11 @@ $exposureVer = @filemtime($_SERVER['DOCUMENT_ROOT'] . $exposureCss) ?: time();
         <p>読み取りを外していたことを記録しました。<b>読み取りの改善に使わせていただきます。</b></p>
       <?php endif; ?>
     </div>
+  <?php endif; ?>
+  <?php if ($flash === 'expired'): ?>
+    <?php /* 合言葉が時間切れ・二重タブ等で合わなかったとき。起きたことだけを言う
+             (画面が嘘をついた不具合を過去3回直しているため、事実だけに留める) */ ?>
+    <div class="ex-wrap"><p class="ex-msg">時間が経ったため、この操作は受け付けられませんでした。もう一度お試しください。</p></div>
   <?php endif; ?>
   <form class="ex-intake" method="post" enctype="multipart/form-data" id="intake">
     <div class="ex-ring"><span>◎</span></div>
