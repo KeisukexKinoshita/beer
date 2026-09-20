@@ -142,7 +142,7 @@ function initGalaxy(opt){
     var r=c.getBoundingClientRect(),mx2=(e.clientX-r.left)*DPR,my2=(e.clientY-r.top)*DPR,o=pick(mx2,my2);
     if(o){hov=o.idx;var b=o.p.b;if(tt){tt.innerHTML='<b>'+b.n+'</b> <div class="st">'+(GALAXY_LABEL[b.g]||'')+'</div>'+
       '<div class="row"><span>ALC</span><span>'+b.a.toFixed(1)+'%</span></div><div class="row"><span>IBU</span><span>'+Math.round(b.i)+'</span></div>'+
-      '<div class="row"><span>FRUITY</span><span>'+b.f+'/4</span></div><div class="row"><span>★</span><span>'+b.r.toFixed(1)+'</span></div>';
+      '<div class="row"><span>FRUITY</span><span>'+b.f+'/10</span></div><div class="row"><span>★</span><span>'+b.r.toFixed(1)+'</span></div>';
       tt.style.left=(o._sx/DPR)+'px';tt.style.top=(o._sy/DPR)+'px';tt.style.opacity=1;}c.style.cursor='pointer';}
     else{hov=null;if(tt)tt.style.opacity=0;c.style.cursor=drag?'grabbing':'grab';}
   });

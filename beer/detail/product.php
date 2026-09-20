@@ -34,7 +34,7 @@ $useMap = !empty($beer['latitude']) && !empty($beer['longitude']);
 $rv = [
   min(1, (float)$beer['IBU_all'] / 74.6),
   min(1, (float)$beer['Alcohol'] / 11),
-  min(1, (float)$beer['Fruity'] / 4),
+  min(1, (float)$beer['Fruity'] / 10),
   min(1, (float)$beer['Color'] / 10),
   min(1, (float)$beer['Favorite'] / 5),
 ];
@@ -69,7 +69,7 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
         <div class="r"><div class="k">IBU（苦味）</div>
           <div class="v"><?= fmt_unit($beer['IBU_all']) ?><?= est_note($beer,'IBU_all') ?><?php if (!is_unmeasured($beer['IBU_all'])): ?><span class="bar"><i style="width:<?= min(100, (float)$beer['IBU_all']/74.6*100) ?>%"></i></span><?php endif; ?></div></div>
         <div class="r"><div class="k">フルーティーさ</div>
-          <div class="v"><?= fmt_unit($beer['Fruity'],' / 4') ?><?= est_note($beer,'Fruity') ?><?php if (!is_unmeasured($beer['Fruity'])): ?><span class="bar"><i style="width:<?= min(100, (float)$beer['Fruity']/4*100) ?>%"></i></span><?php endif; ?></div></div>
+          <div class="v"><?= fmt_unit($beer['Fruity'],' / 10') ?><?= est_note($beer,'Fruity') ?><?php if (!is_unmeasured($beer['Fruity'])): ?><span class="bar"><i style="width:<?= min(100, (float)$beer['Fruity']/10*100) ?>%"></i></span><?php endif; ?></div></div>
         <div class="r"><div class="k">評価</div>
           <div class="v"><?= stars_html($beer['Favorite']) ?> <?= is_unmeasured($beer['Favorite']) ? '未評価' : number_format((float)$beer['Favorite'],1) ?></div></div>
         <?php if (!empty($beer['official_url'])): ?>
