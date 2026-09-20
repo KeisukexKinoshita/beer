@@ -24,7 +24,7 @@ function out(string $title, string $body): void {
 
 // 利用者が同意しなかった場合など
 if (isset($_GET['error'])) {
-    out('連携をやめました', '<p>' . htmlspecialchars((string)$_GET['error_description'] ?? '') . '</p>');
+    out('連携をやめました', '<p>' . htmlspecialchars((string)($_GET['error_description'] ?? '')) . '</p>');
 }
 
 $state = $_GET['state'] ?? '';
