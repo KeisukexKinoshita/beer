@@ -226,6 +226,64 @@ function visitor_flash_take(string $visitorId): ?string
 }
 
 /**
+ * 指定した種類のときだけ印を取り出す。**その種類でなければ何もしない**(印は残る)。
+ *
+ * 画面ごとに描ける印が違うので、取り出した画面が描けない印を
+ * **黙って捨ててしまわない**ようにするためのもの(最終レビュー指摘)。
+ */
+function visitor_flash_take_if(string $visitorId, array $kinds): ?string
+{
+    $st = db()->prepare("SELECT flash FROM visitor WHERE visitor_id = :v");
+    $st->execute([':v' => $visitorId]);
+    $f = $st->fetchColumn();
+    if (!is_string($f) || $f === '' || !in_array($f, $kinds, true)) { return null; }
+    db()->prepare("UPDATE visitor SET flash = NULL WHERE visitor_id = :v")
+        ->execute([':v' => $visitorId]);
+    return $f;
+}
+
+/**
+ * 確認・④保管・LINE連携のお礼を、印の種類から本文(HTML)にする。
+ *
+ * try.php(入口・結果の両画面)と history.php が同じ文面を出すための1か所。
+ * ここに無い種類は空文字を返す(呼び出し側は FLASH_KNOWN 等で事前に絞ること)。
+ */
+function reco_flash_body(string $flash): string
+{
+    switch ($flash) {
+        case 'confirmed_queued':
+            return '<p><b>ありがとうございます。</b></p>'
+                . '<p>この銘柄はまだ登録がありません。<b>追加する候補として控えておきます。</b></p>'
+                . '<p class="ex-sub">よく上がる銘柄から順に、実際の情報を調べて載せています。</p>';
+        case 'confirmed_known':
+            return '<p><b>ありがとうございます。</b>記録しました。</p>'
+                . '<p class="ex-sub">こうした答えが積み重なるほど、薦める精度が上がります。</p>';
+        case 'confirmed_unread':
+            // 銘柄名が読めていないので、控えるものがない。控えると言ってはいけない
+            // (修正ラウンド3: C-2 の本体)
+            return '<p><b>ありがとうございます。</b></p>'
+                . '<p>ラベルの銘柄名までは読み取れませんでした。読み取りの改善に使わせていただきます。</p>';
+        case 'corrected':
+            return '<p><b>教えていただきありがとうございます。</b></p>'
+                . '<p>読み取りを外していたことを記録しました。<b>読み取りの改善に使わせていただきます。</b></p>';
+        case 'note_saved':
+            return '<p><b>残しました。</b></p>'
+                . '<p class="ex-sub">この端末に紐づけて保存しています。別の端末でも見るには LINE と繋いでください。</p>';
+        case 'note_empty':
+            return '<p>感想が空だったので、何も残していません。</p>';
+        case 'note_failed':
+            // 本文はあったのに保存できなかった。理由を偽らない(最終レビュー指摘)
+            return '<p>感想を残せませんでした。この写真が、いまの端末の記録に見当たりません。</p>';
+        case 'line_linked':
+            return '<p><b>LINE と繋がりました。</b>この端末の記録に紐づけました。</p>';
+        case 'line_merged':
+            return '<p><b>LINE と繋がりました。</b>以前の記録に合流しました。</p>';
+        default:
+            return '';
+    }
+}
+
+/**
  * 確認のあとに出す印を、**実際に起きたこと**から決める。
  *
  * ここを間違えると画面が嘘をつく。過去に2度間違えた:

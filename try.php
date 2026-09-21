@@ -54,7 +54,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm'])) {
         // (修正ラウンド4: ここに埋め込んだままだと単体テストできない、という指摘への対応)。
         visitor_flash_set($visitorId, reco_confirm_flash($yes, $own));
     }
-    header('Location: /try.php');
+    // 結果画面(?u=)へ戻す。いまは評価・感想・推薦が同じ画面に載っているので、
+    // ?u= なしの入口へ戻すと確認以外のすべてから追い出される(最終レビュー指摘)。
+    // ただし $uid が壊れている(0)ときは ?u=0 にせず、そのまま入口へ戻す
+    header('Location: /try.php' . ($uid > 0 ? '?u=' . $uid : ''));
     exit;
 }
 
@@ -189,44 +192,22 @@ $exposureVer = @filemtime($_SERVER['DOCUMENT_ROOT'] . $exposureCss) ?: time();
 $flash = ($_SERVER['REQUEST_METHOD'] === 'GET') ? visitor_flash_take($visitorId) : null;
 ?>
 <?php
-// 想定外の値(通常の経路では起きないが、知らない状態では何も言わないほうが
-// この画面の設計意図に忠実。修正ラウンド4: Important指摘)なら枠ごと出さない。
-// このどれでもなければ in_array が false になり、div自体が描画されない。
-$flashKnown = ['confirmed_queued', 'confirmed_known', 'confirmed_unread', 'corrected',
-               'note_saved', 'note_empty', 'line_linked', 'line_merged'];
+// 画面に出してよい印の一覧。**ここだけが正**(最終レビュー指摘。入口用・結果用の
+// 2か所に同じ一覧が重複していて、片方だけ直す事故が起きる形になっていた)。
+// 知らない値のときは枠ごと出さない(通常の経路では起きないが、知らない状態では
+// 何も言わないほうがこの画面の設計意図に忠実。修正ラウンド4: Important指摘)。
+const FLASH_KNOWN = ['confirmed_queued', 'confirmed_known', 'confirmed_unread', 'corrected',
+                     'note_saved', 'note_empty', 'note_failed',
+                     'line_linked', 'line_merged'];
 ?>
 
 <?php if ($view === 'intake' || $view === 'error'): ?>
   <?php if ($view === 'error'): ?>
     <div class="ex-wrap"><p class="ex-msg"><?= e($msg) ?></p></div>
   <?php endif; ?>
-  <?php if ($flash !== null && in_array($flash, $flashKnown, true)): ?>
+  <?php if ($flash !== null && in_array($flash, FLASH_KNOWN, true)): ?>
     <div class="ex-wrap ex-thanks">
-      <?php if ($flash === 'confirmed_queued'): ?>
-        <p><b>ありがとうございます。</b></p>
-        <p>この銘柄はまだ登録がありません。<b>追加する候補として控えておきます。</b></p>
-        <p class="ex-sub">よく上がる銘柄から順に、実際の情報を調べて載せています。</p>
-      <?php elseif ($flash === 'confirmed_known'): ?>
-        <p><b>ありがとうございます。</b>記録しました。</p>
-        <p class="ex-sub">こうした答えが積み重なるほど、薦める精度が上がります。</p>
-      <?php elseif ($flash === 'confirmed_unread'): ?>
-        <?php /* 銘柄名が読めていないので、控えるものがない。控えると言ってはいけない
-                 (修正ラウンド3: C-2 の本体) */ ?>
-        <p><b>ありがとうございます。</b></p>
-        <p>ラベルの銘柄名までは読み取れませんでした。読み取りの改善に使わせていただきます。</p>
-      <?php elseif ($flash === 'corrected'): ?>
-        <p><b>教えていただきありがとうございます。</b></p>
-        <p>読み取りを外していたことを記録しました。<b>読み取りの改善に使わせていただきます。</b></p>
-      <?php elseif ($flash === 'note_saved'): ?>
-        <p><b>残しました。</b></p>
-        <p class="ex-sub">この端末に紐づけて保存しています。別の端末でも見るには LINE と繋いでください。</p>
-      <?php elseif ($flash === 'note_empty'): ?>
-        <p>感想が空だったので、何も残していません。</p>
-      <?php elseif ($flash === 'line_linked'): ?>
-        <p><b>LINE と繋がりました。</b>この端末の記録に紐づけました。</p>
-      <?php elseif ($flash === 'line_merged'): ?>
-        <p><b>LINE と繋がりました。</b>以前の記録に合流しました。</p>
-      <?php endif; ?>
+      <?= reco_flash_body($flash) ?>
     </div>
   <?php endif; ?>
   <?php if ($flash === 'expired'): ?>
@@ -392,21 +373,14 @@ $flashKnown = ['confirmed_queued', 'confirmed_known', 'confirmed_unread', 'corre
       <button class="ex-btn"     name="confirm" value="no">ちがう</button>
     </form>
 
-    <?php /* ④保管の結果を伝える印。confirmedなどとは違い、note_save() / LINE連携の
-             redirect (?u=) はこの結果画面に戻ってくるので、ここでも $flash を見る
-             (上の共通ブロックとは別に、この4値だけを扱う) */ ?>
-    <?php if ($flash !== null && in_array($flash, ['note_saved', 'note_empty', 'line_linked', 'line_merged'], true)): ?>
+    <?php /* 確認・④保管・LINE連携の結果を伝える印。確認(confirm)も note_save() /
+             LINE連携の redirect も、いまはすべてこの結果画面(?u=)に戻ってくる
+             (最終レビュー指摘: 確認の POST 先を ?u= 付きに直したのに合わせて、
+             ここでも入口画面と同じ FLASH_KNOWN 全種を描く。片方にしか描かないと、
+             今度は結果画面側でお礼が消える) */ ?>
+    <?php if ($flash !== null && in_array($flash, FLASH_KNOWN, true)): ?>
       <div class="ex-thanks">
-        <?php if ($flash === 'note_saved'): ?>
-          <p><b>残しました。</b></p>
-          <p class="ex-sub">この端末に紐づけて保存しています。別の端末でも見るには LINE と繋いでください。</p>
-        <?php elseif ($flash === 'note_empty'): ?>
-          <p>感想が空だったので、何も残していません。</p>
-        <?php elseif ($flash === 'line_linked'): ?>
-          <p><b>LINE と繋がりました。</b>この端末の記録に紐づけました。</p>
-        <?php elseif ($flash === 'line_merged'): ?>
-          <p><b>LINE と繋がりました。</b>以前の記録に合流しました。</p>
-        <?php endif; ?>
+        <?= reco_flash_body($flash) ?>
       </div>
     <?php endif; ?>
 
