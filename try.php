@@ -257,15 +257,26 @@ $exposureVer = @filemtime($_SERVER['DOCUMENT_ROOT'] . $exposureCss) ?: time();
       <button class="ex-btn"     name="confirm" value="no">ちがう</button>
     </form>
 
-    <div class="ex-lbl">Similar</div>
+    <div class="ex-lbl">次の一杯に</div>
+    <?php
+      // 「別の蔵を優先している」ことを言う。これがこの機能の判断そのもので、
+      // 黙っていては伝わらない(設計書 §6)
+      $seedMaker = $seed['MakerID'] ?? null;
+      $others = 0;
+      foreach ($picked as $p) { if (($p['row']['MakerID'] ?? null) !== $seedMaker) { $others++; } }
+    ?>
+    <?php if ($seedMaker !== null && $others > 0): ?>
+      <p class="ex-sub">同じ味わいの方向で、<b>別の蔵のもの</b>を先に出しています。</p>
+    <?php endif; ?>
     <?php foreach ($picked as $p): $r = $p['row'];
-          list($col) = group_meta(style_group($r['FamilyName'] ?? '', $r['StyleName'] ?? '')); ?>
+          list($col) = group_meta(style_group($r['FamilyName'] ?? '', $r['StyleName'] ?? ''));
+          $why = reco_stage_label($p['stage'] ?? 0, $seed); ?>
       <a class="ex-rec" href="/beer/detail/product.php?ProductID=<?= e($r['ProductID']) ?>">
         <?php /* 並ぶところは通常色(減彩)。ここで強調色を使わない */ ?>
         <span class="ex-dot" style="background:<?= e($col) ?>"></span>
         <span class="ex-nm">
           <b><?= e($r['ProductName']) ?></b>
-          <span><?= e($r['MakerName'] ?: '') ?></span>
+          <span><?= e($r['MakerName'] ?: '') ?><?= $why !== '' ? ' · ' . e($why) : '' ?></span>
         </span>
         <span class="ex-abv"><?= fmt_unit($r['Alcohol'], '%') ?></span>
       </a>
