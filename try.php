@@ -25,6 +25,7 @@ $uploadId = 0;
 $imageWebPath = null;   // 表示部が参照する。保存しなかったときは null のまま
 $dirNow = null; $dirOk = true; $dirReason = '';   // ⑤拡張(方向つき推薦)の状態
 $candidates = [];   // Task 9 で中身が入る。それまでは空
+$existingNote = null;   // ④保管。この写真に既に残した感想があれば入る
 
 // 確認の答え(confirm)を受け取る分岐。POST処理の先頭に置く
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm'])) {
@@ -57,6 +58,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm'])) {
     exit;
 }
 
+// ④保管(設計書 2026-09-19 §4)。感想は任意。飛ばして⑤へ行ける
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['note'])) {
+    if (!csrf_check($visitorId, $_POST['csrf'] ?? null)) {
+        visitor_flash_set($visitorId, 'expired');
+        header('Location: /try.php'); exit;
+    }
+    $uid = (int)($_POST['upload_id'] ?? 0);
+    $saved = note_save($visitorId, $uid, (string)$_POST['note']);
+    // **保存できたときだけ「残しました」と言う。** 空文字や他人の写真なら 0 が返る
+    visitor_flash_set($visitorId, $saved > 0 ? 'note_saved' : 'note_empty');
+    header('Location: /try.php?u=' . $uid);
+    exit;
+}
+
 // 門番・判定・保存・記録の判断は common/reco/handle.php の reco_handle_upload() に
 // 切り出してある(最終レビュー指摘: ここに金・嘘・写真の判断が全部あるのに
 // テストが無かった)。本物のHTTPアップロードかどうかの検査(is_uploaded_file())だけは
@@ -77,6 +92,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['photo'])) {
         $imageWebPath = $h['imageWebPath'];
         $seed         = $h['seed'];
         $eval         = $h['eval'];
+        // 同じ写真の再送(キャッシュ経路)は既存の upload_id を再利用するので、
+        // 既に残した感想があれば拾う($uploadId > 0 のときだけ)
+        if ($uploadId > 0) {
+            $existingNote = note_for_upload($uploadId);
+        }
     }
 }
 
@@ -89,6 +109,7 @@ if ($view === 'intake' && $_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['u
         $v = reco_view_upload($u, $dir);
         $view     = 'result';
         $uploadId = (int)$u['upload_id'];
+        $existingNote = note_for_upload($uploadId);
         $imageWebPath = $u['image_path'] ? '/photo.php?u=' . $uploadId : null;
         $result = ['is_beer' => true, 'matched_product_id' => $u['product_id'],
                    'brand_text' => $u['brand_text'], 'brewery_text' => $u['brewery_text'],
@@ -140,23 +161,30 @@ $exposureVer = @filemtime($_SERVER['DOCUMENT_ROOT'] . $exposureCss) ?: time();
   <a href="/style/styles.php">スタイル</a>
 </nav>
 
+<?php
+// 確認・④保管・LINE連携への回答直後、お礼を出す(修正ラウンド2→3、Task 7で拡張)。
+// URLの $_GET ではなく、その操作を実際に処理したときだけ立つ visitor.flash を見る
+// (修正ラウンド3: C-1。URLを打つだけで「記録しました」が出て、実際には何も
+// 記録していないのに記録したと伝えていた嘘を直した)。
+//
+// **GETで来たときだけ読む。** 写真アップロードの直接POSTは $view を 'result'/'error' に
+// するが、それは今回の操作とは無関係の古い印が紛れ込む余地になる。④保管・LINE連携は
+// どちらも「処理→redirect→GET」で結果画面(?u=)に戻ってくるので、GETで判定すれば
+// 確認(→intake)・保管・LINE連携(→result)のどの戻り先でも正しく拾える
+$flash = ($_SERVER['REQUEST_METHOD'] === 'GET') ? visitor_flash_take($visitorId) : null;
+?>
+<?php
+// 想定外の値(通常の経路では起きないが、知らない状態では何も言わないほうが
+// この画面の設計意図に忠実。修正ラウンド4: Important指摘)なら枠ごと出さない。
+// このどれでもなければ in_array が false になり、div自体が描画されない。
+$flashKnown = ['confirmed_queued', 'confirmed_known', 'confirmed_unread', 'corrected',
+               'note_saved', 'note_empty', 'line_linked', 'line_merged'];
+?>
+
 <?php if ($view === 'intake' || $view === 'error'): ?>
   <?php if ($view === 'error'): ?>
     <div class="ex-wrap"><p class="ex-msg"><?= e($msg) ?></p></div>
   <?php endif; ?>
-  <?php
-  // 確認への回答直後、フォームの上にお礼を出す(修正ラウンド2→3)。
-  // URLの $_GET ではなく、確認を実際に処理したときだけ立つ visitor.flash を見る
-  // (修正ラウンド3: C-1。URLを打つだけで「記録しました」が出て、実際には何も
-  // 記録していないのに記録したと伝えていた嘘を直した)
-  $flash = ($view === 'intake') ? visitor_flash_take($visitorId) : null;
-  ?>
-  <?php
-  // 想定外の値(通常の経路では起きないが、知らない状態では何も言わないほうが
-  // この画面の設計意図に忠実。修正ラウンド4: Important指摘)なら枠ごと出さない。
-  // 4値のどれでもなければ in_array が false になり、div自体が描画されない。
-  $flashKnown = ['confirmed_queued', 'confirmed_known', 'confirmed_unread', 'corrected'];
-  ?>
   <?php if ($flash !== null && in_array($flash, $flashKnown, true)): ?>
     <div class="ex-wrap ex-thanks">
       <?php if ($flash === 'confirmed_queued'): ?>
@@ -174,6 +202,15 @@ $exposureVer = @filemtime($_SERVER['DOCUMENT_ROOT'] . $exposureCss) ?: time();
       <?php elseif ($flash === 'corrected'): ?>
         <p><b>教えていただきありがとうございます。</b></p>
         <p>読み取りを外していたことを記録しました。<b>読み取りの改善に使わせていただきます。</b></p>
+      <?php elseif ($flash === 'note_saved'): ?>
+        <p><b>残しました。</b></p>
+        <p class="ex-sub">この端末に紐づけて保存しています。別の端末でも見るには LINE と繋いでください。</p>
+      <?php elseif ($flash === 'note_empty'): ?>
+        <p>感想が空だったので、何も残していません。</p>
+      <?php elseif ($flash === 'line_linked'): ?>
+        <p><b>LINE と繋がりました。</b>この端末の記録に紐づけました。</p>
+      <?php elseif ($flash === 'line_merged'): ?>
+        <p><b>LINE と繋がりました。</b>以前の記録に合流しました。</p>
       <?php endif; ?>
     </div>
   <?php endif; ?>
@@ -314,6 +351,45 @@ $exposureVer = @filemtime($_SERVER['DOCUMENT_ROOT'] . $exposureCss) ?: time();
       <button class="ex-btn yes" name="confirm" value="yes">これで合っている</button>
       <button class="ex-btn"     name="confirm" value="no">ちがう</button>
     </form>
+
+    <?php /* ④保管の結果を伝える印。confirmedなどとは違い、note_save() / LINE連携の
+             redirect (?u=) はこの結果画面に戻ってくるので、ここでも $flash を見る
+             (上の共通ブロックとは別に、この4値だけを扱う) */ ?>
+    <?php if ($flash !== null && in_array($flash, ['note_saved', 'note_empty', 'line_linked', 'line_merged'], true)): ?>
+      <div class="ex-thanks">
+        <?php if ($flash === 'note_saved'): ?>
+          <p><b>残しました。</b></p>
+          <p class="ex-sub">この端末に紐づけて保存しています。別の端末でも見るには LINE と繋いでください。</p>
+        <?php elseif ($flash === 'note_empty'): ?>
+          <p>感想が空だったので、何も残していません。</p>
+        <?php elseif ($flash === 'line_linked'): ?>
+          <p><b>LINE と繋がりました。</b>この端末の記録に紐づけました。</p>
+        <?php elseif ($flash === 'line_merged'): ?>
+          <p><b>LINE と繋がりました。</b>以前の記録に合流しました。</p>
+        <?php endif; ?>
+      </div>
+    <?php endif; ?>
+
+    <form class="ex-note" method="post" action="/try.php">
+      <input type="hidden" name="upload_id" value="<?= (int)$uploadId ?>">
+      <input type="hidden" name="csrf" value="<?= e(csrf_issue($visitorId)) ?>">
+      <label class="ex-lbl" for="note">飲んだ感想(任意)</label>
+      <textarea id="note" name="note" rows="3" maxlength="1000"
+        placeholder="香り、飲んだ場所、また飲みたいか"><?= e($existingNote['body'] ?? '') ?></textarea>
+      <div class="ex-acts">
+        <button class="ex-btn" type="submit">残す</button>
+      </div>
+    </form>
+    <?php /* 誘いは、いま使っている結果画面の中に置く(設計書 §4)。
+             別の場所でURLを開かせると、その端末の匿名の記録が孤児になる
+             (2026-09-19に実際に起きた) */ ?>
+    <?php $lineLinked = visitor_line_linked($visitorId); ?>
+    <?php if (empty($lineLinked)): ?>
+      <p class="ex-sub">
+        <a href="/line/login.php?back=<?= e(urlencode('/try.php?u=' . $uploadId)) ?>">LINE と繋ぐ</a>
+        と、別の端末からでもこの記録を見られます。
+      </p>
+    <?php endif; ?>
 
     <div class="ex-lbl">次の一杯に</div>
     <?php
