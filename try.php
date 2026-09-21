@@ -223,8 +223,14 @@ $exposureVer = @filemtime($_SERVER['DOCUMENT_ROOT'] . $exposureCss) ?: time();
     var form = document.getElementById('intake');
     var status = document.getElementById('status');
     if (!f || !form) { return; }
-    // 選んだ時点で送る。ボタンが無いぶん、待っていることは画面のテキストで示す
+    // 選んだ時点で送る。ボタンが無いぶん、待っていることは画面のテキストで示す。
+    //
+    // **絵が出せなくても、送信だけは必ず通す。** ここで例外が漏れると
+    // 直後の form.submit() に届かず、「写真を選んだのに何も起きない」になる。
+    // それは実機で一度踏んでいる壊れ方そのもの(2026-09-18、HEIC が弾かれていた件)。
+    // canvas を封じるプライバシー拡張などで getContext が例外を投げる環境がある
     function waiting() {
+      try {
       if (status) { status.hidden = false; }
       var w = document.getElementById('warp');
       if (w && typeof startWarp === 'function') {
@@ -240,6 +246,7 @@ $exposureVer = @filemtime($_SERVER['DOCUMENT_ROOT'] . $exposureCss) ?: time();
         var accent = cs.getPropertyValue('--h-' + names[0]).trim() || '#cfe6f2';
         startWarp({ mount: 'warp', colors: colors, accent: accent });
       }
+      } catch (e) { /* 絵は諦める。送信は止めない */ }
     }
     f.addEventListener('change', function () {
       if (f.files && f.files.length) { waiting(); form.submit(); }

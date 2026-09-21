@@ -95,7 +95,13 @@ function startWarp(opts) {
 
     raf = requestAnimationFrame(frame);
   }
-  raf = requestAnimationFrame(frame);
+  // 動きを減らす設定の端末では回さない。CSS は canvas を隠すだけなので、
+  // ここで止めないと見えない絵を描き続けることになる
+  var reduce = false;
+  try {
+    reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  } catch (e) { reduce = false; }
+  if (!reduce) { raf = requestAnimationFrame(frame); }
 
   return function stop() { alive = false; cancelAnimationFrame(raf); };
 }
