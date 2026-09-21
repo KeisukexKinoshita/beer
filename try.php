@@ -210,6 +210,13 @@ $exposureVer = @filemtime($_SERVER['DOCUMENT_ROOT'] . $exposureCss) ?: time();
     <p class="ex-status" id="status" hidden>判定しています…</p>
     <div class="ex-meta"><?= count(reco_pool()) ?> BEERS</div>
   </form>
+  <?php /* ②解析中の絵(設計書 §2-b)。フォームの外。送信は上に被さるだけで、
+           通信をやり直さない。JS が動かない端末では出ないが、送信自体は
+           noscript のボタンで通る */ ?>
+  <div class="ex-warp" id="warp" hidden>
+    <div class="ex-warp-t">味わいの宇宙に照らしています…</div>
+  </div>
+  <script src="/assets/js/warp.js?v=<?= (int)(@filemtime($_SERVER['DOCUMENT_ROOT'] . '/assets/js/warp.js') ?: time()) ?>"></script>
   <script>
   (function () {
     var f = document.getElementById('photo');
@@ -217,7 +224,23 @@ $exposureVer = @filemtime($_SERVER['DOCUMENT_ROOT'] . $exposureCss) ?: time();
     var status = document.getElementById('status');
     if (!f || !form) { return; }
     // 選んだ時点で送る。ボタンが無いぶん、待っていることは画面のテキストで示す
-    function waiting() { if (status) { status.hidden = false; } }
+    function waiting() {
+      if (status) { status.hidden = false; }
+      var w = document.getElementById('warp');
+      if (w && typeof startWarp === 'function') {
+        w.hidden = false;
+        // 色は group_map() が :root に流し込んだものを読む。CSS に直値を書かない
+        var cs = getComputedStyle(document.documentElement);
+        var names = <?= json_encode(array_keys(group_map())) ?>;
+        var colors = [];
+        for (var i = 0; i < names.length; i++) {
+          var c = cs.getPropertyValue('--g-' + names[i]).trim();
+          if (c) { colors.push(c); }
+        }
+        var accent = cs.getPropertyValue('--h-' + names[0]).trim() || '#cfe6f2';
+        startWarp({ mount: 'warp', colors: colors, accent: accent });
+      }
+    }
     f.addEventListener('change', function () {
       if (f.files && f.files.length) { waiting(); form.submit(); }
     });

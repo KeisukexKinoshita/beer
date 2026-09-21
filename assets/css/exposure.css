@@ -107,3 +107,13 @@ img{max-width:100%;display:block}
 .ex-dirs { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 18px; }
 .ex-dirs .ex-btn { flex: 0 1 auto; font-size: 12px; padding: 8px 12px; }
 .ex-dirs .ex-btn.on { border-color: rgba(255,255,255,.45); }
+
+/* ②解析中(設計書 2026-09-19 §2-b)。露光案の地と同じ純黒に覆う */
+.ex-warp { position: fixed; inset: 0; z-index: 90; background: #000; }
+.ex-warp canvas { display: block; width: 100%; height: 100%; }
+.ex-warp-t { position: absolute; left: 0; right: 0; bottom: 14vh; text-align: center;
+             font-size: 12px; letter-spacing: .12em; color: var(--dim); z-index: 1; }
+@media (prefers-reduced-motion: reduce) {
+  /* 動きを減らす設定の端末では、星も1点も動かさない。文字だけ出す */
+  .ex-warp canvas { display: none; }
+}
