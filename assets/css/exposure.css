@@ -102,3 +102,8 @@ img{max-width:100%;display:block}
   font-weight:700;letter-spacing:.04em;padding:1px 6px;border-radius:999px;
   border:1px solid rgba(255,255,255,.16);color:var(--faint);
   background:rgba(255,255,255,.06);vertical-align:1px;cursor:help}
+
+/* ⑤拡張のボタン。並ぶところなので強調色は使わない */
+.ex-dirs { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 18px; }
+.ex-dirs .ex-btn { flex: 0 1 auto; font-size: 12px; padding: 8px 12px; }
+.ex-dirs .ex-btn.on { border-color: rgba(255,255,255,.45); }

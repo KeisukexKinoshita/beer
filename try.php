@@ -23,6 +23,8 @@ $result = $picked = $seed = [];
 $eval = ['lines' => [], 'estimated' => false, 'source' => 'db'];
 $uploadId = 0;
 $imageWebPath = null;   // 表示部が参照する。保存しなかったときは null のまま
+$dirNow = null; $dirOk = true; $dirReason = '';   // ⑤拡張(方向つき推薦)の状態
+$candidates = [];   // Task 9 で中身が入る。それまでは空
 
 // 確認の答え(confirm)を受け取る分岐。POST処理の先頭に置く
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm'])) {
@@ -75,6 +77,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['photo'])) {
         $imageWebPath = $h['imageWebPath'];
         $seed         = $h['seed'];
         $eval         = $h['eval'];
+    }
+}
+
+// ⑤拡張、および ④保管のあとに戻ってくるときの経路。
+// 写真は上げ直さない。upload の行から同じ評価と推薦を組み立て直す
+if ($view === 'intake' && $_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['u'])) {
+    $u = upload_owned_by((int)$_GET['u'], $visitorId);
+    if ($u && (int)$u['is_beer'] === 1) {
+        $dir = isset($_GET['more']) && isset(RECO_DIRS[$_GET['more']]) ? (string)$_GET['more'] : null;
+        $v = reco_view_upload($u, $dir);
+        $view     = 'result';
+        $uploadId = (int)$u['upload_id'];
+        $imageWebPath = $u['image_path'] ? '/photo.php?u=' . $uploadId : null;
+        $result = ['is_beer' => true, 'matched_product_id' => $u['product_id'],
+                   'brand_text' => $u['brand_text'], 'brewery_text' => $u['brewery_text'],
+                   'style_guess' => $u['style_guess'], 'color' => $u['color'],
+                   'clarity' => $u['clarity'],
+                   'confidence' => $u['confidence'] !== null ? (float)$u['confidence'] : null,
+                   'error' => false];
+        $seed = $v['seed']; $eval = $v['eval']; $picked = $v['picked'];
+        $dirNow = $v['dir']; $dirOk = $v['dirOk']; $dirReason = $v['dirReason'];
+        $candidates   = $v['candidates'] ?? [];   // Task 9 で中身が入る。それまでは空
+        if ($dir !== null) {
+            // 押された方向は、そのまま蔵に渡す分析の中身になる(設計書 §5)
+            event_record($visitorId, 'expand_' . $dir, null, $uploadId);
+        }
     }
 }
 
@@ -283,6 +311,26 @@ $exposureVer = @filemtime($_SERVER['DOCUMENT_ROOT'] . $exposureCss) ?: time();
     <?php endforeach; ?>
 
     <?php if (!$picked): ?><p class="ex-msg">似た銘柄が見つかりませんでした。</p><?php endif; ?>
+
+    <div class="ex-lbl">別の方向で探す</div>
+    <div class="ex-dirs">
+      <?php foreach (RECO_DIRS as $k => $d): ?>
+        <a class="ex-btn ghost<?= $dirNow === $k ? ' on' : '' ?>"
+           href="/try.php?u=<?= (int)$uploadId ?>&amp;more=<?= e($k) ?>"><?= e($d['label']) ?></a>
+      <?php endforeach; ?>
+    </div>
+    <?php if ($dirNow !== null && !$dirOk): ?>
+      <p class="ex-msg">
+        <?php if ($dirReason === 'no_seed_value'): ?>
+          この写真からは、その方向で比べるための値を読み取れませんでした。
+        <?php else: ?>
+          この方向に当てはまる銘柄が、いまの登録の中にありませんでした。
+        <?php endif; ?>
+      </p>
+    <?php elseif ($dirNow !== null): ?>
+      <p class="ex-sub"><b><?= e(RECO_DIRS[$dirNow]['label']) ?></b> で選び直しました。</p>
+    <?php endif; ?>
+
     <div class="ex-acts" style="margin:26px auto 40px"><a class="ex-btn ghost" href="/try.php">もう一枚</a></div>
   </div>
 <?php endif; ?>
