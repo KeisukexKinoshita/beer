@@ -841,6 +841,7 @@ Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>"
   - `reco_shift(array $seed, string $dir): ?array` — ずらした仮の1本。方向が不正なら `null`
   - `reco_expand(array $seed, array $pool, string $dir, int $limit = 3): array` — `['picked'=>[...], 'ok'=>bool, 'reason'=>string]`
   - `reco_seed_from_upload(array $u): array` — `upload` の行から基準の1本を作る
+  - `reco_estimated_map(array $beer): array` — `['abv'=>bool,'ibu'=>bool,'fruity'=>bool]`。その銘柄の `estimated_fields` から軸ごとの推定フラグを作る(タスク3の修正で追加済み)
   - `reco_view_upload(array $u, ?string $dir = null): array` — `['seed','eval','picked','dir','dirOk','dirReason']`
 
 **背景(実装者へ):** 設計書 §5。自由記述はいまは作らない。**方向は数個しかない**のでボタンで足りる。1回ごとの課金も発生せず、押された内容が**そのまま蔵向けの数字になる**。
@@ -1049,9 +1050,12 @@ function reco_view_upload(array $u, ?string $dir = null): array
     $seed = reco_seed_from_upload($u);
     $fromDb = !empty($u['product_id']);
 
+    // 推定かどうかは**軸ごと**に決まる。DBの行でも、その銘柄の estimated_fields に
+    // 載っている列は推定値(いまは200銘柄すべてのフルーティーさが推定)。
+    // まとめて false にすると、推定を測定値の顔で出すことになる
     $eval = eval_build(
         ['abv' => $seed['Alcohol'], 'ibu' => $seed['IBU_all'], 'fruity' => $seed['Fruity']],
-        $pool, !$fromDb);
+        $pool, $fromDb ? reco_estimated_map($seed) : true);
     $eval['source'] = $fromDb ? 'db' : 'guess';
 
     if ($dir === null) {
@@ -1960,7 +1964,8 @@ $exposureVer = @filemtime($_SERVER['DOCUMENT_ROOT'] . $exposureCss) ?: time();
       <?php
         $seed = reco_seed_from_upload($u);
         $ev   = eval_build(['abv' => $seed['Alcohol'], 'ibu' => $seed['IBU_all'],
-                            'fruity' => $seed['Fruity']], $pool, empty($u['product_id']));
+                            'fruity' => $seed['Fruity']], $pool,
+                           empty($u['product_id']) ? true : reco_estimated_map($seed));
         $g    = style_group($seed['FamilyName'] ?? '', $seed['StyleName'] ?? '');
         list($col) = group_meta($g);
         $name = $u['product_id'] ? ($seed['ProductName'] ?? '') : ($u['brand_text'] ?: '銘柄がわかりませんでした');
