@@ -53,3 +53,23 @@ eq(note_for_upload($uid)['body'], '思ったより苦くなかった', '他人�
 // 後片付け
 db()->prepare("DELETE FROM note WHERE visitor_id IN (:a, :b)")->execute([':a' => $vid, ':b' => $other]);
 db()->prepare("DELETE FROM upload WHERE visitor_id IN (:a, :b)")->execute([':a' => $vid, ':b' => $other]);
+
+// --- 持ち主だけが自分の感想を読める(タスク7のレビュー指摘)---
+// 同じ写真が送られると門番は前の人の upload_id をそのまま返す(費用を抑える仕組み)。
+// 判定の結果は機械的な値なので共有してよいが、**感想は本人が書いた文章**である。
+// 画面に出すときは note_for_upload_owned() を使う
+// 直前の後片付けで消えているので、この検査のぶんを作り直す
+$uid2 = upload_record($vid, ['is_beer' => true, 'matched_product_id' => null,
+    'brand_text' => 'T2', 'brewery_text' => 'T2', 'style_guess' => null,
+    'color' => null, 'clarity' => null, 'confidence' => 0.9,
+    'abv_guess' => null, 'ibu_guess' => null, 'fruity_guess' => null,
+    'model' => 'test'], str_repeat('b', 64), null);
+note_save($vid, $uid2, '元の持ち主が書いた感想');
+eq(note_for_upload_owned($uid2, $vid)['body'], '元の持ち主が書いた感想', '持ち主は自分の感想を読める');
+eq(note_for_upload_owned($uid2, $other), null, '**他人の感想は読めない**');
+eq(note_for_upload_owned(0, $vid), null, 'upload_id が0なら読まない');
+eq(note_for_upload_owned(-1, $vid), null, '負の upload_id でも読まない');
+eq(note_for_upload_owned(99999999, $vid), null, '存在しない upload_id なら読まない');
+
+db()->prepare("DELETE FROM note WHERE visitor_id IN (:a, :b)")->execute([':a' => $vid, ':b' => $other]);
+db()->prepare("DELETE FROM upload WHERE visitor_id IN (:a, :b)")->execute([':a' => $vid, ':b' => $other]);

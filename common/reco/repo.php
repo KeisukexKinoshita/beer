@@ -301,6 +301,21 @@ function note_for_upload(int $uploadId): ?array
     return $r ?: null;
 }
 
+/**
+ * **持ち主の感想だけを読む。** 画面に出すときは必ずこちらを使うこと。
+ *
+ * 同じ写真(バイト単位で一致)が送られると、門番はAPIを呼ばずに
+ * **前の人の upload_id をそのまま返す**(費用を抑えるための仕組み)。
+ * 判定の結果は機械的な値なので共有してよいが、**感想は本人が書いた文章**であり、
+ * これを取り違えると他人の書いたものが別の人の入力欄に出る。
+ * (タスク7のレビューで実際に再現された。写真を転送し合えば起こりうる)
+ */
+function note_for_upload_owned(int $uploadId, string $visitorId): ?array
+{
+    if ($uploadId <= 0 || upload_owned_by($uploadId, $visitorId) === null) { return null; }
+    return note_for_upload($uploadId);
+}
+
 /** その訪問者が残した感想の件数 */
 function visitor_note_count(string $visitorId): int
 {

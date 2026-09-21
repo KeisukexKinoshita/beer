@@ -95,7 +95,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['photo'])) {
         // 同じ写真の再送(キャッシュ経路)は既存の upload_id を再利用するので、
         // 既に残した感想があれば拾う($uploadId > 0 のときだけ)
         if ($uploadId > 0) {
-            $existingNote = note_for_upload($uploadId);
+            $existingNote = note_for_upload_owned($uploadId, $visitorId);
         }
     }
 }
@@ -109,7 +109,7 @@ if ($view === 'intake' && $_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['u
         $v = reco_view_upload($u, $dir);
         $view     = 'result';
         $uploadId = (int)$u['upload_id'];
-        $existingNote = note_for_upload($uploadId);
+        $existingNote = note_for_upload_owned($uploadId, $visitorId);
         $imageWebPath = $u['image_path'] ? '/photo.php?u=' . $uploadId : null;
         $result = ['is_beer' => true, 'matched_product_id' => $u['product_id'],
                    'brand_text' => $u['brand_text'], 'brewery_text' => $u['brewery_text'],
