@@ -1,9 +1,12 @@
 <?php
 /*
- * LINE ログインの戻り先。**spike。**
+ * LINE ログインの戻り先(設計書 2026-09-19 §4)。
  *
  * 認可コードを受け取り、トークンに交換し、利用者IDを取り出して
  * visitor.line_user_id に書く。表示名もアイコンも取らない。
+ *
+ * 既存の LINE 利用者と分かったときは、いまの端末の匿名の記録(upload / event / note)を
+ * 既存の行へ合流させ、**使っていた画面(back)へそのまま戻す**。
  */
 require_once __DIR__ . '/../common/reco/visitor.php';
 require_once __DIR__ . '/../common/reco/repo.php';
@@ -87,10 +90,27 @@ $existing = $st->fetchColumn();
 $merged = false;
 if ($existing && $existing !== $visitorId) {
     // いまの匿名の記録を、既存の行へ付け替える
-    foreach (['upload', 'event'] as $t) {
+    foreach (['upload', 'event', 'note'] as $t) {
         db()->prepare("UPDATE `$t` SET visitor_id = :old WHERE visitor_id = :new")
             ->execute([':old' => $existing, ':new' => $visitorId]);
     }
+    // **消す前に、この端末で持っていた状態を引き継ぐ。**
+    // 引き継がないと、LINE と繋いだ直後に年齢確認へ戻される(spike の既知の欠陥)。
+    //
+    // 年齢確認の判定(common/reco/age.php の age_confirmed())が実際に見るのは
+    // `age_confirmed` 列(TINYINT 0/1)であって、`age_confirmed_at` ではない。
+    // 日時だけを引き継いでも `age_confirmed` が 0 のままなら欠陥は直らないため、両方を
+    // 引き継ぐ(GREATEST で「どちらかが確認済みなら確認済み」にする。片方でも
+    // 1 であれば 1 になり、両方 0 ならそのまま 0)。
+    db()->prepare(
+        "UPDATE visitor AS dst,
+                (SELECT age_confirmed, age_confirmed_at FROM visitor WHERE visitor_id = :src) AS s
+         SET dst.age_confirmed = GREATEST(dst.age_confirmed, s.age_confirmed),
+             dst.age_confirmed_at = COALESCE(dst.age_confirmed_at, s.age_confirmed_at)
+         WHERE dst.visitor_id = :dst")
+        ->execute([':src' => $visitorId, ':dst' => $existing]);
+    // `flash` と `csrf_token` は引き継がない。どちらもその場限りの値で、
+    // 繋いだ直後に発行し直されるため。
     db()->prepare("DELETE FROM visitor WHERE visitor_id = :v")->execute([':v' => $visitorId]);
     setcookie(VISITOR_COOKIE, (string)$existing, [
         'expires' => time() + VISITOR_TTL, 'path' => '/',
@@ -103,12 +123,13 @@ if ($existing && $existing !== $visitorId) {
         ->execute([':l' => $lineUserId, ':v' => $visitorId]);
 }
 
-$n = db()->prepare("SELECT COUNT(*) FROM upload WHERE visitor_id = :v");
-$n->execute([':v' => $visitorId]);
-
-out('LINE とつながりました', sprintf(
-    '<p>利用者ID(先頭のみ): <code>%s…</code></p><p>これまでに撮った写真: <b>%d</b> 枚</p><p>%s</p>',
-    htmlspecialchars(substr($lineUserId, 0, 8)),
-    (int)$n->fetchColumn(),
-    $merged ? '以前の記録に合流しました。' : 'この端末の記録に紐づけました。'
-));
+// **誘いを出した画面(back)へそのまま戻す。** spike は利用者IDの先頭を出す
+// 独自の画面で止まっていたが、それでは④保管(→⑤拡張)の続きに戻れない
+$back = (string)($_COOKIE['line_back'] ?? '/try.php');
+if (!preg_match('#^/(try\.php|history\.php)(\?[A-Za-z0-9_=&%.\-]*)?$#', $back)) {
+    $back = '/try.php';
+}
+setcookie('line_back', '', ['expires' => time() - 3600, 'path' => '/']);
+visitor_flash_set($visitorId, $merged ? 'line_merged' : 'line_linked');
+header('Location: ' . $back, true, 302);
+exit;
