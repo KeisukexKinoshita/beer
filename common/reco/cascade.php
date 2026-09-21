@@ -93,3 +93,73 @@ function reco_sort_key(array $r, array $seed): array
 
     return [$sameMaker, $diff, (string)$r['ProductID']];
 }
+
+/**
+ * ⑤拡張の方向(設計書 2026-09-19 §5)。
+ *
+ * axis  : どの軸を動かすか
+ * delta : 度数をずらす幅(度数の方向だけで使う)
+ * cmp   : 候補を絞る向き。'>' なら基準より大きいものだけ
+ * label : 画面のボタンに出す文字
+ */
+const RECO_DIRS = [
+    'lighter'     => ['axis' => 'Alcohol', 'delta' => -1.0, 'cmp' => '<', 'label' => 'もっと軽く'],
+    'stronger'    => ['axis' => 'Alcohol', 'delta' => +1.0, 'cmp' => '>', 'label' => 'もっと強く'],
+    'bitter'      => ['axis' => 'IBU_all', 'delta' => 0.0,  'cmp' => '>', 'label' => 'もっと苦く'],
+    'less_bitter' => ['axis' => 'IBU_all', 'delta' => 0.0,  'cmp' => '<', 'label' => '苦味は控えめに'],
+    'fruitier'    => ['axis' => 'Fruity',  'delta' => 0.0,  'cmp' => '>', 'label' => 'もっとフルーティーに'],
+];
+
+/**
+ * 押した方向へずらした「仮の1本」。度数の方向だけが実際に値を動かす
+ * (並べ替えが度数の近さを見るため)。苦味・フルーティーさは候補の絞り込みで効かせる。
+ */
+function reco_shift(array $seed, string $dir): ?array
+{
+    if (!isset(RECO_DIRS[$dir])) { return null; }
+    $d = RECO_DIRS[$dir];
+    $out = $seed;
+    if ($d['axis'] === 'Alcohol' && !is_unmeasured($seed['Alcohol'] ?? null)) {
+        $out['Alcohol'] = (float)$seed['Alcohol'] + $d['delta'];
+    }
+    return $out;
+}
+
+/**
+ * 方向つきの推薦。段階カスケードはそのまま使い、**候補を絞ってから渡す**。
+ *
+ * 基準の値が無い方向は使わせない。何を基準に「もっと苦い」と言うのかが
+ * 言えないまま推薦を出すと、画面が嘘をつくことになる。
+ *
+ * @return array ['picked'=>array, 'ok'=>bool, 'reason'=>string]
+ *               reason: '' / 'bad_dir' / 'no_seed_value' / 'no_candidate'
+ */
+function reco_expand(array $seed, array $pool, string $dir, int $limit = 3): array
+{
+    if (!isset(RECO_DIRS[$dir])) {
+        return ['picked' => [], 'ok' => false, 'reason' => 'bad_dir'];
+    }
+    $d    = RECO_DIRS[$dir];
+    $base = $seed[$d['axis']] ?? null;
+    if (is_unmeasured($base)) {
+        return ['picked' => [], 'ok' => false, 'reason' => 'no_seed_value'];
+    }
+    $base = (float)$base;
+
+    $narrowed = [];
+    foreach ($pool as $r) {
+        $v = $r[$d['axis']] ?? null;
+        if (is_unmeasured($v)) { continue; }   // 比べようがないものは出さない
+        $v = (float)$v;
+        if ($d['cmp'] === '>' ? $v > $base : $v < $base) { $narrowed[] = $r; }
+    }
+    if (count($narrowed) === 0) {
+        return ['picked' => [], 'ok' => false, 'reason' => 'no_candidate'];
+    }
+
+    $picked = reco_pick(reco_shift($seed, $dir), $narrowed, $limit);
+    if (count($picked) === 0) {
+        return ['picked' => [], 'ok' => false, 'reason' => 'no_candidate'];
+    }
+    return ['picked' => $picked, 'ok' => true, 'reason' => ''];
+}

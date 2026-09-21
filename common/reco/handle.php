@@ -159,3 +159,55 @@ function reco_handle_upload(string $visitorId, array $file, ?callable $transport
 
     return compact('view', 'msg', 'result', 'picked', 'uploadId', 'imageWebPath', 'seed', 'eval');
 }
+
+/**
+ * `upload` の1行から基準の1本を作る。写真を上げ直さずに、同じ評価と推薦を再現するため。
+ * **DBの行がある銘柄はその値を、無ければ判定時の推定値を使う。**
+ */
+function reco_seed_from_upload(array $u): array
+{
+    if (!empty($u['product_id'])) {
+        $b = beer_by_id($u['product_id']);
+        if ($b) { return $b; }
+    }
+    $seed = ['ProductID' => null, 'StyleID' => $u['style_guess'] ?: null,
+             'FamilyName' => '', 'StyleName' => '', 'MakerID' => null,
+             'Alcohol' => $u['abv_guess'] !== null ? (float)$u['abv_guess'] : null,
+             'IBU_all' => $u['ibu_guess'] !== null ? (float)$u['ibu_guess'] : null,
+             'Fruity'  => $u['fruity_guess'] !== null ? (float)$u['fruity_guess'] : null];
+    if ($seed['StyleID']) {
+        $s = style_by_id($seed['StyleID']);
+        $seed['FamilyName'] = $s['FamilyName'] ?? '';
+        $seed['StyleName']  = $s['StyleName'] ?? '';
+    }
+    return $seed;
+}
+
+/**
+ * `upload` の1行から、評価・推薦(方向つきも)をまとめて作る。
+ * **持ち主の検査は呼び出し元の責務**(upload_owned_by() を通った行だけを渡すこと)。
+ *
+ * @param string|null $dir RECO_DIRS のキー。null なら方向なしの推薦
+ */
+function reco_view_upload(array $u, ?string $dir = null): array
+{
+    $pool = reco_pool();
+    $seed = reco_seed_from_upload($u);
+    $fromDb = !empty($u['product_id']);
+
+    // 推定かどうかは**軸ごと**に決まる。DBの行でも、その銘柄の estimated_fields に
+    // 載っている列は推定値(いまは200銘柄すべてのフルーティーさが推定)。
+    // まとめて false にすると、推定を測定値の顔で出すことになる
+    $eval = eval_build(
+        ['abv' => $seed['Alcohol'], 'ibu' => $seed['IBU_all'], 'fruity' => $seed['Fruity']],
+        $pool, $fromDb ? reco_estimated_map($seed) : true);
+    $eval['source'] = $fromDb ? 'db' : 'guess';
+
+    if ($dir === null) {
+        return ['seed' => $seed, 'eval' => $eval, 'picked' => reco_pick($seed, $pool),
+                'dir' => null, 'dirOk' => true, 'dirReason' => ''];
+    }
+    $e = reco_expand($seed, $pool, $dir);
+    return ['seed' => $seed, 'eval' => $eval, 'picked' => $e['picked'],
+            'dir' => $dir, 'dirOk' => $e['ok'], 'dirReason' => $e['reason']];
+}
