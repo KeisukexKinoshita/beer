@@ -141,6 +141,8 @@ if ($view === 'intake' && $_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['u
                    'style_guess' => $u['style_guess'], 'color' => $u['color'],
                    'clarity' => $u['clarity'],
                    'confidence' => $u['confidence'] !== null ? (float)$u['confidence'] : null,
+                   // 選び直したあとは、モデルの確度を利用者が選んだものに添えない
+                   'picked_by_user' => (int)($u['picked_by_user'] ?? 0) === 1,
                    'error' => false];
         $seed = $v['seed']; $eval = $v['eval']; $picked = $v['picked'];
         $dirNow = $v['dir']; $dirOk = $v['dirOk']; $dirReason = $v['dirReason'];
@@ -315,7 +317,8 @@ const FLASH_KNOWN = ['confirmed_queued', 'confirmed_known', 'confirmed_unread', 
   <div class="ex-wrap">
     <div class="ex-hit">
       <b><?= e($result['matched_product_id'] ? $seed['ProductName'] : ($result['brand_text'] ?: '銘柄がわかりませんでした')) ?></b>
-      <?php if ($result['confidence'] !== null): ?>
+      <?php /* 選び直したあとは、利用者が選んだものにモデルの確度を添えない */ ?>
+      <?php if ($result['confidence'] !== null && empty($result['picked_by_user'])): ?>
         <span class="ex-conf"><?= number_format((float)$result['confidence'], 2) ?></span>
       <?php endif; ?>
     </div>

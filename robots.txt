@@ -6,7 +6,7 @@ Disallow: /post/
 Disallow: /img/tmp/
 Disallow: /img/upload/
 
-# 年齢確認・写真の受け渡し口・LINE連携(まだ spike)は索引対象ではない。
+# 年齢確認・写真の受け渡し口・LINE連携は索引対象ではない。
 Disallow: /agecheck.php
 Disallow: /photo.php
 Disallow: /line/
