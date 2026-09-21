@@ -20,6 +20,12 @@ if (!age_confirmed($visitorId)) {
 $rows   = visitor_history($visitorId);
 $linked = visitor_line_linked($visitorId);
 $pool   = reco_pool();
+
+// LINE連携は history.php から起こることもある(誘いを出した画面へそのまま戻す設計)。
+// 印(flash)を描けるのが try.php だけだったため、履歴から繋いだ人には確認の文が
+// 1つも出ず、印は消費されないまま残り続けて、後日 /try.php を開いた瞬間に唐突に
+// 出ていた(最終レビュー指摘)。ここで描ける種類だけを選んで取り出す
+$lineFlash = visitor_flash_take_if($visitorId, ['line_linked', 'line_merged']);
 ?><!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -52,6 +58,11 @@ $exposureVer = @filemtime($_SERVER['DOCUMENT_ROOT'] . $exposureCss) ?: time();
 </nav>
 
 <div class="ex-wrap">
+  <?php if ($lineFlash !== null): ?>
+    <div class="ex-thanks">
+      <?= reco_flash_body($lineFlash) ?>
+    </div>
+  <?php endif; ?>
   <div class="ex-lbl">これまでのビール</div>
 
   <?php if (count($rows) === 0): ?>
