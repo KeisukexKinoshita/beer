@@ -29,7 +29,7 @@ function age_confirm(string $visitorId): void
  * ブラウザは URL の中の `\` を `/` として扱うので、それは `//evil.com`(外部サイト)と同じ。
  * タブや改行を混ぜる細工もある。**形で見るのをやめ、名前で許す。**
  */
-const AGE_NEXT_ALLOWED = ['/', '/index.php', '/try.php'];
+const AGE_NEXT_ALLOWED = ['/', '/index.php', '/try.php', '/history.php'];
 
 function age_next($next): string
 {

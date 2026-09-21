@@ -10,6 +10,7 @@ Disallow: /img/upload/
 Disallow: /agecheck.php
 Disallow: /photo.php
 Disallow: /line/
+Disallow: /history.php
 
 # 旧サイト (php/) と jQuery のデモページ (js/) は 2026-08-30 に配信をやめた。
 # すでに索引されている場合に備えて明示しておく。

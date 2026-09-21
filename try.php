@@ -247,6 +247,12 @@ $flashKnown = ['confirmed_queued', 'confirmed_known', 'confirmed_unread', 'corre
     <p class="ex-status" id="status" hidden>判定しています…</p>
     <div class="ex-meta"><?= count(reco_pool()) ?> BEERS</div>
   </form>
+  <?php $mine = visitor_upload_count($visitorId); ?>
+  <?php if ($mine > 0): ?>
+    <?php /* 主役はビールの読み込み。履歴はその副産物なので、小さく下のほうに置く
+             (設計書 §2-c)。0本の人には出さない ― 空の入口を作らない */ ?>
+    <p class="ex-hist-link"><a href="/history.php">これまでの <?= (int)$mine ?>本 →</a></p>
+  <?php endif; ?>
   <?php /* ②解析中の絵(設計書 §2-b)。フォームの外。送信は上に被さるだけで、
            通信をやり直さない。JS が動かない端末では出ないが、送信自体は
            noscript のボタンで通る */ ?>
