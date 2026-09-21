@@ -265,3 +265,55 @@ function csrf_check(string $visitorId, $token): bool
     if (!is_string($stored) || $stored === '') { return false; }
     return hash_equals($stored, $token);
 }
+
+/**
+ * 感想を残す(設計書 2026-09-19 §4)。写真1枚につき1件。書き直しは上書き。
+ *
+ * **他人の写真には書けない。** 持ち主の検査をここで行う(呼び出し元に任せない)。
+ * 空白だけの投稿は保存しない(空の行を作らない)。
+ *
+ * @return int 保存した note_id。保存しなかったときは 0
+ */
+function note_save(string $visitorId, int $uploadId, string $body): int
+{
+    $body = trim($body);
+    if ($body === '' || $uploadId <= 0) { return 0; }
+    if (upload_owned_by($uploadId, $visitorId) === null) { return 0; }
+
+    // 日時は DB の NOW() を使う。アプリとDBでタイムゾーンが食い違うと一覧の並びが狂う
+    db()->prepare(
+        "INSERT INTO note (visitor_id, upload_id, body, created_at, updated_at)
+         VALUES (:v, :u, :b, NOW(), NOW())
+         ON DUPLICATE KEY UPDATE body = VALUES(body), updated_at = NOW()")
+        ->execute([':v' => $visitorId, ':u' => $uploadId, ':b' => $body]);
+
+    $st = db()->prepare("SELECT note_id FROM note WHERE upload_id = :u");
+    $st->execute([':u' => $uploadId]);
+    return (int)$st->fetchColumn();
+}
+
+/** 写真1枚に付いている感想。無ければ null */
+function note_for_upload(int $uploadId): ?array
+{
+    $st = db()->prepare("SELECT * FROM note WHERE upload_id = :u");
+    $st->execute([':u' => $uploadId]);
+    $r = $st->fetch();
+    return $r ?: null;
+}
+
+/** その訪問者が残した感想の件数 */
+function visitor_note_count(string $visitorId): int
+{
+    $st = db()->prepare("SELECT COUNT(*) FROM note WHERE visitor_id = :v");
+    $st->execute([':v' => $visitorId]);
+    return (int)$st->fetchColumn();
+}
+
+/** LINE と紐づいているか */
+function visitor_line_linked(string $visitorId): bool
+{
+    $st = db()->prepare("SELECT line_user_id FROM visitor WHERE visitor_id = :v");
+    $st->execute([':v' => $visitorId]);
+    $v = $st->fetchColumn();
+    return is_string($v) && $v !== '';
+}
