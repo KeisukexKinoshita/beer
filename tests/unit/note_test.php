@@ -73,3 +73,11 @@ eq(note_for_upload_owned(99999999, $vid), null, '存在しない upload_id な�
 
 db()->prepare("DELETE FROM note WHERE visitor_id IN (:a, :b)")->execute([':a' => $vid, ':b' => $other]);
 db()->prepare("DELETE FROM upload WHERE visitor_id IN (:a, :b)")->execute([':a' => $vid, ':b' => $other]);
+
+// --- 種類で選んで取り出す印(最終レビュー指摘: history.php から LINE 連携したとき、
+//     印を描けるのが try.php だけで、確認の文が出ない/後日 try.php で唐突に出る、
+//     という不具合が起きていた) ---
+visitor_flash_set($vid, 'line_linked');
+eq(visitor_flash_take_if($vid, ['note_saved']), null, '種類が違えば取り出さない');
+eq(visitor_flash_take_if($vid, ['line_linked', 'line_merged']), 'line_linked', '種類が合えば取り出す');
+eq(visitor_flash_take_if($vid, ['line_linked']), null, '一度取り出したら残らない');

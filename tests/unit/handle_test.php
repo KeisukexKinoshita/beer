@@ -324,6 +324,54 @@ eq($h['eval']['lines'][1]['estimated'], true,  '苦味は推定(estimated_fields
 eq($h['eval']['estimated'], true, 'DBの銘柄でも推定を含むことがある');
 reco_ht_unseed_beer();
 
+// ---- キャッシュ経路: 持ち主が同じか違うかで行の扱いが変わる(最終レビュー指摘) -------
+// 同じ写真(バイト一致)が2回目以降に来たとき、gate は API を呼ばずに前回の結果を
+// 使う。**持ち主が同じ**ならその upload_id をそのまま使い(行を増やさない)、
+// **持ち主が違う**なら、以降の確認・感想・拡張・選び直しが持ち主の検査に弾かれない
+// よう、その訪問者自身の行を新しく作る。どちらも API は呼ばれない(費用は増えない)。
+$recoTestPid = reco_ht_seed_beer();
+$visitorA = reco_ht_visitor();
+$callsA = [];
+$hA = reco_handle_upload($visitorA, reco_ht_file('IMG_4816.jpeg'),
+    reco_ht_transport(reco_ht_resp([
+        'matched_product_id' => null, 'brand_text' => 'Cross Photo', 'brewery_text' => 'Cross Brew',
+        'confidence' => 0.6, 'candidates' => [$recoTestPid],
+    ]), $callsA));
+eq($hA['view'], 'result', 'キャッシュ元: 1回目(A)は通常どおり result');
+$rowA = upload_owned_by($hA['uploadId'], $visitorA);
+ok($rowA !== null, 'キャッシュ元: Aの行が作られる');
+
+// -- 持ち主が同じ再送(Aがもう一度同じ写真を送る) --
+$callsSame = [];
+$hSame = reco_handle_upload($visitorA, reco_ht_file('IMG_4816.jpeg'),
+    reco_ht_transport(reco_ht_resp(['is_beer' => false]), $callsSame));   // 呼ばれたら違う応答になる
+eq(count($callsSame), 0, '持ち主が同じ再送: APIは呼ばれない');
+eq($hSame['uploadId'], $hA['uploadId'], '持ち主が同じ再送: 同じ upload_id を使う(行を増やさない)');
+$stCountA = db()->prepare("SELECT COUNT(*) FROM upload WHERE visitor_id = :v");
+$stCountA->execute([':v' => $visitorA]);
+eq((int)$stCountA->fetchColumn(), 1, '持ち主が同じ再送: Aのupload行は1のまま増えない');
+
+// -- 持ち主が違う再送(Bが同じ写真を送る) --
+$visitorB = reco_ht_visitor();
+$callsB = [];
+$hB = reco_handle_upload($visitorB, reco_ht_file('IMG_4816.jpeg'),
+    reco_ht_transport(reco_ht_resp(['is_beer' => false]), $callsB));   // 呼ばれたら違う応答になる
+eq(count($callsB), 0, '持ち主が違う再送: APIは呼ばれない(費用は増えない)');
+ok($hB['uploadId'] !== $hA['uploadId'], '持ち主が違う再送: Aとは別の upload_id を新しく作る');
+$rowB = upload_owned_by($hB['uploadId'], $visitorB);
+ok($rowB !== null, '持ち主が違う再送: 新しい行はBの持ち物として取り出せる');
+eq(upload_owned_by($hA['uploadId'], $visitorB), null,
+   '持ち主が違う再送: Aの行はBのものとしては取り出せない(持ち主の検査は生きている)');
+eq($rowB['image_path'], $rowA['image_path'],
+   '持ち主が違う再送: image_path は前の行と同じものを指す');
+eq($rowB['candidates'], $rowA['candidates'],
+   '持ち主が違う再送: candidates も前の行から復元される(キャッシュ経路で落ちていた)');
+eq(reco_ht_reco_count($hB['uploadId']), count($hB['picked']),
+   '持ち主が違う再送: 新しい upload_id にも推薦が記録される(uq_reco_pos は衝突しない)');
+$ctxB = gate_context($visitorB, 'image/jpeg', 1000, bin2hex(random_bytes(32)));
+eq($ctxB['visitor_today'], 1, '持ち主が違う再送: Bの upload 件数として1件だけ数えられる');
+reco_ht_unseed_beer();
+
 // ---- 後始末。使い捨てのテストデータなので残さない ----------------------------
 // is_beer=true の分岐は identify_shrink() で img/upload/ に実ファイルを書く。
 // DBの行を消す前に、このテストが作った画像も消す(残すと実行のたびに増える)。
