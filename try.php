@@ -24,7 +24,7 @@ $eval = ['lines' => [], 'estimated' => false, 'source' => 'db'];
 $uploadId = 0;
 $imageWebPath = null;   // 表示部が参照する。保存しなかったときは null のまま
 $dirNow = null; $dirOk = true; $dirReason = '';   // ⑤拡張(方向つき推薦)の状態
-$candidates = [];   // Task 9 で中身が入る。それまでは空
+$candidates = [];   // 確度が中くらいで候補が複数あるときだけ入る(設計書 §3)
 $existingNote = null;   // ④保管。この写真に既に残した感想があれば入る
 
 // 確認の答え(confirm)を受け取る分岐。POST処理の先頭に置く
@@ -92,6 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['photo'])) {
         $imageWebPath = $h['imageWebPath'];
         $seed         = $h['seed'];
         $eval         = $h['eval'];
+        $candidates   = $h['candidates'] ?? [];
         // 同じ写真の再送(キャッシュ経路)は既存の upload_id を再利用するので、
         // 既に残した感想があれば拾う($uploadId > 0 のときだけ)
         if ($uploadId > 0) {
@@ -105,10 +106,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['photo'])) {
 if ($view === 'intake' && $_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['u'])) {
     $u = upload_owned_by((int)$_GET['u'], $visitorId);
     if ($u && (int)$u['is_beer'] === 1) {
+        $uploadId = (int)$u['upload_id'];
+
+        // 候補から選び直す(設計書 §3「選んでから評価へ」)。
+        // **upload_pick() が false のときは何も言わずに続けない。** 候補に無いものが
+        // 来たということは、URL が書き換えられている。そのまま(選び直しは起きていない
+        // 状態で)いつもの画面を出す
+        if (isset($_GET['pick']) && preg_match('/^pr\d{4}$/', (string)$_GET['pick'])) {
+            if (upload_pick($uploadId, $visitorId, (string)$_GET['pick'])) {
+                event_record($visitorId, 'pick', (string)$_GET['pick'], $uploadId);
+                // 選んだ銘柄で評価と推薦を作り直す
+                header('Location: /try.php?u=' . $uploadId);
+                exit;
+            }
+        }
+
         $dir = isset($_GET['more']) && isset(RECO_DIRS[$_GET['more']]) ? (string)$_GET['more'] : null;
         $v = reco_view_upload($u, $dir);
         $view     = 'result';
-        $uploadId = (int)$u['upload_id'];
         $existingNote = note_for_upload_owned($uploadId, $visitorId);
         $imageWebPath = $u['image_path'] ? '/photo.php?u=' . $uploadId : null;
         $result = ['is_beer' => true, 'matched_product_id' => $u['product_id'],
@@ -119,7 +134,7 @@ if ($view === 'intake' && $_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['u
                    'error' => false];
         $seed = $v['seed']; $eval = $v['eval']; $picked = $v['picked'];
         $dirNow = $v['dir']; $dirOk = $v['dirOk']; $dirReason = $v['dirReason'];
-        $candidates   = $v['candidates'] ?? [];   // Task 9 で中身が入る。それまでは空
+        $candidates   = $v['candidates'] ?? [];
         if ($dir !== null) {
             // 押された方向は、そのまま蔵に渡す分析の中身になる(設計書 §5)
             event_record($visitorId, 'expand_' . $dir, null, $uploadId);
@@ -322,6 +337,25 @@ $flashKnown = ['confirmed_queued', 'confirmed_known', 'confirmed_unread', 'corre
     </div>
 
     <?php $branch = identify_branch($result); ?>
+
+    <?php /* 確度が中くらいで候補が複数あるとき、1本に決め打たず選ばせる(設計書 §3
+             「選んでから評価へ」)。評価より前に置く。2件未満なら並べない */ ?>
+    <?php if (count($candidates) >= 2): ?>
+      <div class="ex-cands">
+        <div class="ex-lbl">どれでしょうか</div>
+        <p class="ex-sub">読み取りに確信が持てませんでした。選ぶと、その銘柄で評価し直します。</p>
+        <?php foreach ($candidates as $c): ?>
+          <a class="ex-rec" href="/try.php?u=<?= (int)$uploadId ?>&amp;pick=<?= e($c['ProductID']) ?>">
+            <?php list($ccol) = group_meta(style_group($c['FamilyName'] ?? '', $c['StyleName'] ?? '')); ?>
+            <span class="ex-dot" style="background:<?= e($ccol) ?>"></span>
+            <span class="ex-nm">
+              <b><?= e($c['ProductName']) ?></b>
+              <span><?= e($c['MakerName'] ?: '') ?><?= !empty($c['StyleName']) ? ' · ' . e($c['StyleName']) : '' ?></span>
+            </span>
+          </a>
+        <?php endforeach; ?>
+      </div>
+    <?php endif; ?>
 
     <?php if (!empty($eval['lines'])): ?>
       <div class="ex-eval">
