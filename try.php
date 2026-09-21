@@ -20,6 +20,7 @@ if (!age_confirmed($visitorId)) {
 $view = 'intake';   // intake / result / error
 $msg  = '';
 $result = $picked = $seed = [];
+$eval = ['lines' => [], 'estimated' => false, 'source' => 'db'];
 $uploadId = 0;
 $imageWebPath = null;   // 表示部が参照する。保存しなかったときは null のまま
 
@@ -73,6 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['photo'])) {
         $uploadId     = $h['uploadId'];
         $imageWebPath = $h['imageWebPath'];
         $seed         = $h['seed'];
+        $eval         = $h['eval'];
     }
 }
 
@@ -220,12 +222,22 @@ $exposureVer = @filemtime($_SERVER['DOCUMENT_ROOT'] . $exposureCss) ?: time();
 
     <?php $branch = identify_branch($result); ?>
 
-    <?php if (!$result['matched_product_id']): ?>
-      <?php /* DBに無いことは、確度によらず必ず伝える。
-               確度が高くても未登録の銘柄はある(ラベルははっきり読めたが、うちに登録が無い)。
-               (修正ラウンド2: ラウンド1の elseif が「確認を求める」と排他にしてしまい、
-               確度0.8以上でDBに無いときに「登録されていません」が出ない嘘が残っていた) */ ?>
-      <p class="ex-sub">この銘柄はまだ登録されていません。読み取れた特徴から探しました。</p>
+    <?php if (!empty($eval['lines'])): ?>
+      <div class="ex-eval">
+        <div class="ex-lbl">このビールは</div>
+        <?php foreach ($eval['lines'] as $l): ?>
+          <div class="ex-ev">
+            <span class="ex-ev-k"><?= e($l['label']) ?></span>
+            <span class="ex-ev-w"><?= e($l['word']) ?></span>
+            <span class="ex-ev-c"><?= e($l['clause']) ?></span>
+            <span class="ex-ev-v"><?= e($l['value']) ?></span>
+          </div>
+        <?php endforeach; ?>
+        <?php if ($eval['source'] === 'guess'): ?>
+          <p class="ex-sub">数値は<b>ラベルからの推定</b>です。この銘柄はまだ登録がありません。</p>
+        <?php endif; ?>
+        <p class="ex-sub">くらべているのは、このサイトに登録されている <?= count(reco_pool()) ?> 銘柄です。</p>
+      </div>
     <?php endif; ?>
 
     <?php /* is_beer なら必ず確認を求める。外したときに黙って誤った推薦を出さないのが
@@ -234,11 +246,13 @@ $exposureVer = @filemtime($_SERVER['DOCUMENT_ROOT'] . $exposureCss) ?: time();
     <form class="ex-ask" method="post" action="/try.php">
       <input type="hidden" name="upload_id" value="<?= (int)$uploadId ?>">
       <input type="hidden" name="csrf" value="<?= e(csrf_issue($visitorId)) ?>">
-      <?php if ($branch === 'unknown' && !$result['brand_text']): ?>
-        <span class="ex-sub" style="flex:1 1 100%">
-          銘柄名は読み取れませんでした。<?= !empty($seed['StyleName']) ? e($seed['StyleName']) . ' に見えます。' : '' ?>合っていますか?
-        </span>
-      <?php endif; ?>
+      <span class="ex-sub" style="flex:1 1 100%">
+        <?php if ($branch === 'unknown' && !$result['brand_text']): ?>
+          銘柄名は読み取れませんでした。<?= !empty($seed['StyleName']) ? e($seed['StyleName']) . ' に見えます。' : '' ?>この評価で合っていますか?
+        <?php else: ?>
+          この評価で合っていますか?
+        <?php endif; ?>
+      </span>
       <button class="ex-btn yes" name="confirm" value="yes">これで合っている</button>
       <button class="ex-btn"     name="confirm" value="no">ちがう</button>
     </form>

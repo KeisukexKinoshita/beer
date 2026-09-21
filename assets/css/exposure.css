@@ -82,3 +82,17 @@ img{max-width:100%;display:block}
 
 .ex-msg{padding:40px 0;text-align:center;color:var(--dim);font-size:14px}
 @media (max-width:400px){ .ex-ring{width:160px;height:160px} }
+
+/* ③評価(設計書 2026-09-19 §3)。並ぶところなので強調色は使わない */
+.ex-eval { margin: 18px 0 6px; }
+.ex-ev { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px;
+         padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,.06); }
+.ex-ev-k { flex: 0 0 6.5em; font-size: 12px; color: var(--dim); }
+.ex-ev-w { font-size: 14px; font-weight: 700; }
+.ex-ev-c { font-size: 11.5px; color: var(--faint); }
+.ex-ev-v { margin-left: auto; font-size: 12px; color: var(--dim);
+           font-variant-numeric: tabular-nums; }
+@media (max-width: 380px) {
+  .ex-ev-k { flex-basis: 100%; }
+  .ex-ev-v { margin-left: 0; }
+}
