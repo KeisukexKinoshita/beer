@@ -353,14 +353,20 @@ const FLASH_KNOWN = ['confirmed_queued', 'confirmed_known', 'confirmed_unread', 
             <span class="ex-ev-k"><?= e($l['label']) ?></span>
             <span class="ex-ev-w"><?= e($l['word']) ?></span>
             <span class="ex-ev-c"><?= e($l['clause']) ?></span>
-            <span class="ex-ev-v"><?= e($l['value']) ?><?php if (!empty($l['estimated'])): ?><span class="est-note" title="公式情報が無いため、同じスタイルの典型値から推定した値です">推定</span><?php endif; ?></span>
+            <span class="ex-ev-v"><?= e($l['value']) ?><?php if (!empty($l['estimated'])): ?><span class="est-note" title="公式の数値が無いため、推定した値です">推定</span><?php endif; ?></span>
           </div>
         <?php endforeach; ?>
         <?php if ($eval['source'] === 'guess'): ?>
-          <p class="ex-sub">数値は<b>ラベルからの推定</b>です。この銘柄はまだ登録がありません。</p>
+          <p class="ex-sub">数値は<b>ラベルからの推定</b>です。</p>
         <?php endif; ?>
         <p class="ex-sub">くらべているのは、このサイトに登録されている <?= count(reco_pool()) ?> 銘柄です。</p>
       </div>
+    <?php endif; ?>
+    <?php /* 「まだ登録がありません」は、評価の行の有無と関係なく出す(最終レビュー指摘)。
+             推定3項目がすべて null だと $eval['lines'] は空になるが、
+             未登録であること自体は $eval['source'] だけで決まる */ ?>
+    <?php if ($eval['source'] === 'guess'): ?>
+      <p class="ex-sub">この銘柄はまだ登録がありません。</p>
     <?php endif; ?>
 
     <?php /* is_beer なら必ず確認を求める。外したときに黙って誤った推薦を出さないのが
