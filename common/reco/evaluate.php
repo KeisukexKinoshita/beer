@@ -102,16 +102,28 @@ function eval_line(string $axis, ?float $value, array $sorted, bool $estimated):
 
 /**
  * 3軸ぶんまとめて。
- * @param array $vals ['abv'=>?float, 'ibu'=>?float, 'fruity'=>?float]
+ *
+ * @param array $vals      ['abv'=>?float, 'ibu'=>?float, 'fruity'=>?float]
+ * @param bool|array $estimated  全軸まとめて bool で渡すか、
+ *                               ['abv'=>bool,'ibu'=>bool,'fruity'=>bool] で軸ごとに渡す。
+ *                               **DBの行でも、その銘柄の estimated_fields に載っている列は推定値**
+ *                               (2026-09-22時点、200銘柄すべてのフルーティーさが推定)。
+ *                               まとめて false にすると、推定を測定値の顔で出すことになる
+ *                               (修正ラウンド1: 最終レビュー Important)。
+ * @return array ['lines'=>[...], 'estimated'=>bool] 'estimated' は**実際に出した行の中に
+ *               推定が1つでもあるか**。値が無くて行が出なかった軸は数えない
+ *               (語れないものを語らない、と同じ考え方)
  */
-function eval_build(array $vals, array $pool, bool $estimated): array
+function eval_build(array $vals, array $pool, $estimated): array
 {
     $lines = [];
+    $any = false;
     foreach (['abv', 'ibu', 'fruity'] as $axis) {
         $v = $vals[$axis] ?? null;
+        $est = is_array($estimated) ? !empty($estimated[$axis]) : (bool)$estimated;
         $line = eval_line($axis, $v === null || $v === '' ? null : (float)$v,
-                          eval_sorted($pool, $axis), $estimated);
-        if ($line !== null) { $lines[] = $line; }
+                          eval_sorted($pool, $axis), $est);
+        if ($line !== null) { $lines[] = $line; if ($est) { $any = true; } }
     }
-    return ['lines' => $lines, 'estimated' => $estimated];
+    return ['lines' => $lines, 'estimated' => $any];
 }

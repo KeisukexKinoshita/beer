@@ -306,6 +306,24 @@ $h3 = reco_handle_upload($visitor, reco_ht_file('IMG_4684.jpeg'),
     ]), $calls));
 eq($h3['eval']['lines'], [], 'ビール以外には評価を出さない');
 
+// DBにある銘柄でも、estimated_fields に載っている軸には推定の印が付く
+// (pr9999 は reco_ht_seed_beer() が作る。estimated_fields を持たせて確かめる。
+//  修正ラウンド1: 最終レビュー Important)
+$recoTestPid = reco_ht_seed_beer();
+db()->prepare("UPDATE products SET estimated_fields = 'IBU_all,Fruity' WHERE ProductID = :p")
+    ->execute([':p' => $recoTestPid]);
+$calls = [];
+$visitor = reco_ht_visitor();
+$h = reco_handle_upload($visitor, reco_ht_file('IMG_4756.jpeg'),
+    reco_ht_transport(reco_ht_resp([
+        'is_beer' => true, 'matched_product_id' => $recoTestPid, 'confidence' => 0.95,
+    ]), $calls));
+eq($h['eval']['source'], 'db', 'DBの銘柄');
+eq($h['eval']['lines'][0]['estimated'], false, '度数は測った値(estimated_fields に無い)');
+eq($h['eval']['lines'][1]['estimated'], true,  '苦味は推定(estimated_fields にある)');
+eq($h['eval']['estimated'], true, 'DBの銘柄でも推定を含むことがある');
+reco_ht_unseed_beer();
+
 // ---- 後始末。使い捨てのテストデータなので残さない ----------------------------
 // is_beer=true の分岐は identify_shrink() で img/upload/ に実ファイルを書く。
 // DBの行を消す前に、このテストが作った画像も消す(残すと実行のたびに増える)。

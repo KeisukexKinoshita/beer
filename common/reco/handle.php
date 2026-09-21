@@ -13,6 +13,21 @@ require_once __DIR__ . '/cascade.php';
 require_once __DIR__ . '/evaluate.php';
 
 /**
+ * その銘柄の estimated_fields から、評価の軸ごとの推定フラグを作る。
+ * 列名(Alcohol / IBU_all / Fruity)と評価の軸名(abv / ibu / fruity)の対応はここだけが知る。
+ * `is_estimated()` は common/nebula/helpers.php にある純関数(修正ラウンド1: 最終レビュー
+ * Important。この名前は後続タスクも同じ名前で呼ぶ)。
+ */
+function reco_estimated_map(array $beer): array
+{
+    return [
+        'abv'    => is_estimated($beer, 'Alcohol'),
+        'ibu'    => is_estimated($beer, 'IBU_all'),
+        'fruity' => is_estimated($beer, 'Fruity'),
+    ];
+}
+
+/**
  * 写真1枚を受け取ってから、推薦を決めるまでの判断。
  *
  * try.php から切り出したのは、ここに**金・嘘・写真**の判断が全部あるのに
@@ -127,9 +142,11 @@ function reco_handle_upload(string $visitorId, array $file, ?callable $transport
     $eval = ['lines' => [], 'estimated' => false, 'source' => 'db'];
     if ($view === 'result' && $result['is_beer'] === true) {
         if ($result['matched_product_id'] && !empty($seed['ProductID'])) {
+            // DBの行でも、estimated_fields に載っている列は推定値(修正ラウンド1: 最終レビュー
+            // Important。まとめて false を渡すと、推定を測定値の顔で出すことになる)
             $eval = eval_build(
                 ['abv' => $seed['Alcohol'], 'ibu' => $seed['IBU_all'], 'fruity' => $seed['Fruity']],
-                reco_pool(), false);
+                reco_pool(), reco_estimated_map($seed));
             $eval['source'] = 'db';
         } else {
             $eval = eval_build(

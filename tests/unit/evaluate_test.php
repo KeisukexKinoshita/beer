@@ -54,3 +54,23 @@ eq($built['estimated'], false, '全体の推定フラグ');
 eq(json_encode(eval_build(['abv' => 5.0, 'ibu' => 25.0, 'fruity' => 3.0], $pool, false)),
    json_encode(eval_build(['abv' => 5.0, 'ibu' => 25.0, 'fruity' => 3.0], $pool, false)),
    '同じ入力からは必ず同じ結果');
+
+// 軸ごとの推定(タスク3のレビュー指摘)
+$mix = eval_build(['abv' => 5.0, 'ibu' => 25.0, 'fruity' => 3.0], $pool,
+                  ['abv' => false, 'ibu' => true, 'fruity' => true]);
+eq($mix['lines'][0]['estimated'], false, '度数は測った値');
+eq($mix['lines'][1]['estimated'], true,  '苦味は推定');
+eq($mix['lines'][2]['estimated'], true,  'フルーティーさは推定');
+eq($mix['estimated'], true, '1つでも推定があれば全体も推定');
+
+$none = eval_build(['abv' => 5.0, 'ibu' => 25.0, 'fruity' => 3.0], $pool,
+                   ['abv' => false, 'ibu' => false, 'fruity' => false]);
+eq($none['estimated'], false, 'どれも推定でなければ全体も推定でない');
+
+// bool でも今までどおり動く(後方互換)
+eq(eval_build(['abv' => 5.0], $pool, true)['lines'][0]['estimated'], true, 'bool でも軸に伝わる');
+
+// 値が無くて行が出なかった軸は、全体の推定フラグに数えない
+$holed2 = eval_build(['abv' => 5.0, 'ibu' => null, 'fruity' => null], $pool,
+                    ['abv' => false, 'ibu' => true, 'fruity' => true]);
+eq($holed2['estimated'], false, '出していない行は数えない');
