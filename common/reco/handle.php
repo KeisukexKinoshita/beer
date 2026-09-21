@@ -63,10 +63,11 @@ function reco_handle_upload(string $visitorId, array $file, ?callable $transport
     $isFreshIdentify = false;
 
     if (!$g['ok'] && $g['reason'] === 'cached') {
-        // 同じ写真。APIを呼ばずに前回の結果を使う
+        // 同じ写真。**APIは呼ばない**(ここが費用の要)。
+        // ただし前の行は別の訪問者のものかもしれないので、**この訪問者の行を作る**。
+        // 作らないと、このあとの確認・感想・拡張・選び直しが全部
+        // 持ち主の検査に弾かれ、画面が黙って入口に戻る(最終レビュー指摘)
         $prev = upload_by_hash($hash);
-        $uploadId = (int)$prev['upload_id'];
-        $imageWebPath = $prev['image_path'] ? '/photo.php?u=' . $uploadId : null;
         $result = ['is_beer' => (bool)$prev['is_beer'], 'matched_product_id' => $prev['product_id'],
                    'brand_text' => $prev['brand_text'], 'brewery_text' => $prev['brewery_text'],
                    'style_guess' => $prev['style_guess'], 'color' => $prev['color'],
@@ -75,7 +76,25 @@ function reco_handle_upload(string $visitorId, array $file, ?callable $transport
                    'abv_guess' => $prev['abv_guess'] !== null ? (float)$prev['abv_guess'] : null,
                    'ibu_guess' => $prev['ibu_guess'] !== null ? (int)$prev['ibu_guess'] : null,
                    'fruity_guess' => $prev['fruity_guess'] !== null ? (int)$prev['fruity_guess'] : null,
+                   // candidates もキャッシュ経路では落ちていた(最終レビュー指摘)。
+                   // 前の行(カンマ区切り文字列)から復元する
+                   'candidates' => array_values(array_filter(explode(',', (string)($prev['candidates'] ?? '')))),
                    'error' => false];
+
+        if ((string)$prev['visitor_id'] === $visitorId) {
+            // **持ち主が同じ。** 同じ人が同じ写真を2回送っただけなので、行を増やさない
+            $uploadId = (int)$prev['upload_id'];
+        } else {
+            // 持ち主が違う。前の行をそのまま使うと、このあとの確認・感想・拡張・
+            // 選び直しがすべて持ち主の検査に弾かれる。判定の結果(machine的な値)は
+            // 共有してよいので、この訪問者自身の行を新しく作る。
+            // image_path は前の行と同じものを指してよい(同じ画像なので)
+            $uploadId = upload_record($visitorId, $result, $hash, $prev['image_path']);
+            // 新しい upload_id なので uq_reco_pos(upload_id, position)に衝突しない。
+            // 下の共通ブロックで $picked から reco_record() が呼ばれるようにする
+            $isFreshIdentify = true;
+        }
+        $imageWebPath = $prev['image_path'] ? '/photo.php?u=' . $uploadId : null;
         $view = 'result';
     } elseif (!$g['ok']) {
         $view = 'error'; $msg = gate_message($g['reason']);
