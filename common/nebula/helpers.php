@@ -309,3 +309,21 @@ function beers_for_js($beers) {
     }
     return $out;
 }
+
+/**
+ * 推薦の理由(設計書 2026-09-19 §6)。カスケードの何段目で拾ったかを言葉にする。
+ *
+ * 名前が取れていないときは**言い切らない**。「同じ  から」のような壊れた文を出すより、
+ * 一段ゆるい言い方に落とす。
+ */
+function reco_stage_label($stage, $seed) {
+    $style  = trim((string)($seed['StyleName']  ?? ''));
+    $family = trim((string)($seed['FamilyName'] ?? ''));
+    switch ((int)$stage) {
+        case 1: return $style  !== '' ? '同じ ' . $style . ' から'      : '近い味わいのものから';
+        case 2: return $family !== '' ? '同じ ' . $family . ' の系統から' : '近い味わいのものから';
+        case 3: return '近い味わいのものから';
+        case 4: return '度数が近いものから';
+        default: return '';
+    }
+}
