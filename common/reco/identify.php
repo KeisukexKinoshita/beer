@@ -18,7 +18,8 @@ function identify_parse(array $res): array
     $empty = ['is_beer' => null, 'brand_text' => null, 'brewery_text' => null,
               'matched_product_id' => null, 'style_guess' => null,
               'color' => null, 'clarity' => null, 'confidence' => null,
-              'abv_guess' => null, 'ibu_guess' => null, 'fruity_guess' => null, 'error' => false];
+              'abv_guess' => null, 'ibu_guess' => null, 'fruity_guess' => null,
+              'candidates' => [], 'error' => false];
 
     if (($res['type'] ?? '') === 'error') { return array_merge($empty, ['error' => true]); }
 
@@ -77,6 +78,16 @@ function identify_parse(array $res): array
     $pid = $j['matched_product_id'] ?? null;
     if ($pid !== null && !preg_match('/^pr\d{4}$/', (string)$pid)) { $pid = null; }
 
+    // 候補は ProductID の配列。形が違うもの・重複は捨て、**最大3件**まで。
+    // 一覧に実在するかどうかは identify_call() 側で確かめる(matched_product_id と同じ扱い)
+    $cands = [];
+    foreach ((array)($j['candidates'] ?? []) as $c) {
+        if (!is_string($c) || !preg_match('/^pr\d{4}$/', $c)) { continue; }
+        if (in_array($c, $cands, true)) { continue; }
+        $cands[] = $c;
+        if (count($cands) >= 3) { break; }
+    }
+
     return [
         'is_beer'            => isset($j['is_beer']) ? (bool)$j['is_beer'] : null,
         'brand_text'         => $text191($j['brand_text']   ?? null),
@@ -89,6 +100,7 @@ function identify_parse(array $res): array
         'abv_guess'          => $abv,
         'ibu_guess'          => $inRange($j['ibu_guess']    ?? null, 0, 120),
         'fruity_guess'       => $inRange($j['fruity_guess'] ?? null, 1, 10),
+        'candidates'         => $cands,
         'error'              => false,
     ];
 }
@@ -140,7 +152,10 @@ function identify_prompt(array $catalog, array $styles): string
          . "7=主役のひとつ(ヘイジーIPA・フルーツを使ったサワー)、"
          . "9=果実が中心(果汁を大量に使ったサワー)です。"
          . "甘さと果実感を混同せず、麦芽の甘み・カラメル・蜂蜜は果実感に数えないでください。"
-         . "読み取れないものは null にしてください。推測で埋めないでください。";
+         . "読み取れないものは null にしてください。推測で埋めないでください。"
+         . "確信が持てないときは、当てはまりそうな候補を candidates に"
+         . "**一覧のID(pr で始まる6文字)の配列**で最大3件入れてください。"
+         . "1本に絞れるときは candidates を空の配列にしてください。";
 }
 
 /**
@@ -168,6 +183,13 @@ function identify_call(string $imagePath, array $catalog, array $styles, ?callab
                 }
                 if (!$known) { $r['matched_product_id'] = null; }
             }
+            // 一覧に無いIDは候補からも外す。実在しない銘柄を選ばせない
+            if (!empty($r['candidates'])) {
+                $known = [];
+                foreach ($catalog as $c) { $known[$c['ProductID'] ?? ''] = true; }
+                $r['candidates'] = array_values(array_filter($r['candidates'],
+                    function ($pid) use ($known) { return isset($known[$pid]); }));
+            }
             if (!$r['error']) { return $r; }
             $last = $r;
         } catch (Throwable $e) {
@@ -177,7 +199,7 @@ function identify_call(string $imagePath, array $catalog, array $styles, ?callab
                      'matched_product_id' => null, 'style_guess' => null,
                      'color' => null, 'clarity' => null, 'confidence' => null,
                      'abv_guess' => null, 'ibu_guess' => null, 'fruity_guess' => null,
-                     'error' => true, 'model' => IDENTIFY_MODEL];
+                     'candidates' => [], 'error' => true, 'model' => IDENTIFY_MODEL];
         }
     }
     return $last;
@@ -210,7 +232,7 @@ function identify_transport_anthropic(string $imagePath, string $prompt): array
     $schema = ['type' => 'object', 'additionalProperties' => false,
         'required' => ['is_beer','brand_text','brewery_text','matched_product_id',
                        'style_guess','color','clarity','confidence',
-                       'abv_guess','ibu_guess','fruity_guess'],
+                       'abv_guess','ibu_guess','fruity_guess','candidates'],
         'properties' => [
             'is_beer'            => ['type' => 'boolean'],
             'brand_text'         => ['type' => ['string','null']],
@@ -226,6 +248,7 @@ function identify_transport_anthropic(string $imagePath, string $prompt): array
             'abv_guess'          => ['type' => ['number','null']],
             'ibu_guess'          => ['type' => ['integer','null']],
             'fruity_guess'       => ['type' => ['integer','null']],
+            'candidates'         => ['type' => 'array', 'items' => ['type' => 'string']],
         ]];
 
     $message = $client->messages->create(

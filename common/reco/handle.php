@@ -157,7 +157,18 @@ function reco_handle_upload(string $visitorId, array $file, ?callable $transport
         }
     }
 
-    return compact('view', 'msg', 'result', 'picked', 'uploadId', 'imageWebPath', 'seed', 'eval');
+    // 確度が中くらいで候補が複数あるときだけ並べる(設計書 §3)。
+    // 1本に決め打つと、外したときに黙って誤った評価と推薦を出すことになる
+    $candidates = [];
+    if ($view === 'result' && $result['is_beer'] === true
+        && identify_branch($result) === 'choose' && count($result['candidates'] ?? []) >= 2) {
+        foreach ($result['candidates'] as $pid) {
+            $b = beer_by_id($pid);
+            if ($b) { $candidates[] = $b; }
+        }
+    }
+
+    return compact('view', 'msg', 'result', 'picked', 'uploadId', 'imageWebPath', 'seed', 'eval', 'candidates');
 }
 
 /**
@@ -203,11 +214,20 @@ function reco_view_upload(array $u, ?string $dir = null): array
         $pool, $fromDb ? reco_estimated_map($seed) : true);
     $eval['source'] = $fromDb ? 'db' : 'guess';
 
+    $candidates = [];
+    if (empty($u['picked_by_user']) && !empty($u['candidates'])
+        && $u['confidence'] !== null && (float)$u['confidence'] >= 0.4 && (float)$u['confidence'] < 0.8) {
+        foreach (array_filter(explode(',', (string)$u['candidates'])) as $pid) {
+            $b = beer_by_id($pid);
+            if ($b) { $candidates[] = $b; }
+        }
+    }
+
     if ($dir === null) {
         return ['seed' => $seed, 'eval' => $eval, 'picked' => reco_pick($seed, $pool),
-                'dir' => null, 'dirOk' => true, 'dirReason' => ''];
+                'dir' => null, 'dirOk' => true, 'dirReason' => '', 'candidates' => $candidates];
     }
     $e = reco_expand($seed, $pool, $dir);
     return ['seed' => $seed, 'eval' => $eval, 'picked' => $e['picked'],
-            'dir' => $dir, 'dirOk' => $e['ok'], 'dirReason' => $e['reason']];
+            'dir' => $dir, 'dirOk' => $e['ok'], 'dirReason' => $e['reason'], 'candidates' => $candidates];
 }

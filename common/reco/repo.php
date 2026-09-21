@@ -106,10 +106,10 @@ function upload_record(string $visitorId, array $r, string $hash, ?string $image
         "INSERT INTO upload
            (visitor_id, created_at, image_path, image_hash, is_beer, product_id,
             brand_text, brewery_text, style_guess, color, clarity, confidence,
-            abv_guess, ibu_guess, fruity_guess, model, status)
+            abv_guess, ibu_guess, fruity_guess, candidates, model, status)
          VALUES
            (:v, NOW(), :path, :hash, :isbeer, :pid, :brand, :brewery, :style, :color, :clarity, :conf,
-            :abv_guess, :ibu_guess, :fruity_guess, :model, :status)");
+            :abv_guess, :ibu_guess, :fruity_guess, :candidates, :model, :status)");
     $st->execute([
         ':v' => $visitorId,
         ':path' => $imagePath, ':hash' => $hash,
@@ -122,6 +122,7 @@ function upload_record(string $visitorId, array $r, string $hash, ?string $image
         ':abv_guess'    => $r['abv_guess']    ?? null,
         ':ibu_guess'    => $r['ibu_guess']    ?? null,
         ':fruity_guess' => $r['fruity_guess'] ?? null,
+        ':candidates' => !empty($r['candidates']) ? implode(',', $r['candidates']) : null,
         ':model' => $r['model'] ?? null,
         ':status' => $status,
     ]);
@@ -176,6 +177,26 @@ function upload_owned_by(int $uploadId, string $visitorId): ?array
     $st->execute([':u' => $uploadId, ':v' => $visitorId]);
     $row = $st->fetch();
     return $row ?: null;
+}
+
+/**
+ * 候補の中から1本を選ぶ(設計書 2026-09-19 §3)。
+ *
+ * **候補に無い銘柄は選べない。** URL を書き換えて任意の銘柄にすり替えられると、
+ * 記録が汚れ、蔵へ渡す数字の根拠が崩れる。
+ * **他人の写真は選び直せない。**
+ */
+function upload_pick(int $uploadId, string $visitorId, string $productId): bool
+{
+    $u = upload_owned_by($uploadId, $visitorId);
+    if ($u === null) { return false; }
+    $cands = array_filter(explode(',', (string)($u['candidates'] ?? '')));
+    if (!in_array($productId, $cands, true)) { return false; }
+
+    db()->prepare(
+        "UPDATE upload SET product_id = :p, picked_by_user = 1 WHERE upload_id = :u")
+        ->execute([':p' => $productId, ':u' => $uploadId]);
+    return true;
 }
 
 /**

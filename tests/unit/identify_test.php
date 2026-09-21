@@ -212,3 +212,23 @@ eq(identify_parse($mkn('confidence', 'abc'))['confidence'], null, '確度が文�
 // 数字の文字列は受け取る(JSON の型が緩い相手でも拾えるように)
 eq(identify_parse($mkn('abv_guess', '6.5'))['abv_guess'], 6.5, '数字の文字列は受け取る');
 eq(identify_parse($mkn('ibu_guess', '45'))['ibu_guess'],   45, '数字の文字列は受け取る(整数)');
+
+// --- 候補(設計書 2026-09-19 §3)---
+$mkc = function ($cand): array {
+    return ['content' => [['type' => 'text', 'text' => json_encode([
+        'is_beer' => true, 'brand_text' => 'X', 'brewery_text' => 'Y',
+        'matched_product_id' => 'pr0001', 'style_guess' => null,
+        'color' => 5, 'clarity' => 2, 'confidence' => 0.6,
+        'abv_guess' => null, 'ibu_guess' => null, 'fruity_guess' => null,
+        'candidates' => $cand,
+    ])]]];
+};
+
+eq(identify_parse($mkc(['pr0001','pr0002']))['candidates'], ['pr0001','pr0002'], '候補を受け取る');
+eq(identify_parse($mkc([]))['candidates'], [], '候補が無ければ空の配列');
+eq(identify_parse($mkc(null))['candidates'], [], 'null でも空の配列(undefined index を出さない)');
+eq(identify_parse($mkc(['pr0001','ダメ','pr0002']))['candidates'], ['pr0001','pr0002'],
+   '形が違うものは捨てる');
+eq(identify_parse($mkc(['pr0001','pr0002','pr0003','pr0004']))['candidates'],
+   ['pr0001','pr0002','pr0003'], '最大3件まで');
+eq(identify_parse($mkc(['pr0001','pr0001']))['candidates'], ['pr0001'], '同じものは1つにまとめる');
