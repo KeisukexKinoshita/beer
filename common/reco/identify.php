@@ -38,17 +38,21 @@ function identify_parse(array $res): array
 
     // スキーマ側で範囲を縛れないことが分かった(API が integer の minimum/maximum を拒否する)。
     // 範囲外はモデルの誤りなので、嘘の値を DB に入れるより「未取得」にする。
+    // 数値でないものは捨てる。(int)"abc" は 0 になり、0 が範囲内の軸では
+    // **嘘の値が範囲内の顔をして通る**(度数 "abc" → 0.0% → 「かなり軽いほう」)。
+    // 構造化出力が型を保証しているので普段は起きないが、評価の文はこの値から作るので、
+    // ここで塞ぐ(タスク2のレビュー指摘)。
     $inRange = function ($v, int $lo, int $hi) {
-        if ($v === null || $v === '') { return null; }
+        if ($v === null || $v === '' || !is_numeric($v)) { return null; }
         $n = (int)$v;
         return ($n >= $lo && $n <= $hi) ? $n : null;
     };
-    $conf = isset($j['confidence']) ? (float)$j['confidence'] : null;
+    $conf = isset($j['confidence']) && is_numeric($j['confidence']) ? (float)$j['confidence'] : null;
     if ($conf !== null && ($conf < 0 || $conf > 1)) { $conf = null; }
 
     // 度数は小数。0〜20% の外はモデルの誤りとして捨てる(世の中のビールの実質的な上限)
     $abv = $j['abv_guess'] ?? null;
-    if ($abv === null || $abv === '') {
+    if ($abv === null || $abv === '' || !is_numeric($abv)) {
         $abv = null;
     } else {
         $abv = (float)$abv;

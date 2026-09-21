@@ -189,3 +189,26 @@ $p = identify_prompt([['ProductID'=>'pr0001','ProductName'=>'A','MakerName'=>'B'
                      [['StyleID'=>'st0001','StyleName'=>'S','FamilyName'=>'F']]);
 ok(strpos($p, 'fruity_guess') !== false, 'プロンプトが推定項目に触れている');
 ok(strpos($p, '1〜10') !== false, 'フルーティーさの目盛りを伝えている');
+
+// --- 数値でない値は「未取得」にする(タスク2のレビュー指摘)---
+// (int)"abc" は 0 になる。0 が範囲内の軸では、**嘘の値が範囲内の顔をして通る**。
+// 評価の文はこの値から作るので、画面が嘘をつくことに直結する
+$mkn = function ($k, $v): array {
+    return ['content' => [['type' => 'text', 'text' => json_encode([
+        'is_beer' => true, 'brand_text' => 'X', 'brewery_text' => 'Y',
+        'matched_product_id' => null, 'style_guess' => null,
+        'color' => 5, 'clarity' => 2, 'confidence' => 0.5,
+        $k => $v,
+    ])]]];
+};
+eq(identify_parse($mkn('abv_guess', 'abc'))['abv_guess'], null, '度数が文字列なら捨てる');
+eq(identify_parse($mkn('abv_guess', []))['abv_guess'],    null, '度数が配列なら捨てる');
+eq(identify_parse($mkn('abv_guess', true))['abv_guess'],  null, '度数が真偽値なら捨てる');
+eq(identify_parse($mkn('ibu_guess', 'abc'))['ibu_guess'], null, '苦味が文字列なら捨てる');
+eq(identify_parse($mkn('ibu_guess', true))['ibu_guess'],  null, '苦味が真偽値なら捨てる');
+eq(identify_parse($mkn('fruity_guess', true))['fruity_guess'], null, 'フルーティーさが真偽値なら捨てる');
+eq(identify_parse($mkn('color', 'abc'))['color'],         null, '色が文字列なら捨てる');
+eq(identify_parse($mkn('confidence', 'abc'))['confidence'], null, '確度が文字列なら捨てる');
+// 数字の文字列は受け取る(JSON の型が緩い相手でも拾えるように)
+eq(identify_parse($mkn('abv_guess', '6.5'))['abv_guess'], 6.5, '数字の文字列は受け取る');
+eq(identify_parse($mkn('ibu_guess', '45'))['ibu_guess'],   45, '数字の文字列は受け取る(整数)');
