@@ -1089,8 +1089,7 @@ if ($view === 'intake' && $_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['u
                    'error' => false];
         $seed = $v['seed']; $eval = $v['eval']; $picked = $v['picked'];
         $dirNow = $v['dir']; $dirOk = $v['dirOk']; $dirReason = $v['dirReason'];
-        $existingNote = note_for_upload($uploadId);          // Task 7 で使う
-        $candidates   = $v['candidates'] ?? [];              // Task 9 で使う
+        $candidates   = $v['candidates'] ?? [];   // Task 9 で中身が入る。それまでは空
         if ($dir !== null) {
             // 押された方向は、そのまま蔵に渡す分析の中身になる(設計書 §5)
             event_record($visitorId, 'expand_' . $dir, null, $uploadId);
@@ -1576,6 +1575,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['note'])) {
 ```
 
 `$existingNote` は、結果を組み立てるところで `note_for_upload($uploadId)` を呼んで入れる(`$uploadId > 0` のときだけ)。**初期値 `$existingNote = null;` を冒頭の変数初期化に置くこと。**
+
+**Task 5 で足した GET 分岐(`?u=` で戻ってくる経路)にも、この行を足すこと:**
+
+```php
+        $existingNote = note_for_upload($uploadId);
+```
+
+足さないと、感想を残したあとに戻ってきた画面で**入力欄が空になり、書いたものが消えたように見える**。
 
 お礼の分岐(`$flashKnown`)に2つ足す:
 
