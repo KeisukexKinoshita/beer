@@ -332,3 +332,30 @@ function visitor_line_linked(string $visitorId): bool
     $v = $st->fetchColumn();
     return is_string($v) && $v !== '';
 }
+
+/**
+ * これまでに撮った本数(設計書 2026-09-19 §2-c)。
+ * **ビールと判定できたものだけ**を数える。撮り直しを案内しただけのものは本数に入れない。
+ */
+function visitor_upload_count(string $visitorId): int
+{
+    $st = db()->prepare(
+        "SELECT COUNT(*) FROM upload
+         WHERE visitor_id = :v AND is_beer = 1 AND status = 'ok'");
+    $st->execute([':v' => $visitorId]);
+    return (int)$st->fetchColumn();
+}
+
+/** これまでに撮ったビールの一覧。新しい順。感想があれば一緒に返す */
+function visitor_history(string $visitorId, int $limit = 50): array
+{
+    $st = db()->prepare(
+        "SELECT u.*, n.body AS note_body
+         FROM upload u
+         LEFT JOIN note n ON n.upload_id = u.upload_id
+         WHERE u.visitor_id = :v AND u.is_beer = 1 AND u.status = 'ok'
+         ORDER BY u.created_at DESC, u.upload_id DESC
+         LIMIT " . (int)$limit);
+    $st->execute([':v' => $visitorId]);
+    return $st->fetchAll();
+}
