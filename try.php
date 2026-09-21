@@ -230,7 +230,7 @@ $exposureVer = @filemtime($_SERVER['DOCUMENT_ROOT'] . $exposureCss) ?: time();
             <span class="ex-ev-k"><?= e($l['label']) ?></span>
             <span class="ex-ev-w"><?= e($l['word']) ?></span>
             <span class="ex-ev-c"><?= e($l['clause']) ?></span>
-            <span class="ex-ev-v"><?= e($l['value']) ?></span>
+            <span class="ex-ev-v"><?= e($l['value']) ?><?php if (!empty($l['estimated'])): ?><span class="est-note" title="公式情報が無いため、同じスタイルの典型値から推定した値です">推定</span><?php endif; ?></span>
           </div>
         <?php endforeach; ?>
         <?php if ($eval['source'] === 'guess'): ?>

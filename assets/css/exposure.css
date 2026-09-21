@@ -96,3 +96,9 @@ img{max-width:100%;display:block}
   .ex-ev-k { flex-basis: 100%; }
   .ex-ev-v { margin-left: 0; }
 }
+/* 行ごとの推定バッジ(修正ラウンド1: 最終レビュー Important)。
+   nebula.css の .est-note を露光案の地(黒)向けに調整。強調色(--h-*)は使わない */
+.est-note{display:inline-block;margin-left:6px;font-family:var(--f-mo);font-size:9px;
+  font-weight:700;letter-spacing:.04em;padding:1px 6px;border-radius:999px;
+  border:1px solid rgba(255,255,255,.16);color:var(--faint);
+  background:rgba(255,255,255,.06);vertical-align:1px;cursor:help}
