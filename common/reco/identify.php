@@ -17,7 +17,8 @@ function identify_parse(array $res): array
 {
     $empty = ['is_beer' => null, 'brand_text' => null, 'brewery_text' => null,
               'matched_product_id' => null, 'style_guess' => null,
-              'color' => null, 'clarity' => null, 'confidence' => null, 'error' => false];
+              'color' => null, 'clarity' => null, 'confidence' => null,
+              'abv_guess' => null, 'ibu_guess' => null, 'fruity_guess' => null, 'error' => false];
 
     if (($res['type'] ?? '') === 'error') { return array_merge($empty, ['error' => true]); }
 
@@ -44,6 +45,15 @@ function identify_parse(array $res): array
     };
     $conf = isset($j['confidence']) ? (float)$j['confidence'] : null;
     if ($conf !== null && ($conf < 0 || $conf > 1)) { $conf = null; }
+
+    // 度数は小数。0〜20% の外はモデルの誤りとして捨てる(世の中のビールの実質的な上限)
+    $abv = $j['abv_guess'] ?? null;
+    if ($abv === null || $abv === '') {
+        $abv = null;
+    } else {
+        $abv = (float)$abv;
+        if ($abv < 0 || $abv > 20) { $abv = null; }
+    }
 
     // brand_text / brewery_text は VARCHAR(191)。dev の sql_mode に STRICT_TRANS_TABLES が
     // 無いため、超過しても例外にならず黙って切り詰められる。切り詰められた銘柄名は
@@ -72,6 +82,9 @@ function identify_parse(array $res): array
         'color'              => $inRange($j['color']   ?? null, 1, 10),
         'clarity'            => $inRange($j['clarity'] ?? null, 1, 4),
         'confidence'         => $conf,
+        'abv_guess'          => $abv,
+        'ibu_guess'          => $inRange($j['ibu_guess']    ?? null, 0, 120),
+        'fruity_guess'       => $inRange($j['fruity_guess'] ?? null, 1, 10),
         'error'              => false,
     ];
 }
@@ -113,7 +126,17 @@ function identify_prompt(array $catalog, array $styles): string
          . "一覧にない銘柄なら matched_product_id を null にし、読み取れた文字は brand_text に入れてください。"
          . "style_guess には**スタイル一覧のID(st で始まる6文字)をそのまま**入れてください。"
          . "スタイル名や自由な文字列を入れないでください。当てはまるものが無ければ null にしてください。"
-         . "ビール以外の飲み物(チューハイ・エナジードリンク等)は is_beer を false にしてください。";
+         . "ビール以外の飲み物(チューハイ・エナジードリンク等)は is_beer を false にしてください。"
+         . "あわせて、写真から読み取れる範囲で次を推定してください。"
+         . "abv_guess はアルコール度数(%の数値。0〜20)、"
+         . "ibu_guess は苦味の指標(0〜120の整数)、"
+         . "fruity_guess は果実感の強さ(**1〜10の整数**)です。"
+         . "fruity_guess の目盛りは、1=果実感が無い(ドライスタウト・ピルスナー)、"
+         . "3=わずかにある(ペールエール)、5=はっきり感じる(アメリカンIPA・ヴァイツェン)、"
+         . "7=主役のひとつ(ヘイジーIPA・フルーツを使ったサワー)、"
+         . "9=果実が中心(果汁を大量に使ったサワー)です。"
+         . "甘さと果実感を混同せず、麦芽の甘み・カラメル・蜂蜜は果実感に数えないでください。"
+         . "読み取れないものは null にしてください。推測で埋めないでください。";
 }
 
 /**
@@ -149,6 +172,7 @@ function identify_call(string $imagePath, array $catalog, array $styles, ?callab
             $last = ['is_beer' => null, 'brand_text' => null, 'brewery_text' => null,
                      'matched_product_id' => null, 'style_guess' => null,
                      'color' => null, 'clarity' => null, 'confidence' => null,
+                     'abv_guess' => null, 'ibu_guess' => null, 'fruity_guess' => null,
                      'error' => true, 'model' => IDENTIFY_MODEL];
         }
     }
@@ -181,7 +205,8 @@ function identify_transport_anthropic(string $imagePath, string $prompt): array
     // 返させる項目は構造化出力で固定する(設計書 §6)。
     $schema = ['type' => 'object', 'additionalProperties' => false,
         'required' => ['is_beer','brand_text','brewery_text','matched_product_id',
-                       'style_guess','color','clarity','confidence'],
+                       'style_guess','color','clarity','confidence',
+                       'abv_guess','ibu_guess','fruity_guess'],
         'properties' => [
             'is_beer'            => ['type' => 'boolean'],
             'brand_text'         => ['type' => ['string','null']],
@@ -194,6 +219,9 @@ function identify_transport_anthropic(string $imagePath, string $prompt): array
             'color'              => ['type' => ['integer','null']],
             'clarity'            => ['type' => ['integer','null']],
             'confidence'         => ['type' => 'number'],
+            'abv_guess'          => ['type' => ['number','null']],
+            'ibu_guess'          => ['type' => ['integer','null']],
+            'fruity_guess'       => ['type' => ['integer','null']],
         ]];
 
     $message = $client->messages->create(

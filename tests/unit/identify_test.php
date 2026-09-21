@@ -158,3 +158,34 @@ eq(identify_parse($longText('brewery_text', $s300brew))['brewery_text'],
 $s191 = $reco_t_seq(191);
 eq(identify_parse($longText('brand_text', $s191))['brand_text'], $s191, 'ちょうど191文字はそのまま');
 eq(identify_parse($longText('brand_text', ''))['brand_text'], null, '空文字は null にする');
+
+// --- 推定値(未登録ビールの評価に使う。設計書 2026-09-19 §3)---
+$mk = function (array $extra): array {
+    return ['content' => [['type' => 'text', 'text' => json_encode(array_merge([
+        'is_beer' => true, 'brand_text' => 'X', 'brewery_text' => 'Y',
+        'matched_product_id' => null, 'style_guess' => null,
+        'color' => 5, 'clarity' => 2, 'confidence' => 0.5,
+    ], $extra))]]];
+};
+
+$r = identify_parse($mk(['abv_guess' => 6.5, 'ibu_guess' => 45, 'fruity_guess' => 7]));
+eq($r['abv_guess'], 6.5, '度数の推定を受け取る');
+eq($r['ibu_guess'], 45,  '苦味の推定を受け取る');
+eq($r['fruity_guess'], 7, 'フルーティーさの推定を受け取る');
+
+// 範囲外はモデルの誤り。嘘の値をDBに入れるより「未取得」にする(既存の color/clarity と同じ方針)
+eq(identify_parse($mk(['abv_guess' => 99]))['abv_guess'], null, '度数が範囲外なら捨てる');
+eq(identify_parse($mk(['ibu_guess' => 500]))['ibu_guess'], null, '苦味が範囲外なら捨てる');
+eq(identify_parse($mk(['fruity_guess' => 0]))['fruity_guess'], null, 'フルーティーさは1未満を捨てる');
+eq(identify_parse($mk(['fruity_guess' => 11]))['fruity_guess'], null, 'フルーティーさは10超を捨てる');
+
+// 項目そのものが無くても落ちない(古い応答を再生したとき)
+$old = identify_parse($mk([]));
+eq($old['abv_guess'], null, '項目が無ければ null');
+eq($old['is_beer'], true,  '他の項目は今までどおり読める');
+
+// プロンプトにフルーティーさの物差しが入っていること(1〜10 であることを伝えないと4段階で返る)
+$p = identify_prompt([['ProductID'=>'pr0001','ProductName'=>'A','MakerName'=>'B']],
+                     [['StyleID'=>'st0001','StyleName'=>'S','FamilyName'=>'F']]);
+ok(strpos($p, 'fruity_guess') !== false, 'プロンプトが推定項目に触れている');
+ok(strpos($p, '1〜10') !== false, 'フルーティーさの目盛りを伝えている');

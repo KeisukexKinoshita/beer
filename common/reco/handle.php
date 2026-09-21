@@ -56,6 +56,9 @@ function reco_handle_upload(string $visitorId, array $file, ?callable $transport
                    'style_guess' => $prev['style_guess'], 'color' => $prev['color'],
                    'clarity' => $prev['clarity'],
                    'confidence' => $prev['confidence'] !== null ? (float)$prev['confidence'] : null,
+                   'abv_guess' => $prev['abv_guess'] !== null ? (float)$prev['abv_guess'] : null,
+                   'ibu_guess' => $prev['ibu_guess'] !== null ? (int)$prev['ibu_guess'] : null,
+                   'fruity_guess' => $prev['fruity_guess'] !== null ? (int)$prev['fruity_guess'] : null,
                    'error' => false];
         $view = 'result';
     } elseif (!$g['ok']) {
@@ -72,6 +75,7 @@ function reco_handle_upload(string $visitorId, array $file, ?callable $transport
                 'is_beer' => false, 'matched_product_id' => null,
                 'brand_text' => null, 'brewery_text' => null, 'style_guess' => null,
                 'color' => null, 'clarity' => null, 'confidence' => null,
+                'abv_guess' => null, 'ibu_guess' => null, 'fruity_guess' => null,
                 'model' => $result['model'] ?? null,
             ], $hash, null, 'api_error');
             $view = 'error'; $msg = 'いま混み合っています。しばらくしてからお試しください。';

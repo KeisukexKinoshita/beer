@@ -105,9 +105,11 @@ function upload_record(string $visitorId, array $r, string $hash, ?string $image
     $st = db()->prepare(
         "INSERT INTO upload
            (visitor_id, created_at, image_path, image_hash, is_beer, product_id,
-            brand_text, brewery_text, style_guess, color, clarity, confidence, model, status)
+            brand_text, brewery_text, style_guess, color, clarity, confidence,
+            abv_guess, ibu_guess, fruity_guess, model, status)
          VALUES
-           (:v, NOW(), :path, :hash, :isbeer, :pid, :brand, :brewery, :style, :color, :clarity, :conf, :model, :status)");
+           (:v, NOW(), :path, :hash, :isbeer, :pid, :brand, :brewery, :style, :color, :clarity, :conf,
+            :abv_guess, :ibu_guess, :fruity_guess, :model, :status)");
     $st->execute([
         ':v' => $visitorId,
         ':path' => $imagePath, ':hash' => $hash,
@@ -116,7 +118,11 @@ function upload_record(string $visitorId, array $r, string $hash, ?string $image
         ':brand' => $r['brand_text'] ?: null, ':brewery' => $r['brewery_text'] ?: null,
         ':style' => $r['style_guess'] ?: null,
         ':color' => $r['color'], ':clarity' => $r['clarity'],
-        ':conf' => $r['confidence'], ':model' => $r['model'] ?? null,
+        ':conf' => $r['confidence'],
+        ':abv_guess'    => $r['abv_guess']    ?? null,
+        ':ibu_guess'    => $r['ibu_guess']    ?? null,
+        ':fruity_guess' => $r['fruity_guess'] ?? null,
+        ':model' => $r['model'] ?? null,
         ':status' => $status,
     ]);
     return (int)db()->lastInsertId();
