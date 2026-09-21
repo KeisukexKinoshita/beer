@@ -67,10 +67,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['note'])) {
         visitor_flash_set($visitorId, 'expired');
         header('Location: /try.php'); exit;
     }
-    $uid = (int)($_POST['upload_id'] ?? 0);
-    $saved = note_save($visitorId, $uid, (string)$_POST['note']);
-    // **保存できたときだけ「残しました」と言う。** 空文字や他人の写真なら 0 が返る
-    visitor_flash_set($visitorId, $saved > 0 ? 'note_saved' : 'note_empty');
+    $uid  = (int)($_POST['upload_id'] ?? 0);
+    $body = trim((string)($_POST['note'] ?? ''));
+    if ($body === '') {
+        // 何も書かずに押した。空の行を作らない
+        visitor_flash_set($visitorId, 'note_empty');
+    } elseif (note_save($visitorId, $uid, $body) > 0) {
+        visitor_flash_set($visitorId, 'note_saved');
+    } else {
+        // 書いてあったのに保存できなかった。理由を偽らない(最終レビュー指摘)
+        visitor_flash_set($visitorId, 'note_failed');
+    }
     header('Location: /try.php?u=' . $uid);
     exit;
 }
