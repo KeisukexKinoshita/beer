@@ -10,6 +10,7 @@ require_once __DIR__ . '/repo.php';
 require_once __DIR__ . '/gate.php';
 require_once __DIR__ . '/identify.php';
 require_once __DIR__ . '/cascade.php';
+require_once __DIR__ . '/evaluate.php';
 
 /**
  * 写真1枚を受け取ってから、推薦を決めるまでの判断。
@@ -121,5 +122,23 @@ function reco_handle_upload(string $visitorId, array $file, ?callable $transport
         event_record($visitorId, 'reco_view', $result['matched_product_id'], $uploadId);
     }
 
-    return compact('view', 'msg', 'result', 'picked', 'uploadId', 'imageWebPath', 'seed');
+    // ③評価(設計書 2026-09-19 §3)。DBに行があれば測った値、無ければモデルの推定。
+    // **推定のときは必ず印を付ける。** 未登録のほうが常態なので、ここを黙ると嘘になる
+    $eval = ['lines' => [], 'estimated' => false, 'source' => 'db'];
+    if ($view === 'result' && $result['is_beer'] === true) {
+        if ($result['matched_product_id'] && !empty($seed['ProductID'])) {
+            $eval = eval_build(
+                ['abv' => $seed['Alcohol'], 'ibu' => $seed['IBU_all'], 'fruity' => $seed['Fruity']],
+                reco_pool(), false);
+            $eval['source'] = 'db';
+        } else {
+            $eval = eval_build(
+                ['abv' => $result['abv_guess'], 'ibu' => $result['ibu_guess'],
+                 'fruity' => $result['fruity_guess']],
+                reco_pool(), true);
+            $eval['source'] = 'guess';
+        }
+    }
+
+    return compact('view', 'msg', 'result', 'picked', 'uploadId', 'imageWebPath', 'seed', 'eval');
 }

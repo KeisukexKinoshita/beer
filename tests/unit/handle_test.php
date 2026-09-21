@@ -95,8 +95,8 @@ function reco_ht_seed_beer(): string
     reco_ht_unseed_beer(); // 前回の異常終了で残った同名行があれば先に消す(ON DUPLICATE KEYは主キーが無く効かないため)
     db()->prepare("INSERT INTO maker (MakerID, MakerName) VALUES ('mk9999', 'テスト醸造所')")->execute();
     db()->prepare("INSERT INTO style (StyleID, FamilyName, StyleName) VALUES ('st9999', 'IPA', 'テストIPA')")->execute();
-    db()->prepare("INSERT INTO products (ProductID, MakerID, ProductName, StyleID, Alcohol)
-                   VALUES (:p, 'mk9999', 'テスト銘柄', 'st9999', 6.0)")->execute([':p' => $pid]);
+    db()->prepare("INSERT INTO products (ProductID, MakerID, ProductName, StyleID, Alcohol, IBU_all, Fruity)
+                   VALUES (:p, 'mk9999', 'テスト銘柄', 'st9999', 6.0, 40, 5)")->execute([':p' => $pid]);
     return $pid;
 }
 function reco_ht_unseed_beer(): void
@@ -260,6 +260,51 @@ eq(reco_confirm_flash(false, ['product_id' => 'pr0013', 'brand_text' => 'HAZY JA
    '「ちがう」なら、DBにあっても corrected');
 eq(reco_confirm_flash(false, ['product_id' => null, 'brand_text' => null]), 'corrected',
    '「ちがう」なら、何も読めていなくても corrected');
+
+// --- ③評価(設計書 2026-09-19 §3)---
+// 既存のヘルパーをそのまま使う:
+//   reco_ht_visitor()            新しい訪問者ID(連投の上限に当たらないよう毎回変える)
+//   reco_ht_file('IMG_xxxx.jpeg')  data/sample/ の写真。**写真ごとにハッシュが違う**ので、
+//                                 使い回すと gate が 'cached' を返し、判定の経路に入らない
+//   reco_ht_resp([...])          応答の形を組み立てる
+//   reco_ht_transport($resp, $calls)  その応答を返す偽の transport
+
+// DBに無い銘柄でも評価が出る。推定の印が付く
+$calls = [];
+$visitor = reco_ht_visitor();
+$h = reco_handle_upload($visitor, reco_ht_file('IMG_2238.jpeg'),
+    reco_ht_transport(reco_ht_resp([
+        'is_beer' => true, 'brand_text' => 'SUPERFLUX', 'brewery_text' => 'Superflux Beer',
+        'matched_product_id' => null, 'confidence' => 0.9,
+        'abv_guess' => 6.5, 'ibu_guess' => 45, 'fruity_guess' => 7,
+    ]), $calls));
+ok(isset($h['eval']), '評価の材料が返る');
+eq($h['eval']['source'], 'guess', 'DBに無ければ推定が出どころ');
+eq($h['eval']['estimated'], true, '推定の印が付く');
+eq(count($h['eval']['lines']), 3, '3軸ぶんの行が出る');
+
+// DBにある銘柄は測った値を使う(pr9999 は Alcohol 6.0 / IBU_all 40 / Fruity 5 で作る)
+$recoTestPid = reco_ht_seed_beer();
+$calls = [];
+$visitor = reco_ht_visitor();
+$h2 = reco_handle_upload($visitor, reco_ht_file('IMG_2315.jpeg'),
+    reco_ht_transport(reco_ht_resp([
+        'is_beer' => true, 'matched_product_id' => $recoTestPid, 'confidence' => 0.95,
+        'abv_guess' => 9.9, 'ibu_guess' => 99, 'fruity_guess' => 1,
+    ]), $calls));
+eq($h2['eval']['source'], 'db', 'DBに行があればDBの値を使う');
+eq($h2['eval']['estimated'], false, 'DBの値には推定の印を付けない');
+eq($h2['eval']['lines'][0]['value'], '6.0%', '推定値(9.9%)ではなくDBの値が出る');
+reco_ht_unseed_beer();
+
+// ビール以外には評価を出さない(語れないものを語らない)
+$calls = [];
+$visitor = reco_ht_visitor();
+$h3 = reco_handle_upload($visitor, reco_ht_file('IMG_4684.jpeg'),
+    reco_ht_transport(reco_ht_resp([
+        'is_beer' => false, 'brand_text' => 'Red Bull', 'confidence' => 0.9,
+    ]), $calls));
+eq($h3['eval']['lines'], [], 'ビール以外には評価を出さない');
 
 // ---- 後始末。使い捨てのテストデータなので残さない ----------------------------
 // is_beer=true の分岐は identify_shrink() で img/upload/ に実ファイルを書く。
