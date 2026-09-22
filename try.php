@@ -292,23 +292,28 @@ const FLASH_KNOWN = ['confirmed_queued', 'confirmed_known', 'confirmed_unread', 
     // それは実機で一度踏んでいる壊れ方そのもの(2026-09-18、HEIC が弾かれていた件)。
     // canvas を封じるプライバシー拡張などで getContext が例外を投げる環境がある
     function waiting() {
-      try {
-      if (status) { status.hidden = false; }
+      // **幕を下ろすのと、絵を描くのを分ける。**
+      // まとめて try の中に入れていたため、絵の側で何かあると幕すら出なかった
+      // (実機で「絵が出ない」と報告された。文字も出ていなかった)
       var w = document.getElementById('warp');
-      if (w && typeof startWarp === 'function') {
-        w.hidden = false;
-        // 色は group_map() が :root に流し込んだものを読む。CSS に直値を書かない
-        var cs = getComputedStyle(document.documentElement);
-        var names = <?= json_encode(array_keys(group_map())) ?>;
-        var colors = [];
-        for (var i = 0; i < names.length; i++) {
-          var c = cs.getPropertyValue('--g-' + names[i]).trim();
-          if (c) { colors.push(c); }
+      try {
+        if (status) { status.hidden = false; }
+        if (w) { w.hidden = false; }   // ここまでは必ずやる
+      } catch (e) {}
+      try {
+        if (w && typeof startWarp === 'function') {
+          // 色は group_map() が :root に流し込んだものを読む。CSS に直値を書かない
+          var cs = getComputedStyle(document.documentElement);
+          var names = <?= json_encode(array_keys(group_map())) ?>;
+          var colors = [];
+          for (var i = 0; i < names.length; i++) {
+            var c = cs.getPropertyValue('--g-' + names[i]).trim();
+            if (c) { colors.push(c); }
+          }
+          var accent = cs.getPropertyValue('--h-' + names[0]).trim() || '#cfe6f2';
+          startWarp({ mount: 'warp', colors: colors, accent: accent });
         }
-        var accent = cs.getPropertyValue('--h-' + names[0]).trim() || '#cfe6f2';
-        startWarp({ mount: 'warp', colors: colors, accent: accent });
-      }
-      } catch (e) { /* 絵は諦める。送信は止めない */ }
+      } catch (e) { /* 絵は諦める。幕と送信は止めない */ }
     }
     f.addEventListener('change', function () {
       if (f.files && f.files.length) { waiting(); form.submit(); }

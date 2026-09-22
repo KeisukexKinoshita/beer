@@ -232,3 +232,29 @@ eq(identify_parse($mkc(['pr0001','ダメ','pr0002']))['candidates'], ['pr0001','
 eq(identify_parse($mkc(['pr0001','pr0002','pr0003','pr0004']))['candidates'],
    ['pr0001','pr0002','pr0003'], '最大3件まで');
 eq(identify_parse($mkc(['pr0001','pr0001']))['candidates'], ['pr0001'], '同じものは1つにまとめる');
+
+// --- EXIF の向き(実機で「写真が横に表示される」と報告された)---
+// スマホの写真は、撮った向きを画素ではなく EXIF の向き情報で持っていることが多い。
+// GD は作り直すときに EXIF を落とすので、直さずに保存すると横倒しのまま残る
+eq(identify_exif_transform(1), ['rotate' => 0,   'flip' => null], '1 はそのまま');
+eq(identify_exif_transform(3), ['rotate' => 180, 'flip' => null], '3 は180度');
+eq(identify_exif_transform(6), ['rotate' => 270, 'flip' => null], '6 は右に90度(反時計270)');
+eq(identify_exif_transform(8), ['rotate' => 90,  'flip' => null], '8 は左に90度');
+eq(identify_exif_transform(2), ['rotate' => 0,   'flip' => 'h'],  '2 は左右反転');
+eq(identify_exif_transform(4), ['rotate' => 0,   'flip' => 'v'],  '4 は上下反転');
+eq(identify_exif_transform(5), ['rotate' => 270, 'flip' => 'h'],  '5 は反転して回す');
+eq(identify_exif_transform(7), ['rotate' => 90,  'flip' => 'h'],  '7 は反転して逆に回す');
+eq(identify_exif_transform(0), ['rotate' => 0,   'flip' => null], '読めなかったときは触らない');
+eq(identify_exif_transform(99), ['rotate' => 0,  'flip' => null], '知らない値でも触らない');
+
+// 実際に縮めて、縦横が保たれること(向き情報が 1 の写真なので、縦は縦のまま)
+$exifSrc = dirname(__DIR__, 2) . '/data/sample/IMG_1006.jpeg';
+if (is_file($exifSrc)) {
+    $exifDst = sys_get_temp_dir() . '/reco_orient_test.jpg';
+    ok(identify_shrink($exifSrc, $exifDst), '縮められる');
+    list($ow, $oh) = getimagesize($exifSrc);
+    list($nw, $nh) = getimagesize($exifDst);
+    ok($nh > $nw, '縦の写真は縦のまま');
+    ok(max($nw, $nh) <= 1568, '長辺は1568pxまで');
+    @unlink($exifDst);
+}

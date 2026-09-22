@@ -21,7 +21,10 @@ function startWarp(opts) {
   var DPR = Math.min(window.devicePixelRatio || 1, 2);
   var W = 0, H = 0;
   function size() {
-    W = host.clientWidth; H = host.clientHeight;
+    // 幕を出した直後は、端末によって寸法が 0 で返ることがある。
+    // 0 のまま canvas を作ると何も見えない(実機で「絵が出ない」と報告された)
+    W = host.clientWidth  || window.innerWidth  || 320;
+    H = host.clientHeight || window.innerHeight || 480;
     cv.width = Math.floor(W * DPR); cv.height = Math.floor(H * DPR);
     cv.style.width = W + 'px'; cv.style.height = H + 'px';
     x.setTransform(DPR, 0, 0, DPR, 0, 0);
@@ -101,7 +104,14 @@ function startWarp(opts) {
   try {
     reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   } catch (e) { reduce = false; }
-  if (!reduce) { raf = requestAnimationFrame(frame); }
+  if (reduce) {
+    // 動きは出さないが、**絵は出す**。星野と、落ち着いた1点を1枚だけ描く。
+    // 何も描かないと、待っている間に何が起きているのか分からなくなる
+    frame(t0 + DUR * 0.999);
+    alive = false;
+  } else {
+    raf = requestAnimationFrame(frame);
+  }
 
   return function stop() { alive = false; cancelAnimationFrame(raf); };
 }

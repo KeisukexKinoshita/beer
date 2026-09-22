@@ -1,6 +1,10 @@
 # beer 専用のイメージ。seisan3-php を土台に GD だけを足す。
 #
 # GD が要るのは、アップロードされた写真を長辺1568pxに縮めるため
+# exif が要るのは、**写真の向きを直すため**。スマホの縦写真は中身が横長で、
+# 「右に90度回して見よ」という向き情報を EXIF に持っている。GD は作り直すときに
+# EXIF を落とすので、直さずに保存すると横倒しのまま残る(実機で報告された)。
+# 画面で横になるだけでなく、ラベルが横を向いたまま判定に送られるので読み取りも不利になる。
 # (common/reco/identify.php の identify_shrink)。縮めないと入力トークンが
 # 4倍ほどになり、1枚あたりの費用がそのぶん増える。
 #
@@ -14,7 +18,7 @@ FROM seisan3-php
 RUN apt-get update \
  && apt-get install -y --no-install-recommends libjpeg-dev libpng-dev libwebp-dev \
  && docker-php-ext-configure gd --with-jpeg --with-webp \
- && docker-php-ext-install -j"$(nproc)" gd \
+ && docker-php-ext-install -j"$(nproc)" gd exif \
  && apt-get purge -y libjpeg-dev libpng-dev libwebp-dev \
  && rm -rf /var/lib/apt/lists/*
 

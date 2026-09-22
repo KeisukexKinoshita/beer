@@ -116,10 +116,8 @@ img{max-width:100%;display:block}
 .ex-warp canvas { display: block; width: 100%; height: 100%; }
 .ex-warp-t { position: absolute; left: 0; right: 0; bottom: 14vh; text-align: center;
              font-size: 12px; letter-spacing: .12em; color: var(--dim); z-index: 1; }
-@media (prefers-reduced-motion: reduce) {
-  /* 動きを減らす設定の端末では、星も1点も動かさない。文字だけ出す */
-  .ex-warp canvas { display: none; }
-}
+/* 動きを減らす設定の端末では、warp.js 側が1枚だけ描いて止める。
+   canvas を隠さないのは、**何も出ないと待っている間に何が起きているか分からない**ため */
 
 /* ④保管。並ぶところなので強調色は使わない */
 .ex-note { margin: 18px 0; }

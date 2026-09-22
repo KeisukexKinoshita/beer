@@ -295,6 +295,30 @@ function identify_transport_anthropic(string $imagePath, string $prompt): array
  *              画像として読めない・対応形式でないときは従来どおり例外を投げる
  *              (アップロード前の検証漏れであり、上限で守るべき「課金の失敗」とは別種)。
  */
+/**
+ * EXIF の向き(1〜8)を、GD でどう直すかに翻訳する。**純関数**。
+ *
+ * スマホの写真は、撮った向きを画素ではなく **EXIF の向き情報**で持っていることが多い
+ * (iPhone の縦写真は、中身は横長で「右に90度回して見よ」と書いてある)。
+ * GD は画像を作り直すときに EXIF を落とすので、**そのまま保存すると横倒しになる**。
+ * 画面で横になるだけでなく、**ラベルが横を向いたまま判定に送られる**ので読み取りも不利になる。
+ *
+ * @return array ['rotate' => 反時計回りの角度(0/90/180/270), 'flip' => null|'h'|'v']
+ */
+function identify_exif_transform(int $orientation): array
+{
+    switch ($orientation) {
+        case 2: return ['rotate' => 0,   'flip' => 'h'];
+        case 3: return ['rotate' => 180, 'flip' => null];
+        case 4: return ['rotate' => 0,   'flip' => 'v'];
+        case 5: return ['rotate' => 270, 'flip' => 'h'];
+        case 6: return ['rotate' => 270, 'flip' => null];
+        case 7: return ['rotate' => 90,  'flip' => 'h'];
+        case 8: return ['rotate' => 90,  'flip' => null];
+        default: return ['rotate' => 0, 'flip' => null];   // 1 と、読めなかったとき
+    }
+}
+
 function identify_shrink(string $src, string $dst): bool
 {
     $info = getimagesize($src);
@@ -306,6 +330,22 @@ function identify_shrink(string $src, string $dst): bool
         IMAGETYPE_WEBP => imagecreatefromwebp($src),
         default        => throw new RuntimeException('対応していない形式です'),
     };
+    // **向きを直してから縮める。** exif 拡張が無い環境では何もしない(横倒しのままだが落ちない)
+    if ($info[2] === IMAGETYPE_JPEG && function_exists('exif_read_data')) {
+        $ex = @exif_read_data($src);
+        $t  = identify_exif_transform((int)($ex['Orientation'] ?? 1));
+        if ($t['flip'] !== null) {
+            imageflip($im, $t['flip'] === 'h' ? IMG_FLIP_HORIZONTAL : IMG_FLIP_VERTICAL);
+        }
+        if ($t['rotate'] !== 0) {
+            $rot = imagerotate($im, $t['rotate'], 0);
+            if ($rot !== false) { imagedestroy($im); $im = $rot; }
+            // 回したので縦横が入れ替わる。以降の計算はこちらを見る
+            $info[0] = imagesx($im);
+            $info[1] = imagesy($im);
+        }
+    }
+
     $im = imagescale($im, ...(
         $info[0] >= $info[1]
             ? [min($info[0], IDENTIFY_MAX_EDGE), -1]
