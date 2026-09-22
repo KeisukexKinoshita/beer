@@ -88,10 +88,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['note'])) {
 // ここに残す。reco_handle_upload() に含めると、単体テストで作る $_FILES はどれも
 // 本物のHTTPアップロードではないので is_uploaded_file() が常に偽になり、
 // 金・嘘・写真の判断を一切テストできなくなる
+// 送られた本体が PHP の post_max_size を超えると、**$_POST も $_FILES も空になる**。
+// そのまま下の分岐に落ちると、何の反応も無いまま入口の画面が出る(黙って失敗する)。
+// 起きたことだけを言う(この案件は画面が嘘をついた不具合を繰り返し直している)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($_POST) && empty($_FILES)
+    && (int)($_SERVER['CONTENT_LENGTH'] ?? 0) > 0) {
+    $view = 'error';
+    $msg  = '写真が大きすぎて受け取れませんでした。もう少し小さいサイズでお試しください。';
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['photo'])) {
     $f = $_FILES['photo'];
     if ($f['error'] !== UPLOAD_ERR_OK || !is_uploaded_file($f['tmp_name'])) {
-        $view = 'error'; $msg = '写真を受け取れませんでした。';
+        // 何が起きたかを言う。UPLOAD_ERR_INI_SIZE / FORM_SIZE は「大きすぎた」であり、
+        // それを黙って「受け取れませんでした」に畳むと、利用者は何を直せばよいか分からない
+        $view = 'error';
+        $msg  = in_array($f['error'], [UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE], true)
+            ? '写真が大きすぎて受け取れませんでした。もう少し小さいサイズでお試しください。'
+            : '写真を受け取れませんでした。もう一度お試しください。';
     } else {
         $h = reco_handle_upload($visitorId, $f);
         $view         = $h['view'];

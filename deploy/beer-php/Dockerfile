@@ -17,3 +17,16 @@ RUN apt-get update \
  && docker-php-ext-install -j"$(nproc)" gd \
  && apt-get purge -y libjpeg-dev libpng-dev libwebp-dev \
  && rm -rf /var/lib/apt/lists/*
+
+# 写真の受け取りの上限。**門番(common/reco/gate.php)の 10MB を超える値**にしておく。
+# php.ini 側が先に弾くと、門番の「写真が大きすぎます(10MBまで)」ではなく
+# 「写真を受け取れませんでした」という何も分からない文言になる
+# (dev の実機で実際に踏んだ。既定は upload_max_filesize=2M で、
+# いまのスマホの写真はたいてい2〜5MBあるため、ほぼ全部が弾かれていた)。
+#
+# post_max_size は upload_max_filesize より大きくすること。
+# フォームの他の項目とヘッダのぶん、送られる本体は写真より少し大きい。
+RUN { \
+      echo 'upload_max_filesize = 12M'; \
+      echo 'post_max_size = 13M'; \
+    } > /usr/local/etc/php/conf.d/beer-uploads.ini
