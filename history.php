@@ -46,6 +46,7 @@ $exposureVer = @filemtime($_SERVER['DOCUMENT_ROOT'] . $exposureCss) ?: time();
   --g-<?= e($k) ?>:<?= e($v[0]) ?>; --h-<?= e($k) ?>:<?= e($v[1]) ?>;
 <?php endforeach; ?>
 }</style>
+<?php require __DIR__ . '/common/analytics.php'; ?>
 </head>
 <body>
 

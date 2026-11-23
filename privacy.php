@@ -30,6 +30,12 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
         <td>ページで使用しているウェブフォントの配信</td>
       </tr>
       <tr>
+        <td>Google LLC<br>（Google アナリティクス）</td>
+        <td>すべてのページ</td>
+        <td>IPアドレス、ブラウザの種類とバージョン、OSの種類、画面の大きさ、言語設定、リファラ、閲覧したページのURLと閲覧日時、Cookie による匿名の識別子</td>
+        <td>当サイトの利用状況（訪問者数・よく見られているページ・どこから来たか）を把握し、サイトの改善に役立てるため</td>
+      </tr>
+      <tr>
         <td>Cloudflare, Inc.<br>（unpkg）</td>
         <td>ビール詳細・ブリュワリー詳細のうち、地図を表示するページ</td>
         <td>IPアドレス、ブラウザの種類とバージョン、OSの種類、リファラ</td>
@@ -69,7 +75,8 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
   </ul>
 
   <h2>4. アクセス解析について</h2>
-  <p>当サイトは、現時点でアクセス解析ツールを導入していません。導入した場合は、この項目と上の外部送信の表を更新します。</p>
+  <p>当サイトは、Google LLC が提供するアクセス解析ツール「Google アナリティクス」を使っています。Google アナリティクスは Cookie を使って利用状況を集めます。集めるのは個人を特定しない統計情報で、氏名などは含みません。送信される情報は上の外部送信の表のとおりです。</p>
+  <p>収集を望まない場合は、ブラウザの設定で Cookie を無効にするか、Google が提供する<a href="https://tools.google.com/dlpage/gaoptout?hl=ja" target="_blank" rel="noopener">オプトアウト アドオン</a>を使うことで停止できます。Google によるデータの取り扱いは、<a href="https://policies.google.com/technologies/partner-sites?hl=ja" target="_blank" rel="noopener">Google のポリシーと規約</a>をご覧ください。</p>
 
   <h2>5. 掲載している情報について</h2>
   <p>当サイトのビール・ブリュワリー・スタイルの紹介文は、公開されている情報にもとづいて当サイトが書き下ろしたものです。他サイトの文章をそのまま転載していません。</p>
@@ -91,7 +98,7 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
 
   <h2>9. 改定</h2>
   <p>このポリシーは必要に応じて改定します。改定した場合は、このページに最終更新日を示します。</p>
-  <p class="doc-note">最終更新日: 2026年9月19日</p>
+  <p class="doc-note">最終更新日: 2026年11月23日</p>
 </div>
 
 <?php require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/footer.php'; ?>
