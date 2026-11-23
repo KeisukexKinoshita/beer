@@ -45,5 +45,5 @@ $nebulaVer = @filemtime($_SERVER['DOCUMENT_ROOT'] . $nebulaCss) ?: time();
 <?php endif; ?>
 <?php foreach ($extraCss as $c): ?><link rel="stylesheet" href="<?= e($c) ?>">
 <?php endforeach; ?>
-<?php require __DIR__ . '/../analytics.php'; ?>
+<?php require __DIR__ . '/analytics.php'; ?>
 </head>
