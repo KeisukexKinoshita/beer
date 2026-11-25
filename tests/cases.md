@@ -8,6 +8,11 @@
 計算したもの**であり、実装を実行して得た値をそのまま転記したものではない。
 実行結果との不一致は「仕様と実装のズレ」として実行報告側で扱う。
 
+> **2026-11 の立て直しで、実行方式・件数・ケース一覧は §14 が現行。** §6〜§13 は当時の記録として残す
+> (件数・「PASS n件」・known-failures の記述は §14 で置き換わった)。
+> 新サイトのページのケースは `tests/runner/http_page.py`(PHP 組み込みサーバへの実 HTTP)で実行する。
+> 以下の「ハーネス前提」は旧コード(`exec_page.php`、CLI 実行)のケースに対するもの。
+
 ハーネス前提(`tests/runner/exec_page.php` を実読して確認済み):
 - `php exec_page.php <sandbox内の相対パス> [params.json]` で1ページ1プロセス実行。
   `params.json` の `get`/`post` がそのまま `$_GET`/`$_POST`/`$_REQUEST` になる。
@@ -1911,3 +1916,141 @@ task-6-report.md)。§13.3の9件の結果(fixtures.sqlのスキーマドリフ�
 完了しており、以後は `run_all.sh` を何度実行しても `beer` に一切書き込まないことを
 確認済みだが、**実データの中身(200/40/102件)は本タスク側では復元できない**ため、
 再度の復旧を依頼した。詳細は task-6-report.md。
+
+
+---
+
+## 14. 立て直し(2026-11-25): 今のサイトの公開ページを検査する
+
+### 14.1 何が壊れていたか(立て直し前の状態)
+
+`bash tests/runner/run_all.sh && bash tests/runner/compare_golden.sh` は「未知の DIFF: 0件 / ALL MATCH」と
+出していたが、**今のサイトの公開ページは1つも検査されていなかった**。
+
+- `tests/fixtures/fixtures.sql` が 2026-08 の定義のまま。db/migrations/001〜011 の列
+  (`products.estimated_fields`、`maker.country_code` など)と表(`visitor` ほか)が無く、新サイトの
+  ページは Fatal(exit 255)や Warning で落ちていた。
+- 落ちたファイル(18件)が `known-failures.txt` に理由なしで載り、比較から外れていた。golden は
+  「落ちた出力」そのもの(TC-SEL-IDX-01 などは Fatal が golden)。
+- golden はリニューアル(site.css、年齢確認の幕、GA4、`Cache-Control: private` / `Vary: Cookie`)より前。
+
+立て直し前の全26ケース(旧 compare で「通っていた」ものも含む):
+
+| ケース | 対象 | 立て直し前の実行結果 |
+|---|---|---|
+| TC-SEL-IDX-01 | index.php(新) | Fatal 255(`p.estimated_fields` 無し)。golden も Fatal。.html を既知除外 |
+| TC-SEL-BEERPRODUCTS-01 | beer/products.php(新) | Fatal 255。既知除外(.html/.exit) |
+| TC-SEL-BEERDETAIL-01 | beer/detail/product.php(新) | Fatal 255。既知除外 |
+| TC-SEL-BRWMAKER-01 | brewery/detail/maker.php(新) | Fatal 255。既知除外 |
+| TC-SEL-BRWMAKERS-01 | brewery/makers.php(新) | exit 0 だが Warning `country_code` ×6。.html 既知除外 |
+| TC-SEL-STYDETAIL-01 | style/detail/style.php(新) | Fatal 255。既知除外 |
+| TC-SEL-STYSTYLES-01 | style/styles.php(新) | Fatal 255。既知除外 |
+| TC-POST-THANK-NEW-01 / -02 | php/thank.php, post/check/thank/thank.php(旧) | Fatal 255(`source_url` 列無し)。既知除外(.html/.exit/.db.txt) |
+| TC-POST-THANK-UPDATE-01 | php/thank.php(旧) | 通る |
+| TC-CORE-01〜03 | common/sql.php(旧) | 通る |
+| TC-SEL-ADDP / POSTADDP / POSTEVAL / EVAL / LMAK / LSTY / MAKERS / PRD / CHECK-NEW / CHECK-UPDATE / PHPCHECK-NEW | php/・post/(旧) | exit 0。旧コードの Warning を含んだ出力が golden と一致(§14.5) |
+| TC-SEL-MAK-01 / TC-SEL-POSTPRD-01 | php/maker.php, php/post_product.php(旧) | 通る(警告なし) |
+
+### 14.2 テスト用 DB を今の定義に合わせた方式
+
+`tests/runner/load_fixtures.sh`(run_case.sh が毎ケース呼ぶ)が、**特性テスト専用スキーマ
+`beer_characterization` だけ**を、次の順で作り直す。
+
+1. `DROP DATABASE` → `CREATE DATABASE`(前ケースの残骸・古い定義の表を持ち越さない)
+2. `tests/fixtures/fixtures.sql`(2022 年当時の基本6表と合成データ。**手で書き足さない**)
+3. `db/migrations/` の `[0-9]*.sql` をファイル名の昇順に全部(`*_rollback.sql` は除く)
+4. ケースの `extra_sql`(新サイトのケースは `tests/fixtures/site.sql`)
+
+理由: fixtures.sql に列を手で足す方式は、migration が増えるたびにまた置いていかれる(今回そうなった)。
+migration を当てる方式なら、本番と同じ手順で同じ定義になり、migration が増えても何も直さなくてよい。
+migration のエラーは無視しない(`set -e`)ので、当たらなくなったらその場で止まる。
+migration 001〜011 は、フィクスチャ(maker 3行など)に対してそのまま当たった(データ依存の失敗は無し)。
+001 は全 maker を `country_code='JP'` にし、002 の座標更新は該当 MakerID が無いので 0 行。
+
+`tests/fixtures/site.sql` は新サイトのケースだけに足す合成データ: 銘柄 0 件のスタイル(ID 4 Gose)、
+GB・緯度経度つきの蔵 mk9004 と、推定値(`estimated_fields='IBU_all'`)・公式リンクつきの銘柄 104、
+訪問者2名(確認済み `0123456789abcdef0123456789abcdef`、行はあるが未確認 `fedcba9876543210fedcba9876543210`)。
+旧コードのケースには足さない(旧コードの golden を動かさないため)。
+
+### 14.3 ハーネスの拡張
+
+- 新サイトのケース(`"scope": "site"`)は `tests/runner/http_page.py` が `php -S` を起動して **実 HTTP** で叩く。
+  CLI の PHP は `header()` の内容を保持しない(`headers_list()` が常に空)ため、Cookie・Host・ステータス・
+  応答ヘッダを正しく扱うには実サーバが要る。`params.json` の `cookies` / `host` / `uri` / `method` /
+  `get` / `post` を使う。
+- 出力は `<ID>.html`(本文)、`<ID>.exit`(Fatal か 5xx なら 255)、`<ID>.head.txt`(`Status: n` と応答ヘッダ。
+  `Date` / `Connection` / `Content-Length` / `X-Powered-By` は除く)、`<ID>.db.txt`(`dump_queries` の結果)。
+- 旧コードのケース(`"scope": "legacy"`)は従来どおり CLI の `exec_page.php`。
+- `tests/runner/update_golden.sh` で golden を取り直す(取り直す前に出力を読むこと)。
+
+### 14.4 正規化した項目(`tests/runner/normalize.php`。これだけ)
+
+| 項目 | 置き換え |
+|---|---|
+| CSS/JS の `?v=<filemtime>` | `?v=<MTIME>` |
+| 幕の hidden `tok`(32桁hex) | `<AGE_TOK>`(Set-Cookie の `db_age_tok` と値が食い違えば `<AGE_TOK-MISMATCH>` で落とす) |
+| `Set-Cookie: db_age_tok=<32hex>` | `<AGE_TOK>` |
+| agecheck の hidden `csrf`(64桁hex) | `<CSRF>` |
+| `Set-Cookie: db_vid=<32hex>` | `<VISITOR_ID>` |
+| Set-Cookie の `expires=…` / `Max-Age=…` | `<DATE>` / `<N>` |
+
+日時・件数・文言・Cookie の属性(`secure` / `HttpOnly` / `SameSite`)・Cache-Control / Vary / Location は置き換えない。
+同じ状態で2回続けて実行し、`tests/out/` が完全に一致することを確認した。
+
+### 14.5 ケース一覧(立て直し後。53件 = 新サイト 34 + 旧コード 19)
+
+新サイト(`scope=site`。例外に入れられない。すべて exit 0 で Warning なし)。**幕あり=Cookie なしまたは未確認 / 幕なし=確認済み。**
+
+| ページ | ケース |
+|---|---|
+| index.php | IDX-01 幕あり(Set-Cookie db_age_tok)/ IDX-02 確認済み=幕なし / IDX-03 行はあるが未確認=幕あり / IDX-04 ホスト drtbeer.com=GA4 あり / IDX-05 dev.drtbeer.com=GA4 なし / IDX-06 www.drtbeer.com=GA4 なし / IDX-07 db_vid が不正な書式=幕あり |
+| about.php | ABOUT-01 幕あり / ABOUT-02 幕なし |
+| privacy.php / terms.php | PRIVACY-01 / TERMS-01(Cookie なしでも幕を出さず db_age_tok も出さない) |
+| agecheck.php | AGECHECK-01 GET(tok のみ)/ -02 行のある訪問者(tok+csrf)/ -03 「はい」=302・db_vid 発行・visitor に確認済み1行 / -04 合言葉違い=出し直し・行を作らない / -05 next が許可外=/index.php へ / -06 「いいえ」 |
+| beer/products.php | BEERPRODUCTS-01 幕あり / -02 幕なし |
+| beer/detail/product.php | BEERDETAIL-01 幕あり / -02 幕なし(度数・IBU 表示)/ -03 推定値・公式リンク・地図 / -04 存在しない ID=404 |
+| brewery/makers.php | BRWMAKERS-01 / -02 |
+| brewery/detail/maker.php | BRWMAKER-01 幕あり / -02 地図あり / -03 存在しない ID=404 |
+| style/styles.php | STYSTYLES-01 / -02(銘柄 0 件のスタイルも載る) |
+| style/detail/style.php | STYDETAIL-01 幕あり / -02 幕なし / -03 銘柄 0 件=味覚マップ・銘柄の節なし / -04 存在しない ID=404 |
+
+旧コード(`scope=legacy`。配布対象外。TC-CORE-01〜03、TC-POST-THANK-*、TC-SEL-{ADDP,CHECK-*,EVAL,LMAK,LSTY,MAK,MAKERS,PHPCHECK-NEW,POSTADDP,POSTEVAL,POSTPRD,PRD})
+19件は、今の DB 定義で全部クリーンに実行できる(立て直し前に Fatal だった THANK-NEW-01/-02 も通る)。
+golden は取り直した。差分は次の2種だけで、機械的に確認済み(新しい列が `SELECT *` の JSON・ダンプに増えた分。
+THANK-NEW の db.txt では、`php/sql_POST.php` が旧版の「IBU=0 の全行の IBU_all を上書きする UPDATE」を
+やめた(コード側の変更)ため、銘柄 102 の IBU_all が 30.00 から 99.99(元の値)に変わった)。
+このうち 11 件は旧コードの PHP 8 警告を含んだまま固定しており、`known-failures.txt` の `noise:` に
+理由つきで載せている(ハーネスが `$_FILES` を渡さない、GET/POST が無いときの未定義変数 など)。
+旧コードは直していない。`known-failures.txt` の「ファイルの DIFF 例外」は 0 件。
+
+### 14.6 再発防止の仕組み(`tests/runner/compare_golden.py`)
+
+- ケース定義(`cases/*.json`)を起点に、あるべきファイルを決める。golden が無ければ MISSING で失敗。
+  ケースの無い golden は ORPHAN で失敗。
+- **実行が Fatal・Warning・Notice・Deprecated・非 0 終了なら、golden と一致していても失敗(NOISE)。**
+  旧コードで意図して固定するものだけ、`known-failures.txt` に `noise:<ID> | 理由` で載せる。
+- `known-failures.txt` は全行に理由が要る(無いと BAD-KNOWN で失敗)。**新サイト(scope=site)のケースは
+  載せられない(載せると失敗)。** 載っているのに当てはまらなくなったら STALE で失敗。
+- 最後に必ず「比較したケース数(新サイト/旧コード)/ 除外したファイル数 / 許容したケース数と内訳(理由つき)」を出す。
+- `start_db.sh` の `/etc/hosts` 追記は、末尾の改行を保証してから行い、すでに連結した行も分け直す。
+
+### 14.7 実行結果
+
+`bash tests/runner/start_db.sh` → `bash tests/runner/run_all.sh` → `bash tests/runner/compare_golden.sh`:
+**53 ケース(新サイト 34 / 旧コード 19)すべて一致、除外 0 件、旧コードの警告を理由つきで許容 11 件**。2回続けて同じ。
+単体テスト `php tests/unit/run.php`: 394 pass / 0 fail。実データ `beer`(products 200 / maker 40 / style 102)は
+特性テストの前後で変わらない。単体テスト(`tests/unit/`)は `beer` の visitor ほかを書き換えるが、
+特性テストは別スキーマ `beer_characterization` だけを使うので干渉しない。
+
+### 14.8 わざと壊して拾えるかを確かめた結果
+
+| 壊し方 | 落ちたケース |
+|---|---|
+| footer.php の「20歳未満」を「21歳未満」に | 本文を持つ全31ケース(IDX・ABOUT・AGECHECK-01/02/04・BEER*・BRW*・STY*・PRIVACY・TERMS。302 の AGECHECK-03/05 と AGECHECK-06 は footer が無いので落ちない) |
+| 銘柄詳細の度数表示を消す | BEERDETAIL-01/-02/-03 の3件だけ |
+| head.php の `Cache-Control: private` を消す | 32ケース(.head.txt)。head.php を使うページすべて |
+| age.php で幕を常に出さない | 幕ありを期待する10ケース(IDX-01/03/07、ABOUT-01、BEERPRODUCTS-01、BEERDETAIL-01、BRWMAKERS-01、BRWMAKER-01、STYSTYLES-01、STYDETAIL-01) |
+| helpers.php の all_beers に存在しない列 | Fatal(exit 255)で NOISE と DIFF。all_beers を使う全ページ |
+| assets/css/site.css の中身を変える(filemtime が変わる) | 落ちない(ALL MATCH) |
+
+いずれも確認後に `git checkout` で元に戻し、`git status` で戻ったことを確認した。
