@@ -1,0 +1,18 @@
+{
+  "id": "TC-SEL-IDX-11",
+  "type": "page",
+  "scope": "site",
+  "page": "index.php",
+  "note": "トップ。ホスト DRTBEER.COM(大文字)=GA4 のタグが出る(小文字にして比べる)",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {},
+    "post": {},
+    "cookies": {
+      "db_vid": "0123456789abcdef0123456789abcdef"
+    },
+    "host": "DRTBEER.COM"
+  }
+}

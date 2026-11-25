@@ -1,0 +1,17 @@
+{
+  "id": "TC-SEL-HISTORY-02",
+  "type": "page",
+  "scope": "site",
+  "page": "history.php",
+  "note": "history.php。確認済みで記録なし=200",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {},
+    "post": {},
+    "cookies": {
+      "db_vid": "0123456789abcdef0123456789abcdef"
+    }
+  }
+}

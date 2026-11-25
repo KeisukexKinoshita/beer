@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Zeta Unrated Lager | Darth Beer.com</title>
+<meta name="description" content="A lager with no rating yet.">
+<meta name="keywords" content="craft beer,クラフトビール,ビール,IPA,ブリュワリー">
+<meta property="og:title" content="Zeta Unrated Lager | Darth Beer.com">
+<meta property="og:description" content="A lager with no rating yet.">
+<meta property="og:type" content="website">
+<link rel="canonical" href="https://beer.test/beer/detail/product.php?ProductID=106">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/assets/css/exposure.css?v=<MTIME>">
+<link rel="stylesheet" href="/assets/css/site.css?v=<MTIME>">
+<style>:root{
+  --g-ipa:#86adbd; --h-ipa:#5fd0ff;
+  --g-stout:#a396b8; --h-stout:#b98cff;
+  --g-sour:#bf96a8; --h-sour:#ff6fb0;
+  --g-pale:#c0b088; --h-pale:#ffd06b;
+  --g-wheat:#aeb890; --h-wheat:#c8e86a;
+  --g-other:#88b8ab; --h-other:#5cf0c2;
+}</style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+</head>
+<body>
+<div class="site-top">
+<div class="ex-bar"><a class="ex-mark" href="/index.php">DARTH BEER</a></div>
+<nav class="ex-tabs">
+  <a href="/try.php">さがす</a>
+  <a class="on" aria-current="page" href="/beer/products.php">銘柄</a>
+  <a href="/brewery/makers.php">蔵</a>
+  <a href="/style/styles.php">スタイル</a>
+</nav>
+</div>
+<main>
+
+<div class="wrap">
+  <div class="detail-hero">
+    <div class="dt-img"><canvas class="beerglass dt-glass" data-bid="106" data-c="2" data-cl="1" data-f="1" data-i="25.00" data-a="5.00" data-g="other" role="img" aria-label="Zeta Unrated Lager のイメージ（色2・アルコール度5%・IBU25 から生成）"></canvas></div>
+    <div>
+      <div class="stylechip" style="margin-bottom:8px"><i class="ex-dot" style="background:#88b8ab"></i>Lager / その他</div>
+      <h1 class="dt-title">Zeta Unrated Lager</h1>
+              <p class="dt-desc">A lager with no rating yet.</p>
+            <div class="spec">
+        <div class="r">
+          <div class="k">ブリュワリー</div>
+          <div class="v"><span class="flag">🇯🇵</span>
+            <a href="/brewery/detail/maker.php?MakerID=mk9006" class="lk">Zeta Brewing</a></div>
+        </div>
+        <div class="r"><div class="k">スタイル</div><div class="v">
+                      <a class="lk" href="/style/detail/style.php?StyleID=2">Pilsner</a>
+                  </div></div>
+        <div class="r"><div class="k">アルコール度</div>
+          <div class="v">5%<span class="bar"><i style="width:45.454545454545%"></i></span></div></div>
+        <div class="r"><div class="k">IBU（苦味）</div>
+          <div class="v">25<span class="bar"><i style="width:33.512064343164%"></i></span></div></div>
+        <div class="r"><div class="k">フルーティーさ</div>
+          <div class="v">1 / 10<span class="bar"><i style="width:10%"></i></span></div></div>
+        <div class="r"><div class="k">評価</div>
+          <div class="v"><span class="rate rate-none" role="img" aria-label="評価はまだありません">☆☆☆☆☆</span> 未評価</div></div>
+              </div>
+                </div>
+  </div>
+
+  <div class="panel" style="margin-top:12px">
+    <h3>味覚マップ上の位置</h3>
+    <div class="sub">全8銘柄の中での位置(原点=平均)</div>
+    <div class="galaxy-shell galaxy-wide">
+      <canvas id="gx"></canvas>
+      <div class="galaxy-tag">味覚銀河</div>
+      <div class="galaxy-hint">ドラッグで回転</div>
+      <div class="legend" id="lg"></div>
+      <div class="tt" id="tt"></div>
+    </div>
+  </div>
+
+  <div class="dt-lower">
+    <div class="panel">
+      <h3>味プロファイル</h3>
+      <canvas class="radar" id="radar"></canvas>
+    </div>
+    <div class="panel">
+      <h3>製造地</h3>
+      <div class="sub">日本</div>
+      <div class="map">
+                  <div class="lmap" data-lat="35.680000" data-lng="139.760000" data-label="Zeta Brewing"></div>
+              </div>
+    </div>
+  </div>
+</div>
+
+<script>window.BEERS = [{"id":108,"n":"Alpha Zero Stout","a":0,"i":0,"f":0,"c":9,"r":0,"g":"stout","st":"Stout","mk":"Alpha Brewing","cc":"JP"},{"id":107,"n":"Alpha No Spec Pale","a":0,"i":0,"f":4,"c":5,"r":3.2,"g":"ipa","st":"IPA","mk":"Alpha Brewing","cc":"JP"},{"id":106,"n":"Zeta Unrated Lager","a":5,"i":25,"f":1,"c":2,"r":0,"g":"other","st":"Pilsner","mk":"Zeta Brewing","cc":"JP"},{"id":105,"n":"Epsilon Unmeasured","a":0,"i":0,"f":0,"c":0,"r":0,"g":"other","st":"—","mk":"Epsilon Brewing","cc":""},{"id":104,"n":"Delta Estimated IPA","a":6,"i":45,"f":3,"c":4,"r":3.9,"g":"ipa","st":"IPA","mk":"Delta Brewing","cc":"GB"},{"id":103,"n":"Gamma Dark Stout","a":6.2,"i":35,"f":1,"c":9,"r":4.8,"g":"stout","st":"Stout","mk":"Gamma Brewing","cc":"JP"},{"id":102,"n":"Beta Light Pilsner","a":4.8,"i":99.99,"f":1,"c":2,"r":3.5,"g":"other","st":"Pilsner","mk":"Beta Brewing","cc":"JP"},{"id":101,"n":"Alpha Citrus IPA","a":5.5,"i":42,"f":2,"c":3,"r":4.2,"g":"ipa","st":"IPA","mk":"Alpha Brewing","cc":"JP"}];</script>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  drawRadar('#radar', [0.3351206434316354,0.45454545454545453,0.1,0.2,0]);
+  initGalaxy({canvas:'#gx', tooltip:'#tt', legend:'#lg', data:window.BEERS,
+    highlightIds:[106],
+    onPick:function(b){location.href='/beer/detail/product.php?ProductID='+encodeURIComponent(b.id);}});
+});
+addEventListener('resize', function(){ drawRadar('#radar', [0.3351206434316354,0.45454545454545453,0.1,0.2,0]); });
+</script>
+
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <nav class="foot-nav">
+      <a href="/about.php">このサイトについて</a>
+      <a href="/privacy.php">プライバシーポリシー</a>
+      <a href="/terms.php">利用規約</a>
+      <a href="https://docs.google.com/forms/d/e/1FAIpQLSc59D4Xn78uL0XDJ9Ztfu_Mp2yY2XJuBZtzbZqmY-7YN0XPcw/viewform?usp=header" target="_blank" rel="noopener nofollow">お問い合わせ</a>
+    </nav>
+    <div class="foot-note">20歳未満の飲酒は法律で禁止されています。</div>
+  </div>
+</footer>
+<script>window.STYLE_GROUPS = {"ipa":{"c":"#86adbd","h":"#5fd0ff","l":"IPA系"},"stout":{"c":"#a396b8","h":"#b98cff","l":"Stout \/ 黒"},"sour":{"c":"#bf96a8","h":"#ff6fb0","l":"Sour"},"pale":{"c":"#c0b088","h":"#ffd06b","l":"Pale \/ Amber"},"wheat":{"c":"#aeb890","h":"#c8e86a","l":"小麦 \/ Weizen"},"other":{"c":"#88b8ab","h":"#5cf0c2","l":"Lager \/ その他"}};</script>
+<script src="/assets/js/radar.js"></script>
+<script src="/assets/js/galaxy.js"></script>
+<script src="/assets/js/beermap.js"></script>
+<script src="/assets/js/beerglass.js"></script>
+</body>
+</html>

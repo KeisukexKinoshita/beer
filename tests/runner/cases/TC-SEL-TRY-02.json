@@ -1,0 +1,17 @@
+{
+  "id": "TC-SEL-TRY-02",
+  "type": "page",
+  "scope": "site",
+  "page": "try.php",
+  "note": "try.php。確認済み=200 で写真の受け取り画面",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {},
+    "post": {},
+    "cookies": {
+      "db_vid": "0123456789abcdef0123456789abcdef"
+    }
+  }
+}

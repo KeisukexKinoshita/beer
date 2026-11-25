@@ -1,0 +1,15 @@
+{
+  "id": "TC-SEL-IDX-08",
+  "type": "page",
+  "scope": "site",
+  "page": "index.php",
+  "note": "`/` そのもの(/index.php ではない)。canonical は https://beer.test/、幕の戻り先は /",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {},
+    "post": {},
+    "uri": "/"
+  }
+}

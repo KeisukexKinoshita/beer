@@ -1,0 +1,17 @@
+{
+  "id": "TC-SEL-TRY-01",
+  "type": "page",
+  "scope": "site",
+  "page": "try.php",
+  "note": "try.php。未確認(Cookie なし)=/agecheck.php?next=/try.php へ 302、db_vid を発行して visitor に行を1件作る(確認は未)",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {},
+    "post": {}
+  },
+  "dump_queries": [
+    "SELECT COUNT(*) AS new_rows, COALESCE(SUM(age_confirmed),0) AS confirmed FROM visitor WHERE visitor_id NOT IN ('0123456789abcdef0123456789abcdef','fedcba9876543210fedcba9876543210')"
+  ]
+}

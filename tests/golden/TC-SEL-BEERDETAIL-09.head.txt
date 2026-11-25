@@ -1,0 +1,5 @@
+Status: 404
+Cache-Control: private
+Vary: Cookie
+Set-Cookie: db_age_tok=<AGE_TOK>; path=/; secure; HttpOnly; SameSite=Lax
+Content-type: text/html; charset=UTF-8

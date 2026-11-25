@@ -1,0 +1,15 @@
+{
+  "id": "TC-SEL-ROBOTS-01",
+  "type": "page",
+  "scope": "site",
+  "page": "robots.txt",
+  "note": "robots.txt(静的ファイルの中身)",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {},
+    "post": {},
+    "uri": "/robots.txt"
+  }
+}

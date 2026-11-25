@@ -1,0 +1,1 @@
+{"get": {"next": "/index.php\r\nSet-Cookie: x=1"}, "post": {"confirm": "yes", "tok": "aaaabbbbccccddddeeeeffff00001111"}, "cookies": {"db_age_tok": "aaaabbbbccccddddeeeeffff00001111"}, "method": "POST", "uri": "/agecheck.php?next=%2Findex.php%0D%0ASet-Cookie%3A%20x%3D1"}

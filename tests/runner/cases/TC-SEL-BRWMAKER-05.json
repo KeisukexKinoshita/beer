@@ -1,0 +1,19 @@
+{
+  "id": "TC-SEL-BRWMAKER-05",
+  "type": "page",
+  "scope": "site",
+  "page": "brewery/detail/maker.php",
+  "note": "蔵詳細(mk9006)。logo_path あり=ロゴ画像を出す",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {
+      "MakerID": "mk9006"
+    },
+    "post": {},
+    "cookies": {
+      "db_vid": "0123456789abcdef0123456789abcdef"
+    }
+  }
+}

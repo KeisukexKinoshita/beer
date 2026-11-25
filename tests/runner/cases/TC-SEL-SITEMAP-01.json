@@ -1,0 +1,15 @@
+{
+  "id": "TC-SEL-SITEMAP-01",
+  "type": "page",
+  "scope": "site",
+  "page": "sitemap.php",
+  "note": "sitemap.php(PHP の出力だけ。/sitemap.xml の振り向けは nginx)。ホスト drtbeer.com、固定ページ+全銘柄+全蔵+解説のあるスタイル",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {},
+    "post": {},
+    "host": "drtbeer.com"
+  }
+}

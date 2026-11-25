@@ -1,0 +1,5 @@
+Status: 200
+Set-Cookie: db_age_tok=<AGE_TOK>; path=/; secure; HttpOnly; SameSite=Lax
+Cache-Control: private
+Vary: Cookie
+Content-type: text/html; charset=UTF-8

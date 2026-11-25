@@ -1,0 +1,24 @@
+{
+  "id": "TC-SEL-AGECHECK-12",
+  "type": "page",
+  "scope": "site",
+  "page": "agecheck.php",
+  "note": "「はい」の next が回避例('/beer/detail/product.php?ProductID=102&x=1')=/index.php へ戻す(許可した名前だけ通す)",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {
+      "next": "/beer/detail/product.php?ProductID=102&x=1"
+    },
+    "post": {
+      "confirm": "yes",
+      "tok": "aaaabbbbccccddddeeeeffff00001111"
+    },
+    "cookies": {
+      "db_age_tok": "aaaabbbbccccddddeeeeffff00001111"
+    },
+    "method": "POST",
+    "uri": "/agecheck.php?next=%2Fbeer%2Fdetail%2Fproduct.php%3FProductID%3D102%26x%3D1"
+  }
+}

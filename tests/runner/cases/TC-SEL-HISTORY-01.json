@@ -1,0 +1,17 @@
+{
+  "id": "TC-SEL-HISTORY-01",
+  "type": "page",
+  "scope": "site",
+  "page": "history.php",
+  "note": "history.php。未確認(Cookie なし)=/agecheck.php?next=/history.php へ 302、行を1件作る",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {},
+    "post": {}
+  },
+  "dump_queries": [
+    "SELECT COUNT(*) AS new_rows, COALESCE(SUM(age_confirmed),0) AS confirmed FROM visitor WHERE visitor_id NOT IN ('0123456789abcdef0123456789abcdef','fedcba9876543210fedcba9876543210')"
+  ]
+}

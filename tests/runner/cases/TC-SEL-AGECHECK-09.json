@@ -1,0 +1,21 @@
+{
+  "id": "TC-SEL-AGECHECK-09",
+  "type": "page",
+  "scope": "site",
+  "page": "agecheck.php",
+  "note": "tok の Cookie が無い POST=成立せず「Cookie を有効にしてからお試しください。」を出す。行は作らない",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {},
+    "post": {
+      "confirm": "yes",
+      "tok": "aaaabbbbccccddddeeeeffff00001111"
+    },
+    "method": "POST"
+  },
+  "dump_queries": [
+    "SELECT COUNT(*) AS visitors FROM visitor WHERE visitor_id NOT IN ('0123456789abcdef0123456789abcdef','fedcba9876543210fedcba9876543210')"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "id": "TC-SEL-BEERDETAIL-09",
+  "type": "page",
+  "scope": "site",
+  "page": "beer/detail/product.php",
+  "note": "銘柄詳細。存在しない ID を未確認の訪問者(Cookie なし)で=404 でも幕が出る",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {
+      "ProductID": "999"
+    },
+    "post": {}
+  }
+}

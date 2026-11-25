@@ -1,0 +1,16 @@
+{
+  "id": "TC-SEL-STYDETAIL-05",
+  "type": "page",
+  "scope": "site",
+  "page": "style/detail/style.php",
+  "note": "スタイル詳細。存在しない ID を未確認の訪問者で=404 でも幕が出る",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {
+      "StyleID": "99"
+    },
+    "post": {}
+  }
+}

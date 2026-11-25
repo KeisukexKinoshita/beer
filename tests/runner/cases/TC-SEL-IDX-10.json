@@ -1,0 +1,25 @@
+{
+  "id": "TC-SEL-IDX-10",
+  "type": "page",
+  "scope": "site",
+  "page": "index.php",
+  "note": "tok の乱数性: Cookie なしで2回取得して、発行される tok が毎回違う(固定値を返す変更で落ちる)",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "steps": [
+      {
+        "method": "GET",
+        "uri": "/",
+        "no_jar": true
+      },
+      {
+        "method": "GET",
+        "uri": "/",
+        "no_jar": true
+      }
+    ],
+    "check_distinct_cookie": "db_age_tok"
+  }
+}

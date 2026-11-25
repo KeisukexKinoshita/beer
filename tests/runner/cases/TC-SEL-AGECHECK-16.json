@@ -1,0 +1,33 @@
+{
+  "id": "TC-SEL-AGECHECK-16",
+  "type": "page",
+  "scope": "site",
+  "page": "agecheck.php",
+  "note": "一連の流れ: 未確認で一覧=幕 → 幕の「はい」(発行された tok)=302・db_vid 発行 → 同じ一覧を発行された db_vid で取り直す=幕が消える。発行された db_vid が DB の行の ID と一致し、確認済みになっている",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "steps": [
+      {
+        "method": "GET",
+        "uri": "/beer/products.php"
+      },
+      {
+        "method": "POST",
+        "uri": "/agecheck.php?next=%2Fbeer%2Fproducts.php",
+        "post": {
+          "confirm": "yes",
+          "tok": "{db_age_tok}"
+        }
+      },
+      {
+        "method": "GET",
+        "uri": "/beer/products.php"
+      }
+    ]
+  },
+  "dump_queries": [
+    "SELECT COUNT(*) AS rows_for_issued_db_vid, SUM(age_confirmed) AS confirmed FROM visitor WHERE visitor_id='{db_vid}'"
+  ]
+}

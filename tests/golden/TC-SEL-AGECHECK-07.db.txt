@@ -1,0 +1,3 @@
+== SELECT age_confirmed, age_confirmed_at IS NOT NULL AS has_confirmed_at FROM visitor WHERE visitor_id='<ID>' ==
+age_confirmed	has_confirmed_at
+1	1

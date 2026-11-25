@@ -1,0 +1,1 @@
+{"steps": [{"method": "GET", "uri": "/beer/products.php"}, {"method": "POST", "uri": "/agecheck.php?next=%2Fbeer%2Fproducts.php", "post": {"confirm": "yes", "tok": "{db_age_tok}"}}, {"method": "GET", "uri": "/beer/products.php"}]}

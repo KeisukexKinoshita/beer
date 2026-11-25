@@ -1,0 +1,19 @@
+{
+  "id": "TC-SEL-BEERDETAIL-05",
+  "type": "page",
+  "scope": "site",
+  "page": "beer/detail/product.php",
+  "note": "銘柄詳細(105)。度数・IBU・フルーティー・評価がすべて NULL=「—」と「未評価」、スタイルなし=「—」、説明が空=説明の段落なし、official_url なし",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {
+      "ProductID": "105"
+    },
+    "post": {},
+    "cookies": {
+      "db_vid": "0123456789abcdef0123456789abcdef"
+    }
+  }
+}

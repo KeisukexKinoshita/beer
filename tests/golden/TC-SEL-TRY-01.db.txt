@@ -1,0 +1,3 @@
+== SELECT COUNT(*) AS new_rows, COALESCE(SUM(age_confirmed),0) AS confirmed FROM visitor WHERE visitor_id NOT IN ('<ID>','<ID>') ==
+new_rows	confirmed
+1	0

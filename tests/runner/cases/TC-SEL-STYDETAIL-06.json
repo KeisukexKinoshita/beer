@@ -1,0 +1,18 @@
+{
+  "id": "TC-SEL-STYDETAIL-06",
+  "type": "page",
+  "scope": "site",
+  "page": "style/detail/style.php",
+  "note": "スタイル詳細に余計なクエリ(?StyleID=2&sort=x)。canonical と幕の戻り先は StyleID だけ残る",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {
+      "StyleID": "2",
+      "sort": "x"
+    },
+    "post": {},
+    "uri": "/style/detail/style.php?StyleID=2&sort=x"
+  }
+}

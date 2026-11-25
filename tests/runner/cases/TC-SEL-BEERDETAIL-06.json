@@ -1,0 +1,19 @@
+{
+  "id": "TC-SEL-BEERDETAIL-06",
+  "type": "page",
+  "scope": "site",
+  "page": "beer/detail/product.php",
+  "note": "銘柄詳細(106)。評価だけ NULL=星なしで「未評価」。ほかの値は出る",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {
+      "ProductID": "106"
+    },
+    "post": {},
+    "cookies": {
+      "db_vid": "0123456789abcdef0123456789abcdef"
+    }
+  }
+}

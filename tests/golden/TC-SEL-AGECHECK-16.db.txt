@@ -1,0 +1,3 @@
+== SELECT COUNT(*) AS rows_for_issued_db_vid, SUM(age_confirmed) AS confirmed FROM visitor WHERE visitor_id='<ID>' ==
+rows_for_issued_db_vid	confirmed
+1	1

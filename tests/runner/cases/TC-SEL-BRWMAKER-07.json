@@ -1,0 +1,16 @@
+{
+  "id": "TC-SEL-BRWMAKER-07",
+  "type": "page",
+  "scope": "site",
+  "page": "brewery/detail/maker.php",
+  "note": "蔵詳細。存在しない ID を未確認の訪問者で=404 でも幕が出る",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {
+      "MakerID": "mk0404"
+    },
+    "post": {}
+  }
+}

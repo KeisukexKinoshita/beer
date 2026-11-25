@@ -1,0 +1,24 @@
+{
+  "id": "TC-SEL-AGECHECK-08",
+  "type": "page",
+  "scope": "site",
+  "page": "agecheck.php",
+  "note": "行のある未確認の訪問者の csrf が違う=成立せず画面を出し直す。行は未確認のまま",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {},
+    "post": {
+      "confirm": "yes",
+      "csrf": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "cookies": {
+      "db_vid": "fedcba9876543210fedcba9876543210"
+    },
+    "method": "POST"
+  },
+  "dump_queries": [
+    "SELECT age_confirmed, age_confirmed_at IS NOT NULL AS has_confirmed_at FROM visitor WHERE visitor_id='fedcba9876543210fedcba9876543210'"
+  ]
+}

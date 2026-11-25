@@ -1,0 +1,458 @@
+=== step 1: GET /beer/products.php ===
+<!DOCTYPE html>
+<html lang="ja" class="age-lock">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>銘柄 | Darth Beer.com</title>
+<meta name="description" content="クラフトビール8銘柄の一覧です。スタイルで絞り込み、度数・IBU・評価で並び替えられます。">
+<meta name="keywords" content="craft beer,クラフトビール,ビール,IPA,ブリュワリー">
+<meta property="og:title" content="銘柄 | Darth Beer.com">
+<meta property="og:description" content="クラフトビール8銘柄の一覧です。スタイルで絞り込み、度数・IBU・評価で並び替えられます。">
+<meta property="og:type" content="website">
+<link rel="canonical" href="https://beer.test/beer/products.php">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/assets/css/exposure.css?v=<MTIME>">
+<link rel="stylesheet" href="/assets/css/site.css?v=<MTIME>">
+<style>:root{
+  --g-ipa:#86adbd; --h-ipa:#5fd0ff;
+  --g-stout:#a396b8; --h-stout:#b98cff;
+  --g-sour:#bf96a8; --h-sour:#ff6fb0;
+  --g-pale:#c0b088; --h-pale:#ffd06b;
+  --g-wheat:#aeb890; --h-wheat:#c8e86a;
+  --g-other:#88b8ab; --h-other:#5cf0c2;
+}</style>
+</head>
+<body>
+<div class="site-top" inert>
+<div class="ex-bar"><a class="ex-mark" href="/index.php">DARTH BEER</a></div>
+<nav class="ex-tabs">
+  <a href="/try.php">さがす</a>
+  <a class="on" aria-current="page" href="/beer/products.php">銘柄</a>
+  <a href="/brewery/makers.php">蔵</a>
+  <a href="/style/styles.php">スタイル</a>
+</nav>
+</div>
+<main inert>
+
+<div class="wrap pg-head">
+  <h1 class="sec-h">銘柄<span class="cnt">全8件</span></h1>
+
+  <!-- 味覚銀河: 全ビールの3D分布 -->
+  <div class="galaxy-shell galaxy-wide" style="margin-top:14px">
+    <canvas id="gx"></canvas>
+    <div class="galaxy-tag">味覚銀河</div>
+    <div class="galaxy-hint">ドラッグで回転 · 星をクリックで詳細へ</div>
+    <div class="legend" id="lg"></div>
+    <div class="tt" id="tt"></div>
+  </div>
+
+  <!-- フィルタ -->
+  <div class="filterbar">
+    <div class="f-chips">
+      <button class="f-chip on" data-group="all">すべて</button>
+                  <button class="f-chip" data-group="ipa"><i class="ex-dot" style="background:#86adbd"></i>IPA系</button>
+            <button class="f-chip" data-group="stout"><i class="ex-dot" style="background:#a396b8"></i>Stout / 黒</button>
+            <button class="f-chip" data-group="sour"><i class="ex-dot" style="background:#bf96a8"></i>Sour</button>
+            <button class="f-chip" data-group="pale"><i class="ex-dot" style="background:#c0b088"></i>Pale / Amber</button>
+            <button class="f-chip" data-group="wheat"><i class="ex-dot" style="background:#aeb890"></i>小麦 / Weizen</button>
+            <button class="f-chip" data-group="other"><i class="ex-dot" style="background:#88b8ab"></i>Lager / その他</button>
+          </div>
+    <div class="f-right">
+      <span class="f-count-wrap"><b id="f-count">8</b> 件</span>
+      <input class="f-search" id="f-search" type="search" placeholder="銘柄・蔵で検索" aria-label="ビールを検索">
+      <select class="f-sort" id="f-sort" aria-label="並び替え">
+        <option value="newest">新着順</option>
+        <option value="rating">評価が高い順</option>
+        <option value="ibu">IBUが高い順</option>
+        <option value="alcohol">度数が高い順</option>
+        <option value="name">名前順</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- カードグリッド -->
+  <div class="grid-b" id="beer-grid">
+        <a class="bcard" href="/beer/detail/product.php?ProductID=108"
+       data-group="stout" data-name="Alpha Zero Stout" data-maker="Alpha Brewing"
+       data-style="Stout" data-rating="0.00" data-ibu="0.00"
+       data-alcohol="0.00" data-order="8">
+      <div class="thumb"><canvas class="beerglass " data-bid="108" data-c="9" data-cl="4" data-f="0" data-i="0.00" data-a="0.00" data-g="stout" role="img" aria-label="Alpha Zero Stout のイメージ（色9・アルコール度0%・IBU0 から生成）"></canvas></div>
+      <div class="body">
+        <div class="stylechip"><i class="ex-dot" style="background:#a396b8"></i>Stout / 黒</div>
+        <h4>Alpha Zero Stout</h4>
+        <div class="mk">🇯🇵 Alpha Brewing</div>
+        <div class="meta">
+          <span>0% · IBU0</span>
+          <span class="rate" role="img" aria-label="5段階評価で0.0点">☆☆☆☆☆</span>        </div>
+      </div>
+    </a>
+        <a class="bcard" href="/beer/detail/product.php?ProductID=107"
+       data-group="ipa" data-name="Alpha No Spec Pale" data-maker="Alpha Brewing"
+       data-style="IPA" data-rating="3.20" data-ibu=""
+       data-alcohol="" data-order="7">
+      <div class="thumb"><canvas class="beerglass " data-bid="107" data-c="5" data-cl="2" data-f="4" data-i="" data-a="" data-g="ipa" role="img" aria-label="Alpha No Spec Pale のイメージ（色5・アルコール度—・IBU— から生成）"></canvas></div>
+      <div class="body">
+        <div class="stylechip"><i class="ex-dot" style="background:#86adbd"></i>IPA系</div>
+        <h4>Alpha No Spec Pale</h4>
+        <div class="mk">🇯🇵 Alpha Brewing</div>
+        <div class="meta">
+          <span>— · IBU—</span>
+          <span class="rate" role="img" aria-label="5段階評価で3.2点">★★★☆☆</span>        </div>
+      </div>
+    </a>
+        <a class="bcard" href="/beer/detail/product.php?ProductID=106"
+       data-group="other" data-name="Zeta Unrated Lager" data-maker="Zeta Brewing"
+       data-style="Pilsner" data-rating="" data-ibu="25.00"
+       data-alcohol="5.00" data-order="6">
+      <div class="thumb"><canvas class="beerglass " data-bid="106" data-c="2" data-cl="1" data-f="1" data-i="25.00" data-a="5.00" data-g="other" role="img" aria-label="Zeta Unrated Lager のイメージ（色2・アルコール度5%・IBU25 から生成）"></canvas></div>
+      <div class="body">
+        <div class="stylechip"><i class="ex-dot" style="background:#88b8ab"></i>Lager / その他</div>
+        <h4>Zeta Unrated Lager</h4>
+        <div class="mk">🇯🇵 Zeta Brewing</div>
+        <div class="meta">
+          <span>5% · IBU25</span>
+          <span class="rate rate-none" role="img" aria-label="評価はまだありません">☆☆☆☆☆</span>        </div>
+      </div>
+    </a>
+        <a class="bcard" href="/beer/detail/product.php?ProductID=105"
+       data-group="other" data-name="Epsilon Unmeasured" data-maker="Epsilon Brewing"
+       data-style="" data-rating="" data-ibu=""
+       data-alcohol="" data-order="5">
+      <div class="thumb"><canvas class="beerglass " data-bid="105" data-c="" data-cl="" data-f="" data-i="" data-a="" data-g="other" role="img" aria-label="Epsilon Unmeasured のイメージ（色—・アルコール度—・IBU— から生成）"></canvas></div>
+      <div class="body">
+        <div class="stylechip"><i class="ex-dot" style="background:#88b8ab"></i>Lager / その他</div>
+        <h4>Epsilon Unmeasured</h4>
+        <div class="mk">🏳️ Epsilon Brewing</div>
+        <div class="meta">
+          <span>— · IBU—</span>
+          <span class="rate rate-none" role="img" aria-label="評価はまだありません">☆☆☆☆☆</span>        </div>
+      </div>
+    </a>
+        <a class="bcard" href="/beer/detail/product.php?ProductID=104"
+       data-group="ipa" data-name="Delta Estimated IPA" data-maker="Delta Brewing"
+       data-style="IPA" data-rating="3.90" data-ibu="45.00"
+       data-alcohol="6.00" data-order="4">
+      <div class="thumb"><canvas class="beerglass " data-bid="104" data-c="4" data-cl="2" data-f="3" data-i="45.00" data-a="6.00" data-g="ipa" role="img" aria-label="Delta Estimated IPA のイメージ（色4・アルコール度6%・IBU45 から生成）"></canvas></div>
+      <div class="body">
+        <div class="stylechip"><i class="ex-dot" style="background:#86adbd"></i>IPA系</div>
+        <h4>Delta Estimated IPA</h4>
+        <div class="mk">🇬🇧 Delta Brewing</div>
+        <div class="meta">
+          <span>6% · IBU45<span class="est-mark" title="公式情報が無いため、同じスタイルの典型値から推定した値です">推定</span></span>
+          <span class="rate" role="img" aria-label="5段階評価で3.9点">★★★★☆</span>        </div>
+      </div>
+    </a>
+        <a class="bcard" href="/beer/detail/product.php?ProductID=103"
+       data-group="stout" data-name="Gamma Dark Stout" data-maker="Gamma Brewing"
+       data-style="Stout" data-rating="4.80" data-ibu="35.00"
+       data-alcohol="6.20" data-order="3">
+      <div class="thumb"><canvas class="beerglass " data-bid="103" data-c="9" data-cl="4" data-f="1" data-i="35.00" data-a="6.20" data-g="stout" role="img" aria-label="Gamma Dark Stout のイメージ（色9・アルコール度6.2%・IBU35 から生成）"></canvas></div>
+      <div class="body">
+        <div class="stylechip"><i class="ex-dot" style="background:#a396b8"></i>Stout / 黒</div>
+        <h4>Gamma Dark Stout</h4>
+        <div class="mk">🇯🇵 Gamma Brewing</div>
+        <div class="meta">
+          <span>6.2% · IBU35</span>
+          <span class="rate" role="img" aria-label="5段階評価で4.8点">★★★★★</span>        </div>
+      </div>
+    </a>
+        <a class="bcard" href="/beer/detail/product.php?ProductID=102"
+       data-group="other" data-name="Beta Light Pilsner" data-maker="Beta Brewing"
+       data-style="Pilsner" data-rating="3.50" data-ibu="99.99"
+       data-alcohol="4.80" data-order="2">
+      <div class="thumb"><canvas class="beerglass " data-bid="102" data-c="2" data-cl="2" data-f="1" data-i="99.99" data-a="4.80" data-g="other" role="img" aria-label="Beta Light Pilsner のイメージ（色2・アルコール度4.8%・IBU99.99 から生成）"></canvas></div>
+      <div class="body">
+        <div class="stylechip"><i class="ex-dot" style="background:#88b8ab"></i>Lager / その他</div>
+        <h4>Beta Light Pilsner</h4>
+        <div class="mk">🇯🇵 Beta Brewing</div>
+        <div class="meta">
+          <span>4.8% · IBU99.99</span>
+          <span class="rate" role="img" aria-label="5段階評価で3.5点">★★★★☆</span>        </div>
+      </div>
+    </a>
+        <a class="bcard" href="/beer/detail/product.php?ProductID=101"
+       data-group="ipa" data-name="Alpha Citrus IPA" data-maker="Alpha Brewing"
+       data-style="IPA" data-rating="4.20" data-ibu="42.00"
+       data-alcohol="5.50" data-order="1">
+      <div class="thumb"><canvas class="beerglass " data-bid="101" data-c="3" data-cl="1" data-f="2" data-i="42.00" data-a="5.50" data-g="ipa" role="img" aria-label="Alpha Citrus IPA のイメージ（色3・アルコール度5.5%・IBU42 から生成）"></canvas></div>
+      <div class="body">
+        <div class="stylechip"><i class="ex-dot" style="background:#86adbd"></i>IPA系</div>
+        <h4>Alpha Citrus IPA</h4>
+        <div class="mk">🇯🇵 Alpha Brewing</div>
+        <div class="meta">
+          <span>5.5% · IBU42</span>
+          <span class="rate" role="img" aria-label="5段階評価で4.2点">★★★★☆</span>        </div>
+      </div>
+    </a>
+      </div>
+</div>
+
+<script>window.BEERS = [{"id":108,"n":"Alpha Zero Stout","a":0,"i":0,"f":0,"c":9,"r":0,"g":"stout","st":"Stout","mk":"Alpha Brewing","cc":"JP"},{"id":107,"n":"Alpha No Spec Pale","a":0,"i":0,"f":4,"c":5,"r":3.2,"g":"ipa","st":"IPA","mk":"Alpha Brewing","cc":"JP"},{"id":106,"n":"Zeta Unrated Lager","a":5,"i":25,"f":1,"c":2,"r":0,"g":"other","st":"Pilsner","mk":"Zeta Brewing","cc":"JP"},{"id":105,"n":"Epsilon Unmeasured","a":0,"i":0,"f":0,"c":0,"r":0,"g":"other","st":"—","mk":"Epsilon Brewing","cc":""},{"id":104,"n":"Delta Estimated IPA","a":6,"i":45,"f":3,"c":4,"r":3.9,"g":"ipa","st":"IPA","mk":"Delta Brewing","cc":"GB"},{"id":103,"n":"Gamma Dark Stout","a":6.2,"i":35,"f":1,"c":9,"r":4.8,"g":"stout","st":"Stout","mk":"Gamma Brewing","cc":"JP"},{"id":102,"n":"Beta Light Pilsner","a":4.8,"i":99.99,"f":1,"c":2,"r":3.5,"g":"other","st":"Pilsner","mk":"Beta Brewing","cc":"JP"},{"id":101,"n":"Alpha Citrus IPA","a":5.5,"i":42,"f":2,"c":3,"r":4.2,"g":"ipa","st":"IPA","mk":"Alpha Brewing","cc":"JP"}];</script>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  initGalaxy({canvas:'#gx', tooltip:'#tt', legend:'#lg', data:window.BEERS,
+    onPick:function(b){location.href='/beer/detail/product.php?ProductID='+encodeURIComponent(b.id);}});
+});
+</script>
+
+</main>
+<footer class="site-footer" inert>
+  <div class="wrap">
+    <nav class="foot-nav">
+      <a href="/about.php">このサイトについて</a>
+      <a href="/privacy.php">プライバシーポリシー</a>
+      <a href="/terms.php">利用規約</a>
+      <a href="https://docs.google.com/forms/d/e/1FAIpQLSc59D4Xn78uL0XDJ9Ztfu_Mp2yY2XJuBZtzbZqmY-7YN0XPcw/viewform?usp=header" target="_blank" rel="noopener nofollow">お問い合わせ</a>
+    </nav>
+    <div class="foot-note">20歳未満の飲酒は法律で禁止されています。</div>
+  </div>
+</footer>
+<div class="age-gate" role="dialog" aria-modal="true" aria-labelledby="age-q" data-nosnippet>
+  <div class="ex-bar"><span class="ex-mark">DARTH BEER</span></div>
+  <div class="ex-wrap">
+    <div class="ex-intake" style="padding-top:152px;padding-bottom:100px">
+      <div class="ex-ring"><span>20</span></div>
+      <div>
+        <div class="age-q" id="age-q">20歳以上ですか</div>
+        <p style="color:var(--dim);font-size:12.5px;max-width:28ch">当サイトは酒類に関する情報を扱っています。</p>
+        <p style="color:var(--faint);font-size:11px;margin-top:8px"><a href="/terms.php" target="_blank" rel="noopener">利用規約</a>をご確認ください</p>
+      </div>
+      <form class="ex-acts" method="POST" action="/agecheck.php?next=%2Fbeer%2Fproducts.php">
+        <input type="hidden" name="tok" value="<AGE_TOK>">
+        <button type="submit" name="confirm" value="yes" class="ex-btn">はい</button>
+        <button type="submit" name="declined" value="yes" class="ex-btn ghost">いいえ</button>
+      </form>
+    </div>
+  </div>
+</div>
+<script>window.STYLE_GROUPS = {"ipa":{"c":"#86adbd","h":"#5fd0ff","l":"IPA系"},"stout":{"c":"#a396b8","h":"#b98cff","l":"Stout \/ 黒"},"sour":{"c":"#bf96a8","h":"#ff6fb0","l":"Sour"},"pale":{"c":"#c0b088","h":"#ffd06b","l":"Pale \/ Amber"},"wheat":{"c":"#aeb890","h":"#c8e86a","l":"小麦 \/ Weizen"},"other":{"c":"#88b8ab","h":"#5cf0c2","l":"Lager \/ その他"}};</script>
+<script src="/assets/js/galaxy.js"></script>
+<script src="/assets/js/beerlist.js"></script>
+<script src="/assets/js/beerglass.js"></script>
+</body>
+</html>
+
+=== step 2: POST /agecheck.php?next=%2Fbeer%2Fproducts.php ===
+
+=== step 3: GET /beer/products.php ===
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>銘柄 | Darth Beer.com</title>
+<meta name="description" content="クラフトビール8銘柄の一覧です。スタイルで絞り込み、度数・IBU・評価で並び替えられます。">
+<meta name="keywords" content="craft beer,クラフトビール,ビール,IPA,ブリュワリー">
+<meta property="og:title" content="銘柄 | Darth Beer.com">
+<meta property="og:description" content="クラフトビール8銘柄の一覧です。スタイルで絞り込み、度数・IBU・評価で並び替えられます。">
+<meta property="og:type" content="website">
+<link rel="canonical" href="https://beer.test/beer/products.php">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/assets/css/exposure.css?v=<MTIME>">
+<link rel="stylesheet" href="/assets/css/site.css?v=<MTIME>">
+<style>:root{
+  --g-ipa:#86adbd; --h-ipa:#5fd0ff;
+  --g-stout:#a396b8; --h-stout:#b98cff;
+  --g-sour:#bf96a8; --h-sour:#ff6fb0;
+  --g-pale:#c0b088; --h-pale:#ffd06b;
+  --g-wheat:#aeb890; --h-wheat:#c8e86a;
+  --g-other:#88b8ab; --h-other:#5cf0c2;
+}</style>
+</head>
+<body>
+<div class="site-top">
+<div class="ex-bar"><a class="ex-mark" href="/index.php">DARTH BEER</a></div>
+<nav class="ex-tabs">
+  <a href="/try.php">さがす</a>
+  <a class="on" aria-current="page" href="/beer/products.php">銘柄</a>
+  <a href="/brewery/makers.php">蔵</a>
+  <a href="/style/styles.php">スタイル</a>
+</nav>
+</div>
+<main>
+
+<div class="wrap pg-head">
+  <h1 class="sec-h">銘柄<span class="cnt">全8件</span></h1>
+
+  <!-- 味覚銀河: 全ビールの3D分布 -->
+  <div class="galaxy-shell galaxy-wide" style="margin-top:14px">
+    <canvas id="gx"></canvas>
+    <div class="galaxy-tag">味覚銀河</div>
+    <div class="galaxy-hint">ドラッグで回転 · 星をクリックで詳細へ</div>
+    <div class="legend" id="lg"></div>
+    <div class="tt" id="tt"></div>
+  </div>
+
+  <!-- フィルタ -->
+  <div class="filterbar">
+    <div class="f-chips">
+      <button class="f-chip on" data-group="all">すべて</button>
+                  <button class="f-chip" data-group="ipa"><i class="ex-dot" style="background:#86adbd"></i>IPA系</button>
+            <button class="f-chip" data-group="stout"><i class="ex-dot" style="background:#a396b8"></i>Stout / 黒</button>
+            <button class="f-chip" data-group="sour"><i class="ex-dot" style="background:#bf96a8"></i>Sour</button>
+            <button class="f-chip" data-group="pale"><i class="ex-dot" style="background:#c0b088"></i>Pale / Amber</button>
+            <button class="f-chip" data-group="wheat"><i class="ex-dot" style="background:#aeb890"></i>小麦 / Weizen</button>
+            <button class="f-chip" data-group="other"><i class="ex-dot" style="background:#88b8ab"></i>Lager / その他</button>
+          </div>
+    <div class="f-right">
+      <span class="f-count-wrap"><b id="f-count">8</b> 件</span>
+      <input class="f-search" id="f-search" type="search" placeholder="銘柄・蔵で検索" aria-label="ビールを検索">
+      <select class="f-sort" id="f-sort" aria-label="並び替え">
+        <option value="newest">新着順</option>
+        <option value="rating">評価が高い順</option>
+        <option value="ibu">IBUが高い順</option>
+        <option value="alcohol">度数が高い順</option>
+        <option value="name">名前順</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- カードグリッド -->
+  <div class="grid-b" id="beer-grid">
+        <a class="bcard" href="/beer/detail/product.php?ProductID=108"
+       data-group="stout" data-name="Alpha Zero Stout" data-maker="Alpha Brewing"
+       data-style="Stout" data-rating="0.00" data-ibu="0.00"
+       data-alcohol="0.00" data-order="8">
+      <div class="thumb"><canvas class="beerglass " data-bid="108" data-c="9" data-cl="4" data-f="0" data-i="0.00" data-a="0.00" data-g="stout" role="img" aria-label="Alpha Zero Stout のイメージ（色9・アルコール度0%・IBU0 から生成）"></canvas></div>
+      <div class="body">
+        <div class="stylechip"><i class="ex-dot" style="background:#a396b8"></i>Stout / 黒</div>
+        <h4>Alpha Zero Stout</h4>
+        <div class="mk">🇯🇵 Alpha Brewing</div>
+        <div class="meta">
+          <span>0% · IBU0</span>
+          <span class="rate" role="img" aria-label="5段階評価で0.0点">☆☆☆☆☆</span>        </div>
+      </div>
+    </a>
+        <a class="bcard" href="/beer/detail/product.php?ProductID=107"
+       data-group="ipa" data-name="Alpha No Spec Pale" data-maker="Alpha Brewing"
+       data-style="IPA" data-rating="3.20" data-ibu=""
+       data-alcohol="" data-order="7">
+      <div class="thumb"><canvas class="beerglass " data-bid="107" data-c="5" data-cl="2" data-f="4" data-i="" data-a="" data-g="ipa" role="img" aria-label="Alpha No Spec Pale のイメージ（色5・アルコール度—・IBU— から生成）"></canvas></div>
+      <div class="body">
+        <div class="stylechip"><i class="ex-dot" style="background:#86adbd"></i>IPA系</div>
+        <h4>Alpha No Spec Pale</h4>
+        <div class="mk">🇯🇵 Alpha Brewing</div>
+        <div class="meta">
+          <span>— · IBU—</span>
+          <span class="rate" role="img" aria-label="5段階評価で3.2点">★★★☆☆</span>        </div>
+      </div>
+    </a>
+        <a class="bcard" href="/beer/detail/product.php?ProductID=106"
+       data-group="other" data-name="Zeta Unrated Lager" data-maker="Zeta Brewing"
+       data-style="Pilsner" data-rating="" data-ibu="25.00"
+       data-alcohol="5.00" data-order="6">
+      <div class="thumb"><canvas class="beerglass " data-bid="106" data-c="2" data-cl="1" data-f="1" data-i="25.00" data-a="5.00" data-g="other" role="img" aria-label="Zeta Unrated Lager のイメージ（色2・アルコール度5%・IBU25 から生成）"></canvas></div>
+      <div class="body">
+        <div class="stylechip"><i class="ex-dot" style="background:#88b8ab"></i>Lager / その他</div>
+        <h4>Zeta Unrated Lager</h4>
+        <div class="mk">🇯🇵 Zeta Brewing</div>
+        <div class="meta">
+          <span>5% · IBU25</span>
+          <span class="rate rate-none" role="img" aria-label="評価はまだありません">☆☆☆☆☆</span>        </div>
+      </div>
+    </a>
+        <a class="bcard" href="/beer/detail/product.php?ProductID=105"
+       data-group="other" data-name="Epsilon Unmeasured" data-maker="Epsilon Brewing"
+       data-style="" data-rating="" data-ibu=""
+       data-alcohol="" data-order="5">
+      <div class="thumb"><canvas class="beerglass " data-bid="105" data-c="" data-cl="" data-f="" data-i="" data-a="" data-g="other" role="img" aria-label="Epsilon Unmeasured のイメージ（色—・アルコール度—・IBU— から生成）"></canvas></div>
+      <div class="body">
+        <div class="stylechip"><i class="ex-dot" style="background:#88b8ab"></i>Lager / その他</div>
+        <h4>Epsilon Unmeasured</h4>
+        <div class="mk">🏳️ Epsilon Brewing</div>
+        <div class="meta">
+          <span>— · IBU—</span>
+          <span class="rate rate-none" role="img" aria-label="評価はまだありません">☆☆☆☆☆</span>        </div>
+      </div>
+    </a>
+        <a class="bcard" href="/beer/detail/product.php?ProductID=104"
+       data-group="ipa" data-name="Delta Estimated IPA" data-maker="Delta Brewing"
+       data-style="IPA" data-rating="3.90" data-ibu="45.00"
+       data-alcohol="6.00" data-order="4">
+      <div class="thumb"><canvas class="beerglass " data-bid="104" data-c="4" data-cl="2" data-f="3" data-i="45.00" data-a="6.00" data-g="ipa" role="img" aria-label="Delta Estimated IPA のイメージ（色4・アルコール度6%・IBU45 から生成）"></canvas></div>
+      <div class="body">
+        <div class="stylechip"><i class="ex-dot" style="background:#86adbd"></i>IPA系</div>
+        <h4>Delta Estimated IPA</h4>
+        <div class="mk">🇬🇧 Delta Brewing</div>
+        <div class="meta">
+          <span>6% · IBU45<span class="est-mark" title="公式情報が無いため、同じスタイルの典型値から推定した値です">推定</span></span>
+          <span class="rate" role="img" aria-label="5段階評価で3.9点">★★★★☆</span>        </div>
+      </div>
+    </a>
+        <a class="bcard" href="/beer/detail/product.php?ProductID=103"
+       data-group="stout" data-name="Gamma Dark Stout" data-maker="Gamma Brewing"
+       data-style="Stout" data-rating="4.80" data-ibu="35.00"
+       data-alcohol="6.20" data-order="3">
+      <div class="thumb"><canvas class="beerglass " data-bid="103" data-c="9" data-cl="4" data-f="1" data-i="35.00" data-a="6.20" data-g="stout" role="img" aria-label="Gamma Dark Stout のイメージ（色9・アルコール度6.2%・IBU35 から生成）"></canvas></div>
+      <div class="body">
+        <div class="stylechip"><i class="ex-dot" style="background:#a396b8"></i>Stout / 黒</div>
+        <h4>Gamma Dark Stout</h4>
+        <div class="mk">🇯🇵 Gamma Brewing</div>
+        <div class="meta">
+          <span>6.2% · IBU35</span>
+          <span class="rate" role="img" aria-label="5段階評価で4.8点">★★★★★</span>        </div>
+      </div>
+    </a>
+        <a class="bcard" href="/beer/detail/product.php?ProductID=102"
+       data-group="other" data-name="Beta Light Pilsner" data-maker="Beta Brewing"
+       data-style="Pilsner" data-rating="3.50" data-ibu="99.99"
+       data-alcohol="4.80" data-order="2">
+      <div class="thumb"><canvas class="beerglass " data-bid="102" data-c="2" data-cl="2" data-f="1" data-i="99.99" data-a="4.80" data-g="other" role="img" aria-label="Beta Light Pilsner のイメージ（色2・アルコール度4.8%・IBU99.99 から生成）"></canvas></div>
+      <div class="body">
+        <div class="stylechip"><i class="ex-dot" style="background:#88b8ab"></i>Lager / その他</div>
+        <h4>Beta Light Pilsner</h4>
+        <div class="mk">🇯🇵 Beta Brewing</div>
+        <div class="meta">
+          <span>4.8% · IBU99.99</span>
+          <span class="rate" role="img" aria-label="5段階評価で3.5点">★★★★☆</span>        </div>
+      </div>
+    </a>
+        <a class="bcard" href="/beer/detail/product.php?ProductID=101"
+       data-group="ipa" data-name="Alpha Citrus IPA" data-maker="Alpha Brewing"
+       data-style="IPA" data-rating="4.20" data-ibu="42.00"
+       data-alcohol="5.50" data-order="1">
+      <div class="thumb"><canvas class="beerglass " data-bid="101" data-c="3" data-cl="1" data-f="2" data-i="42.00" data-a="5.50" data-g="ipa" role="img" aria-label="Alpha Citrus IPA のイメージ（色3・アルコール度5.5%・IBU42 から生成）"></canvas></div>
+      <div class="body">
+        <div class="stylechip"><i class="ex-dot" style="background:#86adbd"></i>IPA系</div>
+        <h4>Alpha Citrus IPA</h4>
+        <div class="mk">🇯🇵 Alpha Brewing</div>
+        <div class="meta">
+          <span>5.5% · IBU42</span>
+          <span class="rate" role="img" aria-label="5段階評価で4.2点">★★★★☆</span>        </div>
+      </div>
+    </a>
+      </div>
+</div>
+
+<script>window.BEERS = [{"id":108,"n":"Alpha Zero Stout","a":0,"i":0,"f":0,"c":9,"r":0,"g":"stout","st":"Stout","mk":"Alpha Brewing","cc":"JP"},{"id":107,"n":"Alpha No Spec Pale","a":0,"i":0,"f":4,"c":5,"r":3.2,"g":"ipa","st":"IPA","mk":"Alpha Brewing","cc":"JP"},{"id":106,"n":"Zeta Unrated Lager","a":5,"i":25,"f":1,"c":2,"r":0,"g":"other","st":"Pilsner","mk":"Zeta Brewing","cc":"JP"},{"id":105,"n":"Epsilon Unmeasured","a":0,"i":0,"f":0,"c":0,"r":0,"g":"other","st":"—","mk":"Epsilon Brewing","cc":""},{"id":104,"n":"Delta Estimated IPA","a":6,"i":45,"f":3,"c":4,"r":3.9,"g":"ipa","st":"IPA","mk":"Delta Brewing","cc":"GB"},{"id":103,"n":"Gamma Dark Stout","a":6.2,"i":35,"f":1,"c":9,"r":4.8,"g":"stout","st":"Stout","mk":"Gamma Brewing","cc":"JP"},{"id":102,"n":"Beta Light Pilsner","a":4.8,"i":99.99,"f":1,"c":2,"r":3.5,"g":"other","st":"Pilsner","mk":"Beta Brewing","cc":"JP"},{"id":101,"n":"Alpha Citrus IPA","a":5.5,"i":42,"f":2,"c":3,"r":4.2,"g":"ipa","st":"IPA","mk":"Alpha Brewing","cc":"JP"}];</script>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  initGalaxy({canvas:'#gx', tooltip:'#tt', legend:'#lg', data:window.BEERS,
+    onPick:function(b){location.href='/beer/detail/product.php?ProductID='+encodeURIComponent(b.id);}});
+});
+</script>
+
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <nav class="foot-nav">
+      <a href="/about.php">このサイトについて</a>
+      <a href="/privacy.php">プライバシーポリシー</a>
+      <a href="/terms.php">利用規約</a>
+      <a href="https://docs.google.com/forms/d/e/1FAIpQLSc59D4Xn78uL0XDJ9Ztfu_Mp2yY2XJuBZtzbZqmY-7YN0XPcw/viewform?usp=header" target="_blank" rel="noopener nofollow">お問い合わせ</a>
+    </nav>
+    <div class="foot-note">20歳未満の飲酒は法律で禁止されています。</div>
+  </div>
+</footer>
+<script>window.STYLE_GROUPS = {"ipa":{"c":"#86adbd","h":"#5fd0ff","l":"IPA系"},"stout":{"c":"#a396b8","h":"#b98cff","l":"Stout \/ 黒"},"sour":{"c":"#bf96a8","h":"#ff6fb0","l":"Sour"},"pale":{"c":"#c0b088","h":"#ffd06b","l":"Pale \/ Amber"},"wheat":{"c":"#aeb890","h":"#c8e86a","l":"小麦 \/ Weizen"},"other":{"c":"#88b8ab","h":"#5cf0c2","l":"Lager \/ その他"}};</script>
+<script src="/assets/js/galaxy.js"></script>
+<script src="/assets/js/beerlist.js"></script>
+<script src="/assets/js/beerglass.js"></script>
+</body>
+</html>
+

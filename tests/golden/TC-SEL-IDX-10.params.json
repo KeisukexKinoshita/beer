@@ -1,0 +1,1 @@
+{"steps": [{"method": "GET", "uri": "/", "no_jar": true}, {"method": "GET", "uri": "/", "no_jar": true}], "check_distinct_cookie": "db_age_tok"}

@@ -1,0 +1,15 @@
+{
+  "id": "TC-SEL-PRIVACY-02",
+  "type": "page",
+  "scope": "site",
+  "page": "privacy.php",
+  "note": "プライバシーポリシー。ホスト drtbeer.com=幕は出さず GA4 のタグは出る",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {},
+    "post": {},
+    "host": "drtbeer.com"
+  }
+}

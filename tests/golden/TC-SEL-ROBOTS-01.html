@@ -1,0 +1,27 @@
+# Darth Beer.com
+# 投稿機能 (post/) は 2026-09-02 に配信を止めた (あとで作り直す)。
+# すでに索引されている場合に備えて明示しておく。
+User-agent: *
+Disallow: /post/
+Disallow: /img/tmp/
+Disallow: /img/upload/
+
+# 年齢確認・写真の受け渡し口・LINE連携は索引対象ではない。
+Disallow: /agecheck.php
+Disallow: /photo.php
+Disallow: /line/
+Disallow: /history.php
+
+# 旧サイト (php/) と jQuery のデモページ (js/) は 2026-08-30 に配信をやめた。
+# すでに索引されている場合に備えて明示しておく。
+Disallow: /php/
+Disallow: /js/
+Disallow: /css/
+
+# サイトマップの場所。Sitemap ディレクティブは絶対URLでしか書けないため、
+# 公開ドメインが決まるまで書けなかった (2026-09-02 に drtbeer.com で公開)。
+#
+# 実体は sitemap.php (ホスト名から絶対URLを組み立てる動的生成) だが、
+# **Search Console は拡張子が .php のパスを受け付けない**ため、
+# nginx (deploy/nginx/drtbeer.conf) で /sitemap.xml から振り向けている。
+Sitemap: https://drtbeer.com/sitemap.xml

@@ -1,0 +1,16 @@
+=== step 1: GET /beer/products.php ===
+Status: 200
+Cache-Control: private
+Vary: Cookie
+Set-Cookie: db_age_tok=<AGE_TOK>; path=/; secure; HttpOnly; SameSite=Lax
+Content-type: text/html; charset=UTF-8
+=== step 2: POST /agecheck.php?next=%2Fbeer%2Fproducts.php ===
+Status: 302
+Set-Cookie: db_vid=<VISITOR_ID>; expires=<DATE:ok>; Max-Age=<MAX_AGE:365d>; path=/; secure; HttpOnly; SameSite=Lax
+Location: /beer/products.php
+Content-type: text/html; charset=UTF-8
+=== step 3: GET /beer/products.php ===
+Status: 200
+Cache-Control: private
+Vary: Cookie
+Content-type: text/html; charset=UTF-8

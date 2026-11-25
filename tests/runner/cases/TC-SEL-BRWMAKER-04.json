@@ -1,0 +1,19 @@
+{
+  "id": "TC-SEL-BRWMAKER-04",
+  "type": "page",
+  "scope": "site",
+  "page": "brewery/detail/maker.php",
+  "note": "蔵詳細(mk9005)。説明が空・URL1 が空=それぞれの段落なし、country_code NULL=旗は白旗・国名なし、緯度経度なし=「所在地データ未設定」、ロゴなし",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {
+      "MakerID": "mk9005"
+    },
+    "post": {},
+    "cookies": {
+      "db_vid": "0123456789abcdef0123456789abcdef"
+    }
+  }
+}

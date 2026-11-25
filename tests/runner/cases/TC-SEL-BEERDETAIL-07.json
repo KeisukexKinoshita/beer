@@ -1,0 +1,19 @@
+{
+  "id": "TC-SEL-BEERDETAIL-07",
+  "type": "page",
+  "scope": "site",
+  "page": "beer/detail/product.php",
+  "note": "銘柄詳細(107)。度数と IBU だけ NULL=「—」(0 と出さない)。評価は出る",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {
+      "ProductID": "107"
+    },
+    "post": {},
+    "cookies": {
+      "db_vid": "0123456789abcdef0123456789abcdef"
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "id": "TC-SEL-IDX-09",
+  "type": "page",
+  "scope": "site",
+  "page": "index.php",
+  "note": "余計なクエリ(?utm=x&fbclid=y)付き。canonical に余計なクエリが残らない・幕の戻り先(form の action の next)からも落ちる",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {
+      "utm": "x",
+      "fbclid": "y"
+    },
+    "post": {},
+    "uri": "/index.php?utm=x&fbclid=y"
+  }
+}

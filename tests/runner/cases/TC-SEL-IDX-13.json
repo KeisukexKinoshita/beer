@@ -1,0 +1,15 @@
+{
+  "id": "TC-SEL-IDX-13",
+  "type": "page",
+  "scope": "site",
+  "page": "index.php",
+  "note": "トップ。未確認(Cookie なし)で drtbeer.com=幕が出ていても GA4 のタグは出る(現状の固定。privacy.php の記述との整合は要確認)",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {},
+    "post": {},
+    "host": "drtbeer.com"
+  }
+}

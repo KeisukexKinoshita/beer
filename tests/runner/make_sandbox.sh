@@ -9,7 +9,7 @@ mkdir -p tests/sandbox
 for d in common css js php post style brewery beer bk_html assets; do
   cp -a "$d" tests/sandbox/
 done
-cp -a index.php about.php privacy.php terms.php agecheck.php style.css chartjs-plugin-datalabels.min.js tests/sandbox/
+cp -a index.php about.php privacy.php terms.php agecheck.php try.php history.php sitemap.php robots.txt style.css chartjs-plugin-datalabels.min.js tests/sandbox/
 
 # DB接続設定。**実データの入った db_config.local.php をそのままコピーしない。**
 # 以前はそのままコピーしていたため、特性テストが実DB(beer)に直接フィクスチャを

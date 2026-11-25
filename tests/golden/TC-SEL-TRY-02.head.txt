@@ -1,0 +1,3 @@
+Status: 200
+Set-Cookie: db_vid=<VISITOR_ID>; expires=<DATE:ok>; Max-Age=<MAX_AGE:365d>; path=/; secure; HttpOnly; SameSite=Lax
+Content-type: text/html; charset=UTF-8

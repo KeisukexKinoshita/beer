@@ -1,0 +1,18 @@
+{
+  "id": "TC-SEL-BEERDETAIL-10",
+  "type": "page",
+  "scope": "site",
+  "page": "beer/detail/product.php",
+  "note": "銘柄詳細に余計なクエリ(?ProductID=102&utm=x)。canonical と幕の戻り先は ProductID だけ残る",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {
+      "ProductID": "102",
+      "utm": "x"
+    },
+    "post": {},
+    "uri": "/beer/detail/product.php?ProductID=102&utm=x"
+  }
+}

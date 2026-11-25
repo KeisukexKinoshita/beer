@@ -1,0 +1,20 @@
+{
+  "id": "TC-SEL-BEERDETAIL-11",
+  "type": "page",
+  "scope": "site",
+  "page": "beer/detail/product.php",
+  "note": "銘柄詳細(102)。ホスト drtbeer.com(確認済み)=GA4 のタグが出る",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {
+      "ProductID": "102"
+    },
+    "post": {},
+    "cookies": {
+      "db_vid": "0123456789abcdef0123456789abcdef"
+    },
+    "host": "drtbeer.com"
+  }
+}

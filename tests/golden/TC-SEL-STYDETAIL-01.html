@@ -42,7 +42,7 @@
   
     <div class="panel" style="margin-top:24px">
     <h3>味覚マップ上の位置</h3>
-    <div class="sub">明るい点がこのスタイルの1銘柄(原点=平均)</div>
+    <div class="sub">明るい点がこのスタイルの2銘柄(原点=平均)</div>
     <div class="galaxy-shell galaxy-wide">
       <canvas id="gx"></canvas>
       <div class="galaxy-tag">味覚銀河</div>
@@ -54,7 +54,7 @@
 
   <section class="blk">
     <div class="sec-top">
-      <h2 class="sec-h">銘柄<span class="cnt">全1件</span></h2>
+      <h2 class="sec-h">銘柄<span class="cnt">全2件</span></h2>
     </div>
     <div class="grid-b">
             <a class="bcard" href="/beer/detail/product.php?ProductID=102">
@@ -66,15 +66,24 @@
           <div class="meta"><span>4.8% · IBU99.99</span><span class="rate" role="img" aria-label="5段階評価で3.5点">★★★★☆</span></div>
         </div>
       </a>
+            <a class="bcard" href="/beer/detail/product.php?ProductID=106">
+        <div class="thumb"><canvas class="beerglass " data-bid="106" data-c="2" data-cl="1" data-f="1" data-i="25.00" data-a="5.00" data-g="other" role="img" aria-label="Zeta Unrated Lager のイメージ（色2・アルコール度5%・IBU25 から生成）"></canvas></div>
+        <div class="body">
+          <div class="stylechip"><i class="ex-dot" style="background:#88b8ab"></i>Lager / その他</div>
+          <h4>Zeta Unrated Lager</h4>
+          <div class="mk">🇯🇵 Zeta Brewing</div>
+          <div class="meta"><span>5% · IBU25</span><span class="rate rate-none" role="img" aria-label="評価はまだありません">☆☆☆☆☆</span></div>
+        </div>
+      </a>
           </div>
   </section>
   </div>
 
-<script>window.BEERS = [{"id":104,"n":"Delta Estimated IPA","a":6,"i":45,"f":3,"c":4,"r":3.9,"g":"ipa","st":"IPA","mk":"Delta Brewing","cc":"GB"},{"id":103,"n":"Gamma Dark Stout","a":6.2,"i":35,"f":1,"c":9,"r":4.8,"g":"stout","st":"Stout","mk":"Gamma Brewing","cc":"JP"},{"id":102,"n":"Beta Light Pilsner","a":4.8,"i":99.99,"f":1,"c":2,"r":3.5,"g":"other","st":"Pilsner","mk":"Beta Brewing","cc":"JP"},{"id":101,"n":"Alpha Citrus IPA","a":5.5,"i":42,"f":2,"c":3,"r":4.2,"g":"ipa","st":"IPA","mk":"Alpha Brewing","cc":"JP"}];</script>
+<script>window.BEERS = [{"id":108,"n":"Alpha Zero Stout","a":0,"i":0,"f":0,"c":9,"r":0,"g":"stout","st":"Stout","mk":"Alpha Brewing","cc":"JP"},{"id":107,"n":"Alpha No Spec Pale","a":0,"i":0,"f":4,"c":5,"r":3.2,"g":"ipa","st":"IPA","mk":"Alpha Brewing","cc":"JP"},{"id":106,"n":"Zeta Unrated Lager","a":5,"i":25,"f":1,"c":2,"r":0,"g":"other","st":"Pilsner","mk":"Zeta Brewing","cc":"JP"},{"id":105,"n":"Epsilon Unmeasured","a":0,"i":0,"f":0,"c":0,"r":0,"g":"other","st":"—","mk":"Epsilon Brewing","cc":""},{"id":104,"n":"Delta Estimated IPA","a":6,"i":45,"f":3,"c":4,"r":3.9,"g":"ipa","st":"IPA","mk":"Delta Brewing","cc":"GB"},{"id":103,"n":"Gamma Dark Stout","a":6.2,"i":35,"f":1,"c":9,"r":4.8,"g":"stout","st":"Stout","mk":"Gamma Brewing","cc":"JP"},{"id":102,"n":"Beta Light Pilsner","a":4.8,"i":99.99,"f":1,"c":2,"r":3.5,"g":"other","st":"Pilsner","mk":"Beta Brewing","cc":"JP"},{"id":101,"n":"Alpha Citrus IPA","a":5.5,"i":42,"f":2,"c":3,"r":4.2,"g":"ipa","st":"IPA","mk":"Alpha Brewing","cc":"JP"}];</script>
 <script>
 document.addEventListener('DOMContentLoaded', function(){
   initGalaxy({canvas:'#gx', tooltip:'#tt', legend:'#lg', data:window.BEERS,
-    highlightIds:[102],
+    highlightIds:[102,106],
     onPick:function(b){location.href='/beer/detail/product.php?ProductID='+encodeURIComponent(b.id);}});
 });
 </script>

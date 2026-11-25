@@ -1,0 +1,24 @@
+{
+  "id": "TC-SEL-AGECHECK-07",
+  "type": "page",
+  "scope": "site",
+  "page": "agecheck.php",
+  "note": "行のある未確認の訪問者が行ベースの csrf で「はい」=成立(try.php から飛ばされる人の経路)。tok の Cookie は無い。302 /index.php、その行が確認済みになる",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {},
+    "post": {
+      "confirm": "yes",
+      "csrf": "c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0"
+    },
+    "cookies": {
+      "db_vid": "fedcba9876543210fedcba9876543210"
+    },
+    "method": "POST"
+  },
+  "dump_queries": [
+    "SELECT age_confirmed, age_confirmed_at IS NOT NULL AS has_confirmed_at FROM visitor WHERE visitor_id='fedcba9876543210fedcba9876543210'"
+  ]
+}

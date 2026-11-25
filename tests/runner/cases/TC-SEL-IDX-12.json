@@ -1,0 +1,18 @@
+{
+  "id": "TC-SEL-IDX-12",
+  "type": "page",
+  "scope": "site",
+  "page": "index.php",
+  "note": "トップ。ホスト drtbeer.com:443(ポート付き)=現状は GA4 のタグが出ない(現状の固定。ブラウザは既定ポートでは Host にポートを付けない)",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {},
+    "post": {},
+    "cookies": {
+      "db_vid": "0123456789abcdef0123456789abcdef"
+    },
+    "host": "drtbeer.com:443"
+  }
+}

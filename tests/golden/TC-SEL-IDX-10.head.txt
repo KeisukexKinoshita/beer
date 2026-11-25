@@ -1,0 +1,13 @@
+=== step 1: GET / ===
+Status: 200
+Cache-Control: private
+Vary: Cookie
+Set-Cookie: db_age_tok=<AGE_TOK>; path=/; secure; HttpOnly; SameSite=Lax
+Content-type: text/html; charset=UTF-8
+=== step 2: GET / ===
+Status: 200
+Cache-Control: private
+Vary: Cookie
+Set-Cookie: db_age_tok=<AGE_TOK>; path=/; secure; HttpOnly; SameSite=Lax
+Content-type: text/html; charset=UTF-8
+# check: db_age_tok issued 2 times, distinct = yes
