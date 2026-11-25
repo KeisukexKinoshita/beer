@@ -1,33 +1,29 @@
-# 既知の失敗一覧(compare_golden.sh が読む)。1行1ファイル名。# で始まる行はコメント。
+# 既知の例外の一覧(compare_golden.py が読む)。**すべての行に理由が要る**(理由の無い行は失敗)。
 #
-# 原因: tests/fixtures/fixtures.sql のスキーマが db/migrations/001〜004 で追加された
-# 列に追いついていない(tests/cases.md §13.3)。fixtures.sql の同期は本ラウンドの
-# 対象外として見送り済み。fixtures.sql を直したら、この一覧からその行を消すこと
-# (compare_golden.sh は、一覧にあるのに一致してしまったファイルを STALE として失敗にする)。
+# 書式(1行1件。# 以降はコメント):
+#   <ファイル名> | <理由>        … golden と違っていても失敗にしない(例: TC-XXX-01.html)
+#   noise:<ケースID> | <理由>    … 実行が Warning / Notice / Deprecated を出す・非0終了でも、
+#                                 golden と一致していれば失敗にしない(意図して記録しているもの)
 #
-# 2026-09-20、bash tests/runner/run_all.sh && bash tests/runner/compare_golden.sh を
-# 実行して確認した実際の DIFF (18件)をそのまま列挙している。
+# **新サイトのページ(ケース定義の scope が "site")は、どちらの形でも書けない**(書くと失敗)。
+# 落ちているページは、ここに足さずに直す。旧コード(scope が "legacy")だけ書ける。
+#
+# 旧コード = php/ post/ common/sql.php 系。配布対象外(deploy/make_archive.sh の冒頭)で、本番では
+# 動いていない。直さずに現状を固定してある。2026-11 のテスト用 DB の作り直し(fixtures.sql の後に
+# db/migrations/ を全部当てる)で、旧コードのケースが Fatal で落ちる状態はすべて解消し、
+# 通らないファイル(DIFF の例外)は 0 件になった。残るのは次の「警告つきで固定」だけ。
 
-# TC-SEL-IDX-01 は .exit は golden と一致している(golden 側も既に Fatal=255 のため)。
-# .html だけが既知の DIFF。
-TC-SEL-IDX-01.html
-TC-SEL-BEERPRODUCTS-01.html
-TC-SEL-BEERPRODUCTS-01.exit
-TC-SEL-BEERDETAIL-01.html
-TC-SEL-BEERDETAIL-01.exit
-TC-SEL-BRWMAKER-01.html
-TC-SEL-BRWMAKER-01.exit
-TC-SEL-STYDETAIL-01.html
-TC-SEL-STYDETAIL-01.exit
-TC-SEL-STYSTYLES-01.html
-TC-SEL-STYSTYLES-01.exit
-TC-POST-THANK-NEW-01.html
-TC-POST-THANK-NEW-01.exit
-TC-POST-THANK-NEW-01.db.txt
-TC-POST-THANK-NEW-02.html
-TC-POST-THANK-NEW-02.exit
-TC-POST-THANK-NEW-02.db.txt
+# --- ハーネスが $_FILES を用意しないことによる(tests/cases.md §3.1 の既知の制約。バグではない)
+noise:TC-SEL-CHECK-NEW-01    | 旧コード post/check/check.php。ハーネスが $_FILES を渡さないので upimg の警告と move_uploaded_file の Deprecated が出る
+noise:TC-SEL-CHECK-UPDATE-01 | 旧コード post/check/check.php。同上($_FILES 無し)に加え、update 経路は投稿フォームの項目(chk_*)を渡さないため未定義キーの警告が出る
+noise:TC-SEL-PHPCHECK-NEW-01 | 旧コード php/check.php。ハーネスが $_FILES を渡さないので upimg の警告と move_uploaded_file の Deprecated が出る
 
-# Fatal ではなく Warning (Undefined array key "country_code") が混入するだけなので
-# exit code は golden と一致している(このファイルは .html のみ)
-TC-SEL-BRWMAKERS-01.html
+# --- 旧コードのページが、GET/POST の無い状態で呼ばれたときの警告をそのまま固定している(旧コードは直さない)
+noise:TC-SEL-ADDP-01    | 旧コード php/add_product.php の未定義変数 $product_id(単独表示では設定されない。PHP 8 の警告)
+noise:TC-SEL-POSTADDP-01 | 旧コード post/add_product.php の未定義変数 $product_id(同上)
+noise:TC-SEL-POSTEVAL-01 | 旧コード post/evaluation.php の未定義変数 $product_id(同上)
+noise:TC-SEL-EVAL-01    | 旧コード php/evaluation.php。product_id 無しで開いた経路の未定義変数・未定義キー・nl2br(null) の警告
+noise:TC-SEL-LMAK-01    | 旧コード php/list_maker.php。GET product_id が無いときの未定義キー警告
+noise:TC-SEL-LSTY-01    | 旧コード php/list_style.php。GET product_id が無いときの未定義キー警告
+noise:TC-SEL-MAKERS-01  | 旧コード php/makers.php 76行目。未定義キー "comment" の警告
+noise:TC-SEL-PRD-01     | 旧コード php/product.php 124行目。未定義キー "comment" の警告
