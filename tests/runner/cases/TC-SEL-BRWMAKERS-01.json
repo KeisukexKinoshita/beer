@@ -1,7 +1,12 @@
 {
   "id": "TC-SEL-BRWMAKERS-01",
   "type": "page",
+  "scope": "site",
   "page": "brewery/makers.php",
+  "note": "蔵一覧。Cookie なし=幕あり",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
   "params": {
     "get": {},
     "post": {}

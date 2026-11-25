@@ -1,0 +1,17 @@
+{
+  "id": "TC-SEL-IDX-07",
+  "type": "page",
+  "scope": "site",
+  "page": "index.php",
+  "note": "トップ。Cookie が書式不正(32桁hexでない)=幕あり、DB を引かない",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {},
+    "post": {},
+    "cookies": {
+      "db_vid": "not-a-visitor-id"
+    }
+  }
+}

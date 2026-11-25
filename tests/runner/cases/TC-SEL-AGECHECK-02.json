@@ -1,0 +1,17 @@
+{
+  "id": "TC-SEL-AGECHECK-02",
+  "type": "page",
+  "scope": "site",
+  "page": "agecheck.php",
+  "note": "年齢確認画面(GET、行のある訪問者)。tok と csrf の hidden",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {},
+    "post": {},
+    "cookies": {
+      "db_vid": "fedcba9876543210fedcba9876543210"
+    }
+  }
+}

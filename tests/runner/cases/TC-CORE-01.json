@@ -1,6 +1,7 @@
 {
   "id": "TC-CORE-01",
   "type": "core",
+  "scope": "legacy",
   "vars": {
     "src_prd": "no",
     "src_mak": "no"

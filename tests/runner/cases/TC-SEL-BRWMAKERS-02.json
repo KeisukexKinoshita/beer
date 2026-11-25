@@ -1,0 +1,17 @@
+{
+  "id": "TC-SEL-BRWMAKERS-02",
+  "type": "page",
+  "scope": "site",
+  "page": "brewery/makers.php",
+  "note": "蔵一覧。確認済み=幕なし(国旗・取扱件数)",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {},
+    "post": {},
+    "cookies": {
+      "db_vid": "0123456789abcdef0123456789abcdef"
+    }
+  }
+}

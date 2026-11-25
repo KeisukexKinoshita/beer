@@ -1,0 +1,20 @@
+{
+  "id": "TC-SEL-AGECHECK-06",
+  "type": "page",
+  "scope": "site",
+  "page": "agecheck.php",
+  "note": "「いいえ」。ご利用いただけません画面(ナビなし)",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {},
+    "post": {
+      "declined": "yes"
+    },
+    "cookies": {
+      "db_age_tok": "aaaabbbbccccddddeeeeffff00001111"
+    },
+    "method": "POST"
+  }
+}

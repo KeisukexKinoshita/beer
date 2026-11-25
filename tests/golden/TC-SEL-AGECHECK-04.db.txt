@@ -1,0 +1,3 @@
+== SELECT COUNT(*) AS visitors FROM visitor WHERE visitor_id NOT IN ('0123456789abcdef0123456789abcdef','fedcba9876543210fedcba9876543210') ==
+visitors
+0

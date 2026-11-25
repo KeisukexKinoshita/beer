@@ -1,6 +1,7 @@
 {
   "id": "TC-SEL-ADDP-01",
   "type": "page",
+  "scope": "legacy",
   "page": "php/add_product.php",
   "params": {
     "get": {},

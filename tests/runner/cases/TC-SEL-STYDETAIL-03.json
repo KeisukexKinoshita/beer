@@ -1,0 +1,19 @@
+{
+  "id": "TC-SEL-STYDETAIL-03",
+  "type": "page",
+  "scope": "site",
+  "page": "style/detail/style.php",
+  "note": "スタイル詳細(ID 4=銘柄 0 件)。味覚マップ・銘柄の節を出さない",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {
+      "StyleID": "4"
+    },
+    "post": {},
+    "cookies": {
+      "db_vid": "0123456789abcdef0123456789abcdef"
+    }
+  }
+}

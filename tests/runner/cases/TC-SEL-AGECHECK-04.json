@@ -1,0 +1,24 @@
+{
+  "id": "TC-SEL-AGECHECK-04",
+  "type": "page",
+  "scope": "site",
+  "page": "agecheck.php",
+  "note": "「はい」だが合言葉が合わない POST。リダイレクトせず画面を出し直し、visitor に行を作らない",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {},
+    "post": {
+      "confirm": "yes",
+      "tok": "00000000000000000000000000000000"
+    },
+    "cookies": {
+      "db_age_tok": "aaaabbbbccccddddeeeeffff00001111"
+    },
+    "method": "POST"
+  },
+  "dump_queries": [
+    "SELECT COUNT(*) AS visitors FROM visitor WHERE visitor_id NOT IN ('0123456789abcdef0123456789abcdef','fedcba9876543210fedcba9876543210')"
+  ]
+}

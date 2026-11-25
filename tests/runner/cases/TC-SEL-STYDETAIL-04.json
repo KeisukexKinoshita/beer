@@ -1,0 +1,19 @@
+{
+  "id": "TC-SEL-STYDETAIL-04",
+  "type": "page",
+  "scope": "site",
+  "page": "style/detail/style.php",
+  "note": "スタイル詳細。存在しない ID=HTTP 404",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {
+      "StyleID": "99"
+    },
+    "post": {},
+    "cookies": {
+      "db_vid": "0123456789abcdef0123456789abcdef"
+    }
+  }
+}

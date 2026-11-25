@@ -1,6 +1,7 @@
 {
   "id": "TC-CORE-03",
   "type": "core",
+  "scope": "legacy",
   "vars": {
     "src_prd": "no",
     "sql_where": "''=''",

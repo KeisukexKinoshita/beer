@@ -1,0 +1,17 @@
+{
+  "id": "TC-SEL-IDX-02",
+  "type": "page",
+  "scope": "site",
+  "page": "index.php",
+  "note": "トップ。確認済みの訪問者(visitor.age_confirmed=1 と db_vid)=幕なし、Set-Cookie なし",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {},
+    "post": {},
+    "cookies": {
+      "db_vid": "0123456789abcdef0123456789abcdef"
+    }
+  }
+}

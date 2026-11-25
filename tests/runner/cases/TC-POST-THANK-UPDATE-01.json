@@ -1,6 +1,7 @@
 {
   "id": "TC-POST-THANK-UPDATE-01",
   "type": "page",
+  "scope": "legacy",
   "page": "php/thank.php",
   "dump_tables": [
     "products",

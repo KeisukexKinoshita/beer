@@ -1,6 +1,7 @@
 {
   "id": "TC-POST-THANK-NEW-01",
   "type": "page",
+  "scope": "legacy",
   "page": "php/thank.php",
   "pre_img": "upload_test.png",
   "dump_tables": [

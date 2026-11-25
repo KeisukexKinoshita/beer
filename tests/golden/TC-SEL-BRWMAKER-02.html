@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Delta Brewing | Darth Beer.com</title>
+<meta name="description" content="Craft brewery Delta, a UK fixture with coordinates.">
+<meta name="keywords" content="craft beer,クラフトビール,ビール,IPA,ブリュワリー">
+<meta property="og:title" content="Delta Brewing | Darth Beer.com">
+<meta property="og:description" content="Craft brewery Delta, a UK fixture with coordinates.">
+<meta property="og:type" content="website">
+<link rel="canonical" href="https://beer.test/brewery/detail/maker.php?MakerID=mk9004">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/assets/css/exposure.css?v=<MTIME>">
+<link rel="stylesheet" href="/assets/css/site.css?v=<MTIME>">
+<style>:root{
+  --g-ipa:#86adbd; --h-ipa:#5fd0ff;
+  --g-stout:#a396b8; --h-stout:#b98cff;
+  --g-sour:#bf96a8; --h-sour:#ff6fb0;
+  --g-pale:#c0b088; --h-pale:#ffd06b;
+  --g-wheat:#aeb890; --h-wheat:#c8e86a;
+  --g-other:#88b8ab; --h-other:#5cf0c2;
+}</style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+</head>
+<body>
+<div class="site-top">
+<div class="ex-bar"><a class="ex-mark" href="/index.php">DARTH BEER</a></div>
+<nav class="ex-tabs">
+  <a href="/try.php">さがす</a>
+  <a href="/beer/products.php">銘柄</a>
+  <a class="on" aria-current="page" href="/brewery/makers.php">蔵</a>
+  <a href="/style/styles.php">スタイル</a>
+</nav>
+</div>
+<main>
+
+<div class="wrap">
+  <!-- PC: 概要 | 製造地 -->
+  <div class="brew-top">
+    <div class="brew-info">
+            <h1 class="dt-title">🇬🇧 Delta Brewing</h1>
+              <p class="dt-desc">Craft brewery Delta, a UK fixture with coordinates.</p>
+                    <p style="margin-top:12px;font-size:13px">公式サイト：
+          <a class="lk" href="https://delta.example.com" target="_blank" rel="noopener nofollow" style="word-break:break-all">https://delta.example.com</a></p>
+          </div>
+
+    <div class="brew-map">
+      <div class="cap">イギリス</div>
+      <div class="map">
+                  <div class="lmap" data-lat="57.360000" data-lng="-2.070000" data-label="Delta Brewing"></div>
+              </div>
+    </div>
+  </div>
+
+  <!-- 味覚マップ: このブリュワリーのビールを強調 -->
+  <div class="panel" style="margin-top:26px">
+    <h3>味覚マップ上の位置</h3>
+    <div class="sub">明るい点がこの蔵の1銘柄(原点=平均)</div>
+    <div class="galaxy-shell galaxy-wide">
+      <canvas id="gx"></canvas>
+      <div class="galaxy-tag">味覚銀河</div>
+      <div class="galaxy-hint">ドラッグで回転 · 星クリックで詳細</div>
+      <div class="legend" id="lg"></div>
+      <div class="tt" id="tt"></div>
+    </div>
+  </div>
+
+  <!-- 取扱ビール -->
+  <section class="blk">
+    <div class="sec-top">
+      <h2 class="sec-h">銘柄<span class="cnt">全1件</span></h2>
+    </div>
+    <div class="grid-b">
+            <a class="bcard" href="/beer/detail/product.php?ProductID=104">
+        <div class="thumb"><canvas class="beerglass " data-bid="104" data-c="4" data-cl="2" data-f="3" data-i="45.00" data-a="6.00" data-g="ipa" role="img" aria-label="Delta Estimated IPA のイメージ（色4・アルコール度6%・IBU45 から生成）"></canvas></div>
+        <div class="body">
+          <div class="stylechip"><i class="ex-dot" style="background:#86adbd"></i>IPA系</div>
+          <h4>Delta Estimated IPA</h4>
+          <div class="meta"><span>6% · IBU45<span class="est-mark" title="公式情報が無いため、同じスタイルの典型値から推定した値です">推定</span></span><span class="rate" role="img" aria-label="5段階評価で3.9点">★★★★☆</span></div>
+        </div>
+      </a>
+          </div>
+  </section>
+</div>
+
+<script>window.BEERS = [{"id":104,"n":"Delta Estimated IPA","a":6,"i":45,"f":3,"c":4,"r":3.9,"g":"ipa","st":"IPA","mk":"Delta Brewing","cc":"GB"},{"id":103,"n":"Gamma Dark Stout","a":6.2,"i":35,"f":1,"c":9,"r":4.8,"g":"stout","st":"Stout","mk":"Gamma Brewing","cc":"JP"},{"id":102,"n":"Beta Light Pilsner","a":4.8,"i":99.99,"f":1,"c":2,"r":3.5,"g":"other","st":"Pilsner","mk":"Beta Brewing","cc":"JP"},{"id":101,"n":"Alpha Citrus IPA","a":5.5,"i":42,"f":2,"c":3,"r":4.2,"g":"ipa","st":"IPA","mk":"Alpha Brewing","cc":"JP"}];</script>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  initGalaxy({canvas:'#gx', tooltip:'#tt', legend:'#lg', data:window.BEERS,
+    highlightIds:[104],
+    onPick:function(b){location.href='/beer/detail/product.php?ProductID='+encodeURIComponent(b.id);}});
+});
+</script>
+
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <nav class="foot-nav">
+      <a href="/about.php">このサイトについて</a>
+      <a href="/privacy.php">プライバシーポリシー</a>
+      <a href="/terms.php">利用規約</a>
+      <a href="https://docs.google.com/forms/d/e/1FAIpQLSc59D4Xn78uL0XDJ9Ztfu_Mp2yY2XJuBZtzbZqmY-7YN0XPcw/viewform?usp=header" target="_blank" rel="noopener nofollow">お問い合わせ</a>
+    </nav>
+    <div class="foot-note">20歳未満の飲酒は法律で禁止されています。</div>
+  </div>
+</footer>
+<script>window.STYLE_GROUPS = {"ipa":{"c":"#86adbd","h":"#5fd0ff","l":"IPA系"},"stout":{"c":"#a396b8","h":"#b98cff","l":"Stout \/ 黒"},"sour":{"c":"#bf96a8","h":"#ff6fb0","l":"Sour"},"pale":{"c":"#c0b088","h":"#ffd06b","l":"Pale \/ Amber"},"wheat":{"c":"#aeb890","h":"#c8e86a","l":"小麦 \/ Weizen"},"other":{"c":"#88b8ab","h":"#5cf0c2","l":"Lager \/ その他"}};</script>
+<script src="/assets/js/galaxy.js"></script>
+<script src="/assets/js/beermap.js"></script>
+<script src="/assets/js/beerglass.js"></script>
+</body>
+</html>

@@ -1,6 +1,7 @@
 {
   "id": "TC-SEL-CHECK-NEW-01",
   "type": "page",
+  "scope": "legacy",
   "page": "post/check/check.php",
   "params": {
     "get": {},

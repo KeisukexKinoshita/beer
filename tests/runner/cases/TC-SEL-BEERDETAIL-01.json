@@ -1,7 +1,12 @@
 {
   "id": "TC-SEL-BEERDETAIL-01",
   "type": "page",
+  "scope": "site",
   "page": "beer/detail/product.php",
+  "note": "銘柄詳細(ID 102)。Cookie なし=幕あり。幕の戻り先に ProductID が残る",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
   "params": {
     "get": {
       "ProductID": "102"

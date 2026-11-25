@@ -1,0 +1,14 @@
+{
+  "id": "TC-SEL-ABOUT-01",
+  "type": "page",
+  "scope": "site",
+  "page": "about.php",
+  "note": "このサイトについて。Cookie なし=幕あり",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {},
+    "post": {}
+  }
+}

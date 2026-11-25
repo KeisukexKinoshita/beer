@@ -1,0 +1,17 @@
+{
+  "id": "TC-SEL-BEERPRODUCTS-02",
+  "type": "page",
+  "scope": "site",
+  "page": "beer/products.php",
+  "note": "銘柄一覧。確認済み=幕なし",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {},
+    "post": {},
+    "cookies": {
+      "db_vid": "0123456789abcdef0123456789abcdef"
+    }
+  }
+}

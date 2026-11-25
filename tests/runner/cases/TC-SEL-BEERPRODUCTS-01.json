@@ -1,7 +1,12 @@
 {
   "id": "TC-SEL-BEERPRODUCTS-01",
   "type": "page",
+  "scope": "site",
   "page": "beer/products.php",
+  "note": "銘柄一覧。Cookie なし=幕あり",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
   "params": {
     "get": {},
     "post": {}

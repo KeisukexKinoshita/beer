@@ -11,7 +11,7 @@
 
 <script>
 // product
-let js_prd = [{"ProductID":101,"MakerID":"mk9001","ProductName":"Alpha Citrus IPA","StyleID":"1","Alcohol":"5.50","IBU_all":"42.00","IBU":"42.00","Color":"3","Clarity":"1","Fruity":"2","Favorite":"4.20","ProductExplain":"A citrusy IPA from Alpha Brewing.","IBU_Style":"45.00","Comment":""}];	 
+let js_prd = [{"ProductID":101,"MakerID":"mk9001","ProductName":"Alpha Citrus IPA","StyleID":"1","Alcohol":"5.50","IBU_all":"42.00","IBU":"42.00","Color":"3","Clarity":"1","Fruity":"2","Favorite":"4.20","ProductExplain":"A citrusy IPA from Alpha Brewing.","IBU_Style":"45.00","Comment":"","source_url":null,"image_rights":"placeholder","official_url":null,"estimated_fields":null}];	 
 var prd_ProductID=[], prd_MakerID = [], prd_ProductName = [], prd_StyleID=[], prd_Alcohol = [], prd_IBU=[], prd_Color=[], prd_Clarity=[], prd_Fruity=[], prd_Favorite=[];
 js_prd.forEach(function(value) {
      prd_ProductID.push(value['ProductID'])
@@ -27,7 +27,7 @@ js_prd.forEach(function(value) {
 });
 
 //maker
-let js_mak = [{"MakerID":"mk9001","MakerName":"Alpha Brewing","MakerExplain":"Craft brewery Alpha, known for citrusy IPA.","URL1":"https:\/\/alpha.example.com"}];	 
+let js_mak = [{"MakerID":"mk9001","MakerName":"Alpha Brewing","MakerExplain":"Craft brewery Alpha, known for citrusy IPA.","URL1":"https:\/\/alpha.example.com","country_code":"JP","latitude":null,"longitude":null,"logo_path":null,"source_url":null,"logo_rights":null}];	 
 var mak_MakerID=[], mak_MakerName=[];
 js_mak.forEach(function(value) {
      mak_MakerID.push(value['MakerID'])

@@ -1,0 +1,19 @@
+{
+  "id": "TC-SEL-BEERDETAIL-03",
+  "type": "page",
+  "scope": "site",
+  "page": "beer/detail/product.php",
+  "note": "銘柄詳細(ID 104)。推定値の表示(estimated_fields)・公式リンク・地図(緯度経度あり)",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {
+      "ProductID": "104"
+    },
+    "post": {},
+    "cookies": {
+      "db_vid": "0123456789abcdef0123456789abcdef"
+    }
+  }
+}

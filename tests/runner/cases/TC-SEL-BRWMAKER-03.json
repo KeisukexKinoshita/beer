@@ -1,0 +1,19 @@
+{
+  "id": "TC-SEL-BRWMAKER-03",
+  "type": "page",
+  "scope": "site",
+  "page": "brewery/detail/maker.php",
+  "note": "蔵詳細。存在しない ID=HTTP 404",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {
+      "MakerID": "mk0404"
+    },
+    "post": {},
+    "cookies": {
+      "db_vid": "0123456789abcdef0123456789abcdef"
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "id": "TC-SEL-AGECHECK-05",
+  "type": "page",
+  "scope": "site",
+  "page": "agecheck.php",
+  "note": "「はい」だが次の行き先が許可外(//evil.example)。/index.php へ戻す",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {
+      "next": "//evil.example"
+    },
+    "post": {
+      "confirm": "yes",
+      "tok": "aaaabbbbccccddddeeeeffff00001111"
+    },
+    "cookies": {
+      "db_age_tok": "aaaabbbbccccddddeeeeffff00001111"
+    },
+    "method": "POST",
+    "uri": "/agecheck.php?next=//evil.example"
+  }
+}

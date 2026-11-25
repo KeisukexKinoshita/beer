@@ -1,0 +1,19 @@
+{
+  "id": "TC-SEL-STYDETAIL-02",
+  "type": "page",
+  "scope": "site",
+  "page": "style/detail/style.php",
+  "note": "スタイル詳細(ID 2)。確認済み=幕なし。味覚マップと銘柄の節あり",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {
+      "StyleID": "2"
+    },
+    "post": {},
+    "cookies": {
+      "db_vid": "0123456789abcdef0123456789abcdef"
+    }
+  }
+}

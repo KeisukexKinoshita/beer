@@ -1,0 +1,1 @@
+{"get": {"next": "/beer/products.php"}, "post": {"confirm": "yes", "tok": "aaaabbbbccccddddeeeeffff00001111"}, "cookies": {"db_age_tok": "aaaabbbbccccddddeeeeffff00001111"}, "method": "POST", "uri": "/agecheck.php?next=/beer/products.php"}

@@ -1,0 +1,18 @@
+{
+  "id": "TC-SEL-IDX-04",
+  "type": "page",
+  "scope": "site",
+  "page": "index.php",
+  "note": "トップ。ホスト drtbeer.com=GA4 のタグが出る(確認済みで幕なし)",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {},
+    "post": {},
+    "cookies": {
+      "db_vid": "0123456789abcdef0123456789abcdef"
+    },
+    "host": "drtbeer.com"
+  }
+}

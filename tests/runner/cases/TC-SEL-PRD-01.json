@@ -1,6 +1,7 @@
 {
   "id": "TC-SEL-PRD-01",
   "type": "page",
+  "scope": "legacy",
   "page": "php/product.php",
   "params": {
     "get": {

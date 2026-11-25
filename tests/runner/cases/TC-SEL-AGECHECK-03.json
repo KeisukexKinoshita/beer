@@ -1,0 +1,27 @@
+{
+  "id": "TC-SEL-AGECHECK-03",
+  "type": "page",
+  "scope": "site",
+  "page": "agecheck.php",
+  "note": "「はい」(合言葉が合う POST)。302 で next へ、db_vid を発行、visitor に確認済みの行が1件できる",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {
+      "next": "/beer/products.php"
+    },
+    "post": {
+      "confirm": "yes",
+      "tok": "aaaabbbbccccddddeeeeffff00001111"
+    },
+    "cookies": {
+      "db_age_tok": "aaaabbbbccccddddeeeeffff00001111"
+    },
+    "method": "POST",
+    "uri": "/agecheck.php?next=/beer/products.php"
+  },
+  "dump_queries": [
+    "SELECT COUNT(*) AS visitors, SUM(age_confirmed) AS confirmed, SUM(age_confirmed_at IS NOT NULL) AS with_confirmed_at FROM visitor WHERE visitor_id NOT IN ('0123456789abcdef0123456789abcdef','fedcba9876543210fedcba9876543210')"
+  ]
+}

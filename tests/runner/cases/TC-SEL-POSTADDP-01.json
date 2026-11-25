@@ -1,6 +1,7 @@
 {
   "id": "TC-SEL-POSTADDP-01",
   "type": "page",
+  "scope": "legacy",
   "page": "post/add_product.php",
   "params": {
     "get": {},

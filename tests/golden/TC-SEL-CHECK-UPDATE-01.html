@@ -11,7 +11,7 @@
 
 <script>
 // product
-let js_prd = [{"ProductID":101,"MakerID":"mk9001","ProductName":"Alpha Citrus IPA","StyleID":"1","Alcohol":"5.50","IBU_all":"42.00","IBU":"42.00","Color":"3","Clarity":"1","Fruity":"2","Favorite":"4.20","ProductExplain":"A citrusy IPA from Alpha Brewing.","IBU_Style":"45.00","Comment":""},{"ProductID":102,"MakerID":"mk9002","ProductName":"Beta Light Pilsner","StyleID":"2","Alcohol":"4.80","IBU_all":"99.99","IBU":"0.00","Color":"2","Clarity":"2","Fruity":"1","Favorite":"3.50","ProductExplain":"A crisp pilsner from Beta Brewing.","IBU_Style":"30.00","Comment":""},{"ProductID":103,"MakerID":"mk9003","ProductName":"Gamma Dark Stout","StyleID":"3","Alcohol":"6.20","IBU_all":"35.00","IBU":"35.00","Color":"9","Clarity":"4","Fruity":"1","Favorite":"4.80","ProductExplain":"A roasty stout from Gamma Brewing.","IBU_Style":"35.00","Comment":""}];	 
+let js_prd = [{"ProductID":101,"MakerID":"mk9001","ProductName":"Alpha Citrus IPA","StyleID":"1","Alcohol":"5.50","IBU_all":"42.00","IBU":"42.00","Color":"3","Clarity":"1","Fruity":"2","Favorite":"4.20","ProductExplain":"A citrusy IPA from Alpha Brewing.","IBU_Style":"45.00","Comment":"","source_url":null,"image_rights":"placeholder","official_url":null,"estimated_fields":null},{"ProductID":102,"MakerID":"mk9002","ProductName":"Beta Light Pilsner","StyleID":"2","Alcohol":"4.80","IBU_all":"99.99","IBU":"0.00","Color":"2","Clarity":"2","Fruity":"1","Favorite":"3.50","ProductExplain":"A crisp pilsner from Beta Brewing.","IBU_Style":"30.00","Comment":"","source_url":null,"image_rights":"placeholder","official_url":null,"estimated_fields":null},{"ProductID":103,"MakerID":"mk9003","ProductName":"Gamma Dark Stout","StyleID":"3","Alcohol":"6.20","IBU_all":"35.00","IBU":"35.00","Color":"9","Clarity":"4","Fruity":"1","Favorite":"4.80","ProductExplain":"A roasty stout from Gamma Brewing.","IBU_Style":"35.00","Comment":"","source_url":null,"image_rights":"placeholder","official_url":null,"estimated_fields":null}];	 
 var prd_ProductID=[], prd_MakerID = [], prd_ProductName = [], prd_StyleID=[], prd_Alcohol = [], prd_IBU=[], prd_Color=[], prd_Clarity=[], prd_Fruity=[], prd_Favorite=[];
 js_prd.forEach(function(value) {
      prd_ProductID.push(value['ProductID'])
@@ -27,7 +27,7 @@ js_prd.forEach(function(value) {
 });
 
 //maker
-let js_mak = [{"MakerID":"mk9001","MakerName":"Alpha Brewing","MakerExplain":"Craft brewery Alpha, known for citrusy IPA.","URL1":"https:\/\/alpha.example.com"},{"MakerID":"mk9002","MakerName":"Beta Brewing","MakerExplain":"Craft brewery Beta, focuses on lagers.","URL1":"https:\/\/beta.example.com"},{"MakerID":"mk9003","MakerName":"Gamma Brewing","MakerExplain":"Craft brewery Gamma, dark beer specialist.","URL1":"https:\/\/gamma.example.com"}];	 
+let js_mak = [{"MakerID":"mk9001","MakerName":"Alpha Brewing","MakerExplain":"Craft brewery Alpha, known for citrusy IPA.","URL1":"https:\/\/alpha.example.com","country_code":"JP","latitude":null,"longitude":null,"logo_path":null,"source_url":null,"logo_rights":null},{"MakerID":"mk9002","MakerName":"Beta Brewing","MakerExplain":"Craft brewery Beta, focuses on lagers.","URL1":"https:\/\/beta.example.com","country_code":"JP","latitude":null,"longitude":null,"logo_path":null,"source_url":null,"logo_rights":null},{"MakerID":"mk9003","MakerName":"Gamma Brewing","MakerExplain":"Craft brewery Gamma, dark beer specialist.","URL1":"https:\/\/gamma.example.com","country_code":"JP","latitude":null,"longitude":null,"logo_path":null,"source_url":null,"logo_rights":null}];	 
 var mak_MakerID=[], mak_MakerName=[];
 js_mak.forEach(function(value) {
      mak_MakerID.push(value['MakerID'])
@@ -35,7 +35,7 @@ js_mak.forEach(function(value) {
 });
 
 //style
-let js_sty = [{"StyleID":"1","FamilyName":"Ale","StyleName":"IPA","IBU":"45.00","StyleExplain":"Hoppy and bitter ale style."},{"StyleID":"2","FamilyName":"Lager","StyleName":"Pilsner","IBU":"30.00","StyleExplain":"Crisp, light lager style."},{"StyleID":"3","FamilyName":"Ale","StyleName":"Stout","IBU":"35.00","StyleExplain":"Dark, roasty ale style."}];	 
+let js_sty = [{"StyleID":"1","FamilyName":"Ale","StyleName":"IPA","IBU":"45.00","StyleExplain":"Hoppy and bitter ale style.","catchcopy":null},{"StyleID":"2","FamilyName":"Lager","StyleName":"Pilsner","IBU":"30.00","StyleExplain":"Crisp, light lager style.","catchcopy":null},{"StyleID":"3","FamilyName":"Ale","StyleName":"Stout","IBU":"35.00","StyleExplain":"Dark, roasty ale style.","catchcopy":null}];	 
 var sty_StyleID=[], sty_FamilyName=[], sty_StyleName=[], sty_StyleIBU=[], sty_StyleExplain=[];
 js_sty.forEach(function(value) {
    sty_StyleID.push(value['StyleID'])

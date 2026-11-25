@@ -1,0 +1,17 @@
+{
+  "id": "TC-SEL-STYSTYLES-02",
+  "type": "page",
+  "scope": "site",
+  "page": "style/styles.php",
+  "note": "スタイル一覧。確認済み=幕なし。銘柄 0 件で解説のあるスタイル(Gose)も載る",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {},
+    "post": {},
+    "cookies": {
+      "db_vid": "0123456789abcdef0123456789abcdef"
+    }
+  }
+}

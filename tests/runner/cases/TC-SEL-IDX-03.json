@@ -1,0 +1,17 @@
+{
+  "id": "TC-SEL-IDX-03",
+  "type": "page",
+  "scope": "site",
+  "page": "index.php",
+  "note": "トップ。visitor の行はあるが未確認=幕あり",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {},
+    "post": {},
+    "cookies": {
+      "db_vid": "fedcba9876543210fedcba9876543210"
+    }
+  }
+}

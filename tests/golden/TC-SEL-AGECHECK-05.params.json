@@ -1,0 +1,1 @@
+{"get": {"next": "//evil.example"}, "post": {"confirm": "yes", "tok": "aaaabbbbccccddddeeeeffff00001111"}, "cookies": {"db_age_tok": "aaaabbbbccccddddeeeeffff00001111"}, "method": "POST", "uri": "/agecheck.php?next=//evil.example"}

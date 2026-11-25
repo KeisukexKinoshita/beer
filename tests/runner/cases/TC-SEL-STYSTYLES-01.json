@@ -1,7 +1,12 @@
 {
   "id": "TC-SEL-STYSTYLES-01",
   "type": "page",
+  "scope": "site",
   "page": "style/styles.php",
+  "note": "スタイル一覧。Cookie なし=幕あり",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
   "params": {
     "get": {},
     "post": {}

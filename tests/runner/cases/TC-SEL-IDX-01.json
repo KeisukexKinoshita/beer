@@ -1,7 +1,12 @@
 {
   "id": "TC-SEL-IDX-01",
   "type": "page",
+  "scope": "site",
   "page": "index.php",
+  "note": "トップ。未確認の訪問者(Cookie なし)=幕あり、db_age_tok の Set-Cookie",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
   "params": {
     "get": {},
     "post": {}

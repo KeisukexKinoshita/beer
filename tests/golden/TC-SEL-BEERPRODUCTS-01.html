@@ -1,154 +1,179 @@
 <!DOCTYPE html>
-<html lang="ja">
- <head>
+<html lang="ja" class="age-lock">
+<head>
 <meta charset="utf-8">
-<meta name='description' content="クラフトビールの一覧">
-<meta name='keywords' content="craft beer,beer,クラフトビール、ビール、IPA">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> 
-<script src="../js/jPages-master/js/jPages.js"></script>
-<title>Darth Beer.com</title>
-<link rel="stylesheet" href="../style.css">
-<link rel="stylesheet" href="../common/pages.css">
-
-<script>
-// product
-let js_prd = [{"ProductID":101,"MakerID":"mk9001","ProductName":"Alpha Citrus IPA","StyleID":"1","Alcohol":"5.50","IBU_all":"42.00","IBU":"42.00","Color":"3","Clarity":"1","Fruity":"2","Favorite":"4.20","ProductExplain":"A citrusy IPA from Alpha Brewing.","IBU_Style":"45.00","Comment":""},{"ProductID":102,"MakerID":"mk9002","ProductName":"Beta Light Pilsner","StyleID":"2","Alcohol":"4.80","IBU_all":"99.99","IBU":"0.00","Color":"2","Clarity":"2","Fruity":"1","Favorite":"3.50","ProductExplain":"A crisp pilsner from Beta Brewing.","IBU_Style":"30.00","Comment":""},{"ProductID":103,"MakerID":"mk9003","ProductName":"Gamma Dark Stout","StyleID":"3","Alcohol":"6.20","IBU_all":"35.00","IBU":"35.00","Color":"9","Clarity":"4","Fruity":"1","Favorite":"4.80","ProductExplain":"A roasty stout from Gamma Brewing.","IBU_Style":"35.00","Comment":""}];	 
-var prd_ProductID=[], prd_MakerID = [], prd_ProductName = [], prd_StyleID=[], prd_Alcohol = [], prd_IBU=[], prd_Color=[], prd_Clarity=[], prd_Fruity=[], prd_Favorite=[];
-js_prd.forEach(function(value) {
-     prd_ProductID.push(value['ProductID'])
-     prd_MakerID.push(value['MakerID'])
-     prd_ProductName.push(value['ProductName'])
-     prd_StyleID.push(value['StyleID'])
-     prd_Alcohol.push(value['Alcohol'])
-     prd_IBU.push(value['IBU_all'])
-     prd_Color.push(value['Color'])
-     prd_Clarity.push(value['Clarity'])
-     prd_Fruity.push(value['Fruity'])
-     prd_Favorite.push(value['Favorite'])
-});
-
-//maker
-let js_mak = [{"MakerID":"mk9001","MakerName":"Alpha Brewing","MakerExplain":"Craft brewery Alpha, known for citrusy IPA.","URL1":"https:\/\/alpha.example.com"},{"MakerID":"mk9002","MakerName":"Beta Brewing","MakerExplain":"Craft brewery Beta, focuses on lagers.","URL1":"https:\/\/beta.example.com"},{"MakerID":"mk9003","MakerName":"Gamma Brewing","MakerExplain":"Craft brewery Gamma, dark beer specialist.","URL1":"https:\/\/gamma.example.com"}];	 
-var mak_MakerID=[], mak_MakerName=[];
-js_mak.forEach(function(value) {
-     mak_MakerID.push(value['MakerID'])
-     mak_MakerName.push(value['MakerName'])
-});
-
-//style
-let js_sty = 0;	 
-var sty_StyleID=[], sty_FamilyName=[], sty_StyleName=[], sty_StyleIBU=[], sty_StyleExplain=[];
-js_sty.forEach(function(value) {
-   sty_StyleID.push(value['StyleID'])
-   sty_FamilyName.push(value['FamilyName'])
-   sty_StyleName.push(value['StyleName'])
-   sty_StyleIBU.push(value['StyleIBU'])
-   sty_StyleExplain.push(value['StyleExplain'])
-});
-
-//clarity
-let js_cla = 0;	 
-var cla_ClarityID=[], cla_ClarityValue=[], cla_ClarityName=[];
-js_cla.forEach(function(value) {
-   cla_ClarityID.push(value['ClarityID'])
-   cla_ClarityValue.push(value['ClarityValue'])
-   cla_ClarityName.push(value['ClarityName'])
-});
-
-//fruity
-let js_fru = 0;	 
-var fru_FruityID=[], fru_FruityValue=[], fru_FruityName=[];
-js_fru.forEach(function(value) {
-   fru_FruityID.push(value['FruityID'])
-   fru_FruityValue.push(value['FruityValue'])
-   fru_FruityName.push(value['FruityName'])
-});
-
-</script>
-
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>銘柄 | Darth Beer.com</title>
+<meta name="description" content="クラフトビール4銘柄の一覧です。スタイルで絞り込み、度数・IBU・評価で並び替えられます。">
+<meta name="keywords" content="craft beer,クラフトビール,ビール,IPA,ブリュワリー">
+<meta property="og:title" content="銘柄 | Darth Beer.com">
+<meta property="og:description" content="クラフトビール4銘柄の一覧です。スタイルで絞り込み、度数・IBU・評価で並び替えられます。">
+<meta property="og:type" content="website">
+<link rel="canonical" href="https://beer.test/beer/products.php">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/assets/css/exposure.css?v=<MTIME>">
+<link rel="stylesheet" href="/assets/css/site.css?v=<MTIME>">
+<style>:root{
+  --g-ipa:#86adbd; --h-ipa:#5fd0ff;
+  --g-stout:#a396b8; --h-stout:#b98cff;
+  --g-sour:#bf96a8; --h-sour:#ff6fb0;
+  --g-pale:#c0b088; --h-pale:#ffd06b;
+  --g-wheat:#aeb890; --h-wheat:#c8e86a;
+  --g-other:#88b8ab; --h-other:#5cf0c2;
+}</style>
 </head>
-
 <body>
-<div id='wrap'>
-
-<header>
-
-<script src="https://code.jquery.com/jquery-2.2.4.js" integrity="sha256-iT6Q9iMJYuQiMWNd9lDyBUStIq/8PuOW33aOqmvFpqI=" crossorigin="anonymous"></script>
-   <script>
-   $(function() {
-      const hum = $('#hamburger, .close')
-      const nav = $('.sp-nav')
-      hum.on('click', function(){
-         nav.toggleClass('toggle');
-      });
-   });
-   </script>
-
-<a href="/workspace/tool/beer/tests/sandbox/common/../index.php"><h1>Darth Beer.com</h1></a>
-<nav class="pc-nav">
-<ul>
-	<li><a href="/workspace/tool/beer/tests/sandbox/common/../beer/products.php">ビール</a></li>
-	<li><a href="/workspace/tool/beer/tests/sandbox/common/../brewery/makers.php">ブリュワリー</a></li>
-	<!-- <li><a href="/workspace/tool/beer/tests/sandbox/common/../style/styles.php">スタイル</a></li> -->
-	<li><a href="/workspace/tool/beer/tests/sandbox/common/../post/add_product.php">ビールを投稿</a></li>
-</ul>
+<div class="site-top" inert>
+<div class="ex-bar"><a class="ex-mark" href="/index.php">DARTH BEER</a></div>
+<nav class="ex-tabs">
+  <a href="/try.php">さがす</a>
+  <a class="on" aria-current="page" href="/beer/products.php">銘柄</a>
+  <a href="/brewery/makers.php">蔵</a>
+  <a href="/style/styles.php">スタイル</a>
 </nav>
-<nav class="sp-nav">
-   <ul>
-	<li><a href="/workspace/tool/beer/tests/sandbox/common/../beer/products.php">ビール</a></li>
-	<li><a href="/workspace/tool/beer/tests/sandbox/common/../brewery/makers.php">ブリュワリー</a></li>
-	<!-- <li><a href="/workspace/tool/beer/tests/sandbox/common/../style/styles.php">スタイル</a></li> -->
-	<li><a href="/workspace/tool/beer/tests/sandbox/common/../post/add_product.php">ビールを投稿</a></li>
-      <li class="close"><span>閉じる</span></li>
-   </ul>
- </nav>
-<div id="hamburger">
-      <span></span>
 </div>
-</header>
+<main inert>
 
-<!--
-<div class='first'>
-<h2>
-</h2>
-<p>
-</p>
+<div class="wrap pg-head">
+  <h1 class="sec-h">銘柄<span class="cnt">全4件</span></h1>
+
+  <!-- 味覚銀河: 全ビールの3D分布 -->
+  <div class="galaxy-shell galaxy-wide" style="margin-top:14px">
+    <canvas id="gx"></canvas>
+    <div class="galaxy-tag">味覚銀河</div>
+    <div class="galaxy-hint">ドラッグで回転 · 星をクリックで詳細へ</div>
+    <div class="legend" id="lg"></div>
+    <div class="tt" id="tt"></div>
+  </div>
+
+  <!-- フィルタ -->
+  <div class="filterbar">
+    <div class="f-chips">
+      <button class="f-chip on" data-group="all">すべて</button>
+                  <button class="f-chip" data-group="ipa"><i class="ex-dot" style="background:#86adbd"></i>IPA系</button>
+            <button class="f-chip" data-group="stout"><i class="ex-dot" style="background:#a396b8"></i>Stout / 黒</button>
+            <button class="f-chip" data-group="sour"><i class="ex-dot" style="background:#bf96a8"></i>Sour</button>
+            <button class="f-chip" data-group="pale"><i class="ex-dot" style="background:#c0b088"></i>Pale / Amber</button>
+            <button class="f-chip" data-group="wheat"><i class="ex-dot" style="background:#aeb890"></i>小麦 / Weizen</button>
+            <button class="f-chip" data-group="other"><i class="ex-dot" style="background:#88b8ab"></i>Lager / その他</button>
+          </div>
+    <div class="f-right">
+      <span class="f-count-wrap"><b id="f-count">4</b> 件</span>
+      <input class="f-search" id="f-search" type="search" placeholder="銘柄・蔵で検索" aria-label="ビールを検索">
+      <select class="f-sort" id="f-sort" aria-label="並び替え">
+        <option value="newest">新着順</option>
+        <option value="rating">評価が高い順</option>
+        <option value="ibu">IBUが高い順</option>
+        <option value="alcohol">度数が高い順</option>
+        <option value="name">名前順</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- カードグリッド -->
+  <div class="grid-b" id="beer-grid">
+        <a class="bcard" href="/beer/detail/product.php?ProductID=104"
+       data-group="ipa" data-name="Delta Estimated IPA" data-maker="Delta Brewing"
+       data-style="IPA" data-rating="3.90" data-ibu="45.00"
+       data-alcohol="6.00" data-order="4">
+      <div class="thumb"><canvas class="beerglass " data-bid="104" data-c="4" data-cl="2" data-f="3" data-i="45.00" data-a="6.00" data-g="ipa" role="img" aria-label="Delta Estimated IPA のイメージ（色4・アルコール度6%・IBU45 から生成）"></canvas></div>
+      <div class="body">
+        <div class="stylechip"><i class="ex-dot" style="background:#86adbd"></i>IPA系</div>
+        <h4>Delta Estimated IPA</h4>
+        <div class="mk">🇬🇧 Delta Brewing</div>
+        <div class="meta">
+          <span>6% · IBU45<span class="est-mark" title="公式情報が無いため、同じスタイルの典型値から推定した値です">推定</span></span>
+          <span class="rate" role="img" aria-label="5段階評価で3.9点">★★★★☆</span>        </div>
+      </div>
+    </a>
+        <a class="bcard" href="/beer/detail/product.php?ProductID=103"
+       data-group="stout" data-name="Gamma Dark Stout" data-maker="Gamma Brewing"
+       data-style="Stout" data-rating="4.80" data-ibu="35.00"
+       data-alcohol="6.20" data-order="3">
+      <div class="thumb"><canvas class="beerglass " data-bid="103" data-c="9" data-cl="4" data-f="1" data-i="35.00" data-a="6.20" data-g="stout" role="img" aria-label="Gamma Dark Stout のイメージ（色9・アルコール度6.2%・IBU35 から生成）"></canvas></div>
+      <div class="body">
+        <div class="stylechip"><i class="ex-dot" style="background:#a396b8"></i>Stout / 黒</div>
+        <h4>Gamma Dark Stout</h4>
+        <div class="mk">🇯🇵 Gamma Brewing</div>
+        <div class="meta">
+          <span>6.2% · IBU35</span>
+          <span class="rate" role="img" aria-label="5段階評価で4.8点">★★★★★</span>        </div>
+      </div>
+    </a>
+        <a class="bcard" href="/beer/detail/product.php?ProductID=102"
+       data-group="other" data-name="Beta Light Pilsner" data-maker="Beta Brewing"
+       data-style="Pilsner" data-rating="3.50" data-ibu="99.99"
+       data-alcohol="4.80" data-order="2">
+      <div class="thumb"><canvas class="beerglass " data-bid="102" data-c="2" data-cl="2" data-f="1" data-i="99.99" data-a="4.80" data-g="other" role="img" aria-label="Beta Light Pilsner のイメージ（色2・アルコール度4.8%・IBU99.99 から生成）"></canvas></div>
+      <div class="body">
+        <div class="stylechip"><i class="ex-dot" style="background:#88b8ab"></i>Lager / その他</div>
+        <h4>Beta Light Pilsner</h4>
+        <div class="mk">🇯🇵 Beta Brewing</div>
+        <div class="meta">
+          <span>4.8% · IBU99.99</span>
+          <span class="rate" role="img" aria-label="5段階評価で3.5点">★★★★☆</span>        </div>
+      </div>
+    </a>
+        <a class="bcard" href="/beer/detail/product.php?ProductID=101"
+       data-group="ipa" data-name="Alpha Citrus IPA" data-maker="Alpha Brewing"
+       data-style="IPA" data-rating="4.20" data-ibu="42.00"
+       data-alcohol="5.50" data-order="1">
+      <div class="thumb"><canvas class="beerglass " data-bid="101" data-c="3" data-cl="1" data-f="2" data-i="42.00" data-a="5.50" data-g="ipa" role="img" aria-label="Alpha Citrus IPA のイメージ（色3・アルコール度5.5%・IBU42 から生成）"></canvas></div>
+      <div class="body">
+        <div class="stylechip"><i class="ex-dot" style="background:#86adbd"></i>IPA系</div>
+        <h4>Alpha Citrus IPA</h4>
+        <div class="mk">🇯🇵 Alpha Brewing</div>
+        <div class="meta">
+          <span>5.5% · IBU42</span>
+          <span class="rate" role="img" aria-label="5段階評価で4.2点">★★★★☆</span>        </div>
+      </div>
+    </a>
+      </div>
 </div>
--->
 
-<div id='main_wrap'>
-<div id='main'>
-<div class='sec1'>
-<h2 class='Brewery'>ビール 3件</h2>
-
-<ul class="image_list" id="JPages"> 
-<li><div class="image_box"><a href="detail/product.php?ProductID=103"><img class="thumbnail" src="../img/product/103.png" alt="Gamma Dark Stout" title="Gamma Dark Stout"></div><h3 class="MakerName">Gamma Dark Stout </h3></a>  <p class="MakerExplain">A roasty stout from Gamma Brewing. </p></li><li><div class="image_box"><a href="detail/product.php?ProductID=102"><img class="thumbnail" src="../img/product/102.png" alt="Beta Light Pilsner" title="Beta Light Pilsner"></div><h3 class="MakerName">Beta Light Pilsner </h3></a>  <p class="MakerExplain">A crisp pilsner from Beta Brewing. </p></li><li><div class="image_box"><a href="detail/product.php?ProductID=101"><img class="thumbnail" src="../img/product/101.png" alt="Alpha Citrus IPA" title="Alpha Citrus IPA"></div><h3 class="MakerName">Alpha Citrus IPA </h3></a>  <p class="MakerExplain">A citrusy IPA from Alpha Brewing. </p></li></ul>
-
-<div class="customBtns">
-    <span class="arrowPrev"></span>
-    <span class="arrowNext"></span>
-    <div class="holder"></div>
-</div>
+<script>window.BEERS = [{"id":104,"n":"Delta Estimated IPA","a":6,"i":45,"f":3,"c":4,"r":3.9,"g":"ipa","st":"IPA","mk":"Delta Brewing","cc":"GB"},{"id":103,"n":"Gamma Dark Stout","a":6.2,"i":35,"f":1,"c":9,"r":4.8,"g":"stout","st":"Stout","mk":"Gamma Brewing","cc":"JP"},{"id":102,"n":"Beta Light Pilsner","a":4.8,"i":99.99,"f":1,"c":2,"r":3.5,"g":"other","st":"Pilsner","mk":"Beta Brewing","cc":"JP"},{"id":101,"n":"Alpha Citrus IPA","a":5.5,"i":42,"f":2,"c":3,"r":4.2,"g":"ipa","st":"IPA","mk":"Alpha Brewing","cc":"JP"}];</script>
 <script>
-var class_color='disabled_checkbox_color'
+document.addEventListener('DOMContentLoaded', function(){
+  initGalaxy({canvas:'#gx', tooltip:'#tt', legend:'#lg', data:window.BEERS,
+    onPick:function(b){location.href='/beer/detail/product.php?ProductID='+encodeURIComponent(b.id);}});
+});
 </script>
-<script src="../common/pages.js"></script>
 
-
-</div>  <!-- sec1 -->
-
-</div> <!--  id=main  -->
-</div> <!--  id=main_wrap  -->
-</div> <!--  id=wrap  -->
+</main>
+<footer class="site-footer" inert>
+  <div class="wrap">
+    <nav class="foot-nav">
+      <a href="/about.php">このサイトについて</a>
+      <a href="/privacy.php">プライバシーポリシー</a>
+      <a href="/terms.php">利用規約</a>
+      <a href="https://docs.google.com/forms/d/e/1FAIpQLSc59D4Xn78uL0XDJ9Ztfu_Mp2yY2XJuBZtzbZqmY-7YN0XPcw/viewform?usp=header" target="_blank" rel="noopener nofollow">お問い合わせ</a>
+    </nav>
+    <div class="foot-note">20歳未満の飲酒は法律で禁止されています。</div>
+  </div>
+</footer>
+<div class="age-gate" role="dialog" aria-modal="true" aria-labelledby="age-q" data-nosnippet>
+  <div class="ex-bar"><span class="ex-mark">DARTH BEER</span></div>
+  <div class="ex-wrap">
+    <div class="ex-intake" style="padding-top:152px;padding-bottom:100px">
+      <div class="ex-ring"><span>20</span></div>
+      <div>
+        <div class="age-q" id="age-q">20歳以上ですか</div>
+        <p style="color:var(--dim);font-size:12.5px;max-width:28ch">当サイトは酒類に関する情報を扱っています。</p>
+        <p style="color:var(--faint);font-size:11px;margin-top:8px"><a href="/terms.php" target="_blank" rel="noopener">利用規約</a>をご確認ください</p>
+      </div>
+      <form class="ex-acts" method="POST" action="/agecheck.php?next=%2Fbeer%2Fproducts.php">
+        <input type="hidden" name="tok" value="<AGE_TOK>">
+        <button type="submit" name="confirm" value="yes" class="ex-btn">はい</button>
+        <button type="submit" name="declined" value="yes" class="ex-btn ghost">いいえ</button>
+      </form>
+    </div>
+  </div>
+</div>
+<script>window.STYLE_GROUPS = {"ipa":{"c":"#86adbd","h":"#5fd0ff","l":"IPA系"},"stout":{"c":"#a396b8","h":"#b98cff","l":"Stout \/ 黒"},"sour":{"c":"#bf96a8","h":"#ff6fb0","l":"Sour"},"pale":{"c":"#c0b088","h":"#ffd06b","l":"Pale \/ Amber"},"wheat":{"c":"#aeb890","h":"#c8e86a","l":"小麦 \/ Weizen"},"other":{"c":"#88b8ab","h":"#5cf0c2","l":"Lager \/ その他"}};</script>
+<script src="/assets/js/galaxy.js"></script>
+<script src="/assets/js/beerlist.js"></script>
+<script src="/assets/js/beerglass.js"></script>
 </body>
-
-
-
-
-Warning: Undefined array key "comment" in /workspace/tool/beer/tests/sandbox/beer/products.php on line 90
-
-
-
-
 </html>

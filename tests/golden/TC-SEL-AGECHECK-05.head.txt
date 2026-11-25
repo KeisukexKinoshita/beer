@@ -1,0 +1,4 @@
+Status: 302
+Set-Cookie: db_vid=<VISITOR_ID>; expires=<DATE>; Max-Age=<N>; path=/; secure; HttpOnly; SameSite=Lax
+Location: /index.php
+Content-type: text/html; charset=UTF-8

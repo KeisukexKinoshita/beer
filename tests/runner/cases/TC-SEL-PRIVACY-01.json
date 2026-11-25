@@ -1,0 +1,14 @@
+{
+  "id": "TC-SEL-PRIVACY-01",
+  "type": "page",
+  "scope": "site",
+  "page": "privacy.php",
+  "note": "プライバシーポリシー。Cookie なしでも幕を出さない(Cache-Control / Vary は付く。db_age_tok は発行しない)",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {},
+    "post": {}
+  }
+}

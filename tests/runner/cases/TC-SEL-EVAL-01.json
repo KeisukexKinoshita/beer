@@ -1,6 +1,7 @@
 {
   "id": "TC-SEL-EVAL-01",
   "type": "page",
+  "scope": "legacy",
   "page": "php/evaluation.php",
   "params": {
     "get": {},

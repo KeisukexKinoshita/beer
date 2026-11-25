@@ -1,0 +1,14 @@
+{
+  "id": "TC-SEL-TERMS-01",
+  "type": "page",
+  "scope": "site",
+  "page": "terms.php",
+  "note": "利用規約。Cookie なしでも幕を出さない",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
+  "params": {
+    "get": {},
+    "post": {}
+  }
+}

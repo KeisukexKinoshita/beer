@@ -1,7 +1,12 @@
 {
   "id": "TC-SEL-BRWMAKER-01",
   "type": "page",
+  "scope": "site",
   "page": "brewery/detail/maker.php",
+  "note": "蔵詳細(mk9002)。Cookie なし=幕あり",
+  "extra_sql": [
+    "tests/fixtures/site.sql"
+  ],
   "params": {
     "get": {
       "MakerID": "mk9002"
