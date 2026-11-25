@@ -36,6 +36,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm'])) {
 // "いいえ" の選択
 $declined = $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['declined']);
 
+// 合言葉の Cookie は、**HTML を出し始める前**(head.php より前)に発行する。
+// 出力の途中で setcookie を呼ぶと、出力バッファの無い環境では Warning になり Cookie が届かない
+$ageTokValue = age_tok_issue();
+$ageKnown    = age_visitor_known($visitorCookie);
+$ageCsrf     = $ageKnown ? csrf_issue((string)$visitorCookie) : '';   // DB だけ。ヘッダには触れない
+
 $ageGate = false;   // この画面そのものなので、幕は重ねない
 $title = '年齢確認';
 $desc  = 'Darth Beer.com は酒類に関する情報を扱っています。20歳以上であることをご確認ください。';
@@ -75,13 +81,13 @@ require __DIR__ . '/common/nebula/head.php';
         </p>
       </div>
       <?php if ($cookieMissing): ?>
-        <p style="color:var(--faint);font-size:11px;margin:0">Cookie を有効にしてからお試しください。</p>
+        <p style="color:var(--faint);font-size:11px;margin:0;max-width:none;white-space:nowrap">Cookie を有効にしてからお試しください。</p>
       <?php endif; ?>
       <form class="ex-acts" method="POST">
         <?php /* 行の無い訪問者は二重送信Cookie の合言葉、try.php から来た(行のある)訪問者は従来の csrf */ ?>
-        <input type="hidden" name="tok" value="<?= e(age_tok_issue()) ?>">
-        <?php if (age_visitor_known($visitorCookie)): ?>
-        <input type="hidden" name="csrf" value="<?= e(csrf_issue((string)$visitorCookie)) ?>">
+        <input type="hidden" name="tok" value="<?= e($ageTokValue) ?>">
+        <?php if ($ageKnown): ?>
+        <input type="hidden" name="csrf" value="<?= e($ageCsrf) ?>">
         <?php endif; ?>
         <button type="submit" name="confirm" value="yes" class="ex-btn">はい</button>
         <button type="submit" name="declined" value="yes" class="ex-btn ghost">いいえ</button>
