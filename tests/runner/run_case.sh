@@ -20,12 +20,15 @@ print(f"TYPE={shlex.quote(c['type'])}")
 print(f"PAGE={shlex.quote(c.get('page',''))}")
 print(f"PRE_IMG={shlex.quote(c.get('pre_img',''))}")
 print(f"DUMP_TABLES={shlex.quote(' '.join(c.get('dump_tables',[])))}")
-print(f"SCOPE={shlex.quote(c.get('scope','legacy'))}")
+# scope は必須(書き忘れで旧コード扱いになり、例外に載せられてしまうのを防ぐ)
+if c.get('scope') not in ('site', 'legacy'):
+    sys.stderr.write(f"{sys.argv[1]}: scope は 'site' か 'legacy' を必ず書くこと\n"); sys.exit(1)
+print(f"SCOPE={shlex.quote(c['scope'])}")
 print(f"EXTRA_SQL={shlex.quote(' '.join(c.get('extra_sql',[])))}")
 PYEOF
 )"
 
-mkdir -p tests/out
+mkdir -p tests/out tests/out/.vars
 
 # フィクスチャ再投入 (毎ケース、クリーンな状態から)。
 # スキーマごと作り直し、fixtures.sql のあとに db/migrations/ の未適用分を全部当てる
@@ -51,7 +54,7 @@ PYEOF
 
 # 実行 (1ケース=1プロセス)
 set +e
-rm -f "tests/out/$ID.head.txt"
+rm -f "tests/out/$ID.head.txt" "tests/out/.vars/$ID.json"
 if [ "$TYPE" = "core" ]; then
   php tests/runner/core_case.php "tests/out/$ID.params.json" > "tests/out/$ID.html" 2>&1
 elif [ "$SCOPE" = "site" ]; then
@@ -93,9 +96,14 @@ fi
 if python3 -c "import json,sys; sys.exit(0 if json.load(open(sys.argv[1])).get('dump_queries') else 1)" "$CASE_FILE"; then
   : > "tests/out/$ID.db.txt"
   python3 -c "
-import json,sys
-for q in json.load(open(sys.argv[1]))['dump_queries']: print(q)" "$CASE_FILE" | while IFS= read -r q; do
-    { echo "== $q =="; mysql --socket=$SOCK $DB -e "$q"; } >> "tests/out/$ID.db.txt"
+import json,sys,os
+v = json.load(open(sys.argv[2])) if os.path.exists(sys.argv[2]) else {}
+for q in json.load(open(sys.argv[1]))['dump_queries']:
+    # {db_vid} / {db_age_tok} は、そのケースで実際に発行された Cookie の値に置き換える
+    # (発行された db_vid と DB の行の ID が一致することを、値を正規化せずに見るため)
+    for k, x in v.items(): q = q.replace('{' + k + '}', x)
+    print(q)" "$CASE_FILE" "tests/out/.vars/$ID.json" | while IFS= read -r q; do
+    { echo "== $(echo "$q" | sed -E 's/[0-9a-f]{32}/<ID>/g') =="; mysql --socket=$SOCK $DB -e "$q"; } >> "tests/out/$ID.db.txt"
   done
 fi
 

@@ -12,15 +12,24 @@ RDS_HOST=beer-rds.cqpmrauqnmy0.ap-northeast-1.rds.amazonaws.com
 # 終わっていないと前の行に連結して(例: `ff02::2 ip6-allrouters127.0.0.1 beer-rds…`)
 # どちらの行も壊れ、RDS ホスト名が名前解決できなくなっていた。
 # /etc/hosts はコンテナでは bind mount なので、sed -i(rename)ではなく中身を書き戻す
+HOSTS_FILE="${HOSTS_FILE:-/etc/hosts}"   # 試験のときだけ写しのファイルを指す
 fix_hosts() {
   local tmp; tmp="$(mktemp)"
   # すでに連結してしまっている行を、改行で分け直す
-  sed -E "s/([^[:space:]])(127\.0\.0\.1[[:space:]]+$RDS_HOST)/\1\n\2/" /etc/hosts > "$tmp"
-  if ! grep -Eq "^127\.0\.0\.1[[:space:]]+$RDS_HOST[[:space:]]*$" "$tmp"; then
+  sed -E "s/([^[:space:]])(127\\.0\\.0\\.1[[:space:]]+$RDS_HOST)/\\1\\n\\2/" "$HOSTS_FILE" > "$tmp"
+  # RDS のホスト名が 127.0.0.1 以外の IP で書かれていれば、そのホスト名だけを行から外す
+  # (後ろに 127.0.0.1 の行を足しても、先に書かれた行が勝って実 RDS を向いたままになるため)。
+  # ホスト名を外して IP だけが残った行は捨てる
+  awk -v h="$RDS_HOST" '
+    /^[[:space:]]*#/ || NF == 0 { print; next }
+    { ip = $1; keep = ""; hit = 0
+      for (i = 2; i <= NF; i++) { if ($i == h && ip != "127.0.0.1") { hit = 1 } else { keep = keep " " $i } }
+      if (!hit) print; else if (keep != "") print ip keep }' "$tmp" > "$tmp.2" && mv "$tmp.2" "$tmp"
+  if ! grep -Eq "^127\\.0\\.0\\.1[[:space:]]+([^#]*[[:space:]])?$RDS_HOST([[:space:]]|$)" "$tmp"; then
     [ -n "$(tail -c1 "$tmp")" ] && echo >> "$tmp"
     echo "127.0.0.1 $RDS_HOST" >> "$tmp"
   fi
-  if ! cmp -s "$tmp" /etc/hosts; then cat "$tmp" > /etc/hosts; echo "/etc/hosts を修復/追記した"; fi
+  if ! cmp -s "$tmp" "$HOSTS_FILE"; then cat "$tmp" > "$HOSTS_FILE"; echo "$HOSTS_FILE を修復/追記した"; fi
   rm -f "$tmp"
 }
 fix_hosts

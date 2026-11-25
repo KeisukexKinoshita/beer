@@ -11,12 +11,18 @@
 # migration のエラーは無視しない(set -e)。当たらなくなったら、その場で止まって気づける。
 # 使い方: bash tests/runner/load_fixtures.sh [追加SQL...]
 set -eu
+set -o pipefail
 cd "$(dirname "$0")/../.."
 
 SOCK=/run/mariadb/mariadb.sock
 # **ここで触るのはこのスキーマだけ。** 実データの `beer` には絶対に触らない。
 DB=beer_characterization
 [ "$DB" = "beer_characterization" ] || { echo "refusing: $DB" >&2; exit 2; }
+
+# 追加 SQL の存在を先に確かめる(無いまま cat が失敗しても、パイプの末尾が成功して見逃していた)
+for f in "$@"; do
+  [ -f "$f" ] || { echo "load_fixtures: 追加 SQL が無い: $f" >&2; exit 2; }
+done
 
 {
   echo "DROP DATABASE IF EXISTS \`$DB\`;"
