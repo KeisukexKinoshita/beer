@@ -12,10 +12,9 @@ if (!$beer) {
     require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
     echo '<body>';
     require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/header.php';
-    echo '<div class="wrap" style="padding:80px 0"><div class="eyebrow">404</div>'
-       . '<div class="sec-h">ビールが見つかりませんでした</div>'
-       . '<p style="color:var(--muted);margin-top:14px">指定された銘柄は存在しないようです。'
-       . '<a href="/beer/products.php" style="color:var(--teal)">Beer一覧へ戻る</a></p></div>';
+    echo '<div class="wrap nf"><div class="ex-lbl">404</div>'
+       . '<h1 class="sec-h">ビールが見つかりませんでした</h1>'
+       . '<p><a class="lk" href="/beer/products.php">銘柄一覧へ</a></p></div>';
     require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/footer.php';
     exit;
 }
@@ -47,8 +46,7 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
   <div class="detail-hero">
     <div class="dt-img"><?= beer_glass_tag($beer, 'dt-glass') ?></div>
     <div>
-      <a class="dt-back" href="/beer/products.php">← Beer一覧へ</a>
-      <div class="eyebrow"><?= e($beer['StyleName'] ?: 'Craft Beer') ?> · <?= e($beer['MakerName']) ?></div>
+      <div class="stylechip" style="margin-bottom:8px"><i class="ex-dot" style="background:<?= $gcol ?>"></i><?= e($glabel) ?></div>
       <h1 class="dt-title"><?= e($beer['ProductName']) ?></h1>
       <?php if ($descText !== ''): ?>
         <p class="dt-desc"><?= nl2br(e($descText)) ?></p>
@@ -57,11 +55,11 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
         <div class="r">
           <div class="k">ブリュワリー</div>
           <div class="v"><span class="flag"><?= flag($beer['country_code']) ?></span>
-            <a href="/brewery/detail/maker.php?MakerID=<?= e($beer['MakerID']) ?>" style="color:var(--teal)"><?= e($beer['MakerName']) ?></a></div>
+            <a href="/brewery/detail/maker.php?MakerID=<?= e($beer['MakerID']) ?>" class="lk"><?= e($beer['MakerName']) ?></a></div>
         </div>
         <div class="r"><div class="k">スタイル</div><div class="v">
           <?php if ($beer['StyleName']): ?>
-            <a href="/style/detail/style.php?StyleID=<?= e($beer['StyleID']) ?>" style="color:var(--teal)"><?= e($beer['StyleName']) ?></a>
+            <a class="lk" href="/style/detail/style.php?StyleID=<?= e($beer['StyleID']) ?>"><?= e($beer['StyleName']) ?></a>
           <?php else: ?>—<?php endif; ?>
         </div></div>
         <div class="r"><div class="k">アルコール度</div>
@@ -74,25 +72,25 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
           <div class="v"><?= stars_html($beer['Favorite']) ?> <?= is_unmeasured($beer['Favorite']) ? '未評価' : number_format((float)$beer['Favorite'],1) ?></div></div>
         <?php if (!empty($beer['official_url'])): ?>
         <div class="r"><div class="k">公式サイト</div>
-          <div class="v"><a href="<?= e($beer['official_url']) ?>" target="_blank" rel="noopener nofollow"
-             style="color:var(--teal);word-break:break-all"><?= e($beer['official_url']) ?></a></div></div>
+          <div class="v"><a class="lk" href="<?= e($beer['official_url']) ?>" target="_blank" rel="noopener nofollow"
+             style="word-break:break-all"><?= e($beer['official_url']) ?></a></div></div>
         <?php endif; ?>
       </div>
       <?php if (!empty($beer['estimated_fields'])): ?>
         <p class="est-caption">※「推定」と付いた値は公式情報が見つからなかったため、同じスタイルの典型値から推定しています。</p>
       <?php endif; ?>
       <?php if (!empty($beer['source_url'])): ?>
-        <p class="est-caption">出典：<a href="<?= e($beer['source_url']) ?>" target="_blank" rel="noopener nofollow" style="color:var(--muted)"><?= e($beer['source_url']) ?></a></p>
+        <p class="est-caption">出典：<a href="<?= e($beer['source_url']) ?>" target="_blank" rel="noopener nofollow" class="lk"><?= e($beer['source_url']) ?></a></p>
       <?php endif; ?>
     </div>
   </div>
 
   <div class="panel" style="margin-top:12px">
     <h3>味覚マップ上の位置</h3>
-    <div class="sub">全<?= count($allBeers) ?>銘柄の中で、この一杯がどこに位置するか（原点=平均。★が本銘柄）</div>
-    <div class="galaxy-shell galaxy-wide" style="margin-top:8px">
+    <div class="sub">全<?= count($allBeers) ?>銘柄の中での位置(原点=平均)</div>
+    <div class="galaxy-shell galaxy-wide">
       <canvas id="gx"></canvas>
-      <div class="galaxy-tag">Flavour Galaxy · 味覚銀河</div>
+      <div class="galaxy-tag">味覚銀河</div>
       <div class="galaxy-hint">ドラッグで回転</div>
       <div class="legend" id="lg"></div>
       <div class="tt" id="tt"></div>
@@ -102,12 +100,11 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
   <div class="dt-lower">
     <div class="panel">
       <h3>味プロファイル</h3>
-      <div class="sub">この銘柄の5指標バランス（レーダー）</div>
       <canvas class="radar" id="radar"></canvas>
     </div>
     <div class="panel">
       <h3>製造地</h3>
-      <div class="sub">ブリュワリー所在地 — <?= e(country_name($beer['country_code'])) ?></div>
+      <div class="sub"><?= e(country_name($beer['country_code'])) ?></div>
       <div class="map">
         <?php if ($useMap): ?>
           <div class="lmap" data-lat="<?= e($beer['latitude']) ?>" data-lng="<?= e($beer['longitude']) ?>" data-label="<?= e($beer['MakerName']) ?>"></div>

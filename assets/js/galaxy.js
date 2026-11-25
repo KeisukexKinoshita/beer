@@ -90,8 +90,8 @@ function initGalaxy(opt){
       x.textAlign='center';x.textBaseline='middle';var pad=52*DPR;
       var lx=pe.sx+(pe.sx-o.sx)*0.09,ly=pe.sy+(pe.sy-o.sy)*0.09;
       lx=Math.max(pad,Math.min(W-pad,lx));ly=Math.max(52*DPR,Math.min(H-40*DPR,ly));
-      x.font='700 '+(12*DPR)+'px "M PLUS 1","Noto Sans JP",sans-serif';x.fillStyle=AXC.name;x.fillText(ax.name,lx,ly);
-      x.font=(9.5*DPR)+'px "M PLUS 1","Noto Sans JP",sans-serif';x.fillStyle=AXC.val;x.fillText('max '+ax.max,lx,ly+13*DPR);
+      x.font='700 '+(12*DPR)+'px "Zen Kaku Gothic New","Noto Sans JP",sans-serif';x.fillStyle=AXC.name;x.fillText(ax.name,lx,ly);
+      x.font=(9.5*DPR)+'px "Zen Kaku Gothic New","Noto Sans JP",sans-serif';x.fillStyle=AXC.val;x.fillText('max '+ax.max,lx,ly+13*DPR);
       // -端に min
       var nx=ne.sx+(ne.sx-o.sx)*0.06,ny=ne.sy+(ne.sy-o.sy)*0.06;
       nx=Math.max(pad,Math.min(W-pad,nx));ny=Math.max(52*DPR,Math.min(H-40*DPR,ny));
@@ -103,7 +103,7 @@ function initGalaxy(opt){
     x.clearRect(0,0,W,H);var s=Math.min(W,H);
     ord=pts.map(function(p,idx){return {p:p,idx:idx,pr:proj(p)};}).sort(function(a,b){return a.pr.Z-b.pr.Z;});
     var g=x.createRadialGradient(W/2,H/2,0,W/2,H/2,s*.55);
-    g.addColorStop(0,'rgba(160,107,255,.11)');g.addColorStop(.5,'rgba(255,92,168,.04)');g.addColorStop(1,'rgba(0,0,0,0)');
+    g.addColorStop(0,'rgba(255,255,255,.05)');g.addColorStop(.5,'rgba(255,255,255,.015)');g.addColorStop(1,'rgba(0,0,0,0)');
     x.fillStyle=g;x.fillRect(0,0,W,H);
     drawFrame();
     for(var k=0;k<ord.length;k++){var o=ord[k],b=o.p.b;if(off[b.g])continue;
@@ -126,7 +126,7 @@ function initGalaxy(opt){
       // 単一ハイライト時はリング+名前
       if(single&&isHl){x.strokeStyle='#fff';x.lineWidth=1.5*DPR;x.globalAlpha=.9;
         x.beginPath();x.arc(pr.sx,pr.sy,rad*1.8,0,7);x.stroke();x.globalAlpha=1;
-        x.font='700 '+(12*DPR)+'px "M PLUS 1","Noto Sans JP",sans-serif';x.fillStyle='#fff';
+        x.font='700 '+(12*DPR)+'px "Zen Kaku Gothic New","Noto Sans JP",sans-serif';x.fillStyle='#fff';
         x.textAlign='center';x.fillText(b.n,pr.sx,pr.sy-rad*2.4);}
       o._sx=pr.sx;o._sy=pr.sy;o._r=rad*3.4;
     }

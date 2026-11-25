@@ -7,7 +7,7 @@ $extraCss  = $extraCss ?? [];
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title><?= e($pageTitle) ?></title>
 <meta name="description" content="<?= e($pageDesc) ?>">
 <meta name="keywords" content="craft beer,クラフトビール,ビール,IPA,ブリュワリー">
@@ -30,13 +30,22 @@ if ($canonHost !== '') : ?>
 <?php endif; ?>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+1:wght@400;500;700;800&family=Noto+Sans+JP:wght@300;400;500;700&display=swap">
-<?php /* 内容が変わったら必ず読み直させる(修正ラウンド3。exposure.css で古いCSSが
-         残って事故った件と同じことが nebula.css でも起きうるため、ここにも足す) */
-$nebulaCss = '/assets/css/nebula.css';
-$nebulaVer = @filemtime($_SERVER['DOCUMENT_ROOT'] . $nebulaCss) ?: time();
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<?php /* 見た目は露光案(try.php と同じ exposure.css)が土台。一覧・詳細・文書ページ用の
+         追加分は site.css。内容が変わったら必ず読み直させる(古い CSS が残る事故の対策) */
+$cssBase = '/assets/css/exposure.css';
+$cssSite = '/assets/css/site.css';
+$cssBaseVer = @filemtime($_SERVER['DOCUMENT_ROOT'] . $cssBase) ?: time();
+$cssSiteVer = @filemtime($_SERVER['DOCUMENT_ROOT'] . $cssSite) ?: time();
 ?>
-<link rel="stylesheet" href="<?= e($nebulaCss) ?>?v=<?= (int)$nebulaVer ?>">
+<link rel="stylesheet" href="<?= e($cssBase) ?>?v=<?= (int)$cssBaseVer ?>">
+<link rel="stylesheet" href="<?= e($cssSite) ?>?v=<?= (int)$cssSiteVer ?>">
+<?php /* スタイル色の出所は group_map() 一つ。CSS に直値を書かず、ここで流し込む(try.php と同じ) */ ?>
+<style>:root{
+<?php foreach (group_map() as $k => $v): ?>
+  --g-<?= e($k) ?>:<?= e($v[0]) ?>; --h-<?= e($k) ?>:<?= e($v[1]) ?>;
+<?php endforeach; ?>
+}</style>
 <?php if (!empty($useMap)): ?>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">

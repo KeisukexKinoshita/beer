@@ -131,8 +131,8 @@
     lg.addColorStop(1, rgba(lighten(col, 0.55), 0));
     x.fillStyle = lg; x.fillRect(g.cx - g.topR * 1.3, fTop, g.topR * 2.6, fh * 1.18);
     var sg = x.createLinearGradient(g.cx - g.topR, 0, g.cx + g.topR, 0);
-    sg.addColorStop(0, 'rgba(150,140,175,.28)'); sg.addColorStop(0.3, 'rgba(255,255,255,0)');
-    sg.addColorStop(0.75, 'rgba(255,255,255,0)'); sg.addColorStop(1, 'rgba(140,130,165,.30)');
+    sg.addColorStop(0, 'rgba(150,150,150,.28)'); sg.addColorStop(0.3, 'rgba(255,255,255,0)');
+    sg.addColorStop(0.75, 'rgba(255,255,255,0)'); sg.addColorStop(1, 'rgba(140,140,140,.30)');
     x.fillStyle = sg; x.fillRect(g.cx - g.topR * 1.3, fTop, g.topR * 2.6, fh);
     for (var i = 0; i < 16; i++) {
       var px = g.cx + (r() - 0.5) * g.topR * 1.9, py = fTop + r() * fh;
@@ -160,7 +160,7 @@
     lg.addColorStop(0, 'rgba(255,255,255,.05)'); lg.addColorStop(1, 'rgba(255,255,255,.20)');
     x.fillStyle = lg; x.fillRect(g.cx - g.botR, g.bot - g.gh * 0.075, g.botR * 2, g.gh * 0.075);
     x.restore();
-    x.strokeStyle = 'rgba(228,226,255,.40)'; x.lineWidth = Math.max(1, g.topR * 0.055);
+    x.strokeStyle = 'rgba(255,255,255,.40)'; x.lineWidth = Math.max(1, g.topR * 0.055);
     glassPath(x, g); x.stroke();
     x.strokeStyle = 'rgba(255,255,255,.55)'; x.lineWidth = Math.max(1, g.topR * 0.05);
     x.beginPath(); x.ellipse(g.cx, g.top, g.topR, g.topR * 0.17, 0, 0, 7); x.stroke();

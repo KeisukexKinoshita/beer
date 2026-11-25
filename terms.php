@@ -8,7 +8,6 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
 <?php require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/header.php'; ?>
 
 <div class="wrap doc">
-  <div class="eyebrow">Terms</div>
   <h1 class="doc-h1">利用規約</h1>
   <p class="doc-lead">Darth Beer.com（以下「当サイト」）のご利用にあたり、お守りいただきたいことと、当サイトからお約束することを定めたものです。</p>
 

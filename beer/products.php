@@ -10,14 +10,13 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
 <body>
 <?php require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/header.php'; ?>
 
-<div class="wrap" style="padding-top:40px">
-  <div class="eyebrow">All Beers</div>
-  <div class="sec-h">Beer一覧 <span style="color:var(--muted);font-weight:400;font-size:.6em">全<?= $total ?>件</span></div>
+<div class="wrap pg-head">
+  <h1 class="sec-h">銘柄<span class="cnt">全<?= $total ?>件</span></h1>
 
   <!-- 味覚銀河: 全ビールの3D分布 -->
-  <div class="galaxy-shell galaxy-wide" style="margin-top:24px">
+  <div class="galaxy-shell galaxy-wide" style="margin-top:14px">
     <canvas id="gx"></canvas>
-    <div class="galaxy-tag">Flavour Galaxy · 味覚銀河</div>
+    <div class="galaxy-tag">味覚銀河</div>
     <div class="galaxy-hint">ドラッグで回転 · 星をクリックで詳細へ</div>
     <div class="legend" id="lg"></div>
     <div class="tt" id="tt"></div>
@@ -29,12 +28,12 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
       <button class="f-chip on" data-group="all">すべて</button>
       <?php /* 定義は helpers.php の group_map() が単一の出所。手で並べない */ ?>
       <?php foreach (group_map() as $gk => $gv): list(, $glabel) = group_meta($gk); ?>
-      <button class="f-chip" data-group="<?= e($gk) ?>"><?= e($glabel) ?></button>
+      <button class="f-chip" data-group="<?= e($gk) ?>"><i class="ex-dot" style="background:<?= group_meta($gk)[0] ?>"></i><?= e($glabel) ?></button>
       <?php endforeach; ?>
     </div>
     <div class="f-right">
       <span class="f-count-wrap"><b id="f-count"><?= $total ?></b> 件</span>
-      <input class="f-search" id="f-search" type="search" placeholder="銘柄・ブリュワリーで検索" aria-label="ビールを検索">
+      <input class="f-search" id="f-search" type="search" placeholder="銘柄・蔵で検索" aria-label="ビールを検索">
       <select class="f-sort" id="f-sort" aria-label="並び替え">
         <option value="newest">新着順</option>
         <option value="rating">評価が高い順</option>
@@ -46,7 +45,7 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
   </div>
 
   <!-- カードグリッド -->
-  <div class="grid-b" id="beer-grid" style="margin-top:22px;margin-bottom:70px">
+  <div class="grid-b" id="beer-grid">
     <?php $order = $total; foreach ($beers as $b):
       $g  = style_group($b['FamilyName'] ?? '', $b['StyleName'] ?? '');
       list($gcol, $glabel) = group_meta($g);
@@ -58,7 +57,7 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
        data-alcohol="<?= e($b['Alcohol']) ?>" data-order="<?= $order-- ?>">
       <div class="thumb"><?= beer_glass_tag($b) ?></div>
       <div class="body">
-        <div class="stylechip"><?= e($glabel) ?></div>
+        <div class="stylechip"><i class="ex-dot" style="background:<?= $gcol ?>"></i><?= e($glabel) ?></div>
         <h4><?= e($b['ProductName']) ?></h4>
         <div class="mk"><?= flag($b['country_code']) ?> <?= e($b['MakerName']) ?></div>
         <div class="meta">

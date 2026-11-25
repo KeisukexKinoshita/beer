@@ -29,12 +29,7 @@ $declined = $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['declined']);
 
 $title = '年齢確認';
 $desc  = 'Darth Beer.com は酒類に関する情報を扱っています。20歳以上であることをご確認ください。';
-// この画面は ex-wrap / ex-intake / ex-ring / ex-btn などを使うが、nebula.css には無い
-// (exposure.css にしかない)。head.php が読むのは nebula.css だけなので、ここで足す
-// (バージョン付与は try.php の exposureCss と同じ流儀: filemtime でキャッシュ回避)
-$exposureCss = '/assets/css/exposure.css';
-$exposureVer = @filemtime($_SERVER['DOCUMENT_ROOT'] . $exposureCss) ?: time();
-$extraCss = [$exposureCss . '?v=' . (int)$exposureVer];
+// ex-wrap / ex-intake / ex-ring / ex-btn などは exposure.css のもの。head.php が読み込む
 require __DIR__ . '/common/nebula/head.php';
 ?>
 <body>

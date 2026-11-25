@@ -8,7 +8,6 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
 <?php require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/header.php'; ?>
 
 <div class="wrap doc">
-  <div class="eyebrow">Privacy</div>
   <h1 class="doc-h1">プライバシーポリシー</h1>
   <p class="doc-lead">Darth Beer.com（以下「当サイト」）における、利用者の情報の取り扱いについて定めたものです。</p>
 

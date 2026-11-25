@@ -20,7 +20,7 @@ function beer_card($b) {
   <a class="bcard" href="/beer/detail/product.php?ProductID=<?= e($b['ProductID']) ?>">
     <div class="thumb"><?= beer_glass_tag($b) ?></div>
     <div class="body">
-      <div class="stylechip"><?= e($glabel) ?></div>
+      <div class="stylechip"><i class="ex-dot" style="background:<?= $gcol ?>"></i><?= e($glabel) ?></div>
       <h4><?= e($b['ProductName']) ?></h4>
       <div class="mk"><?= flag($b['country_code']) ?> <?= e($b['MakerName']) ?></div>
       <div class="meta"><span><?= fmt_unit($b['Alcohol'],'%') ?> · IBU<?= fmt_unit($b['IBU_all']) ?><?= est_mark($b,'IBU_all') ?></span><?= stars_html($b['Favorite']) ?></div>
@@ -29,10 +29,8 @@ function beer_card($b) {
   <?php return ob_get_clean();
 }
 function brewery_card($m) {
-  $init = mb_substr(preg_replace('/\s.*$/', '', $m['MakerName']), 0, 1);
   ob_start(); ?>
   <a class="brcard" href="/brewery/detail/maker.php?MakerID=<?= e($m['MakerID']) ?>">
-    <div class="logo"><?= e($init) ?></div>
     <h4><?= flag($m['country_code']) ?> <?= e($m['MakerName']) ?></h4>
     <p><?= e(mb_strimwidth(trim((string)$m['MakerExplain']), 0, 66, '…')) ?></p>
     <div class="loc"><?= e(country_name($m['country_code'])) ?> · 取扱 <?= (int)$m['beer_count'] ?>件</div>
@@ -44,77 +42,63 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
 <body>
 <?php require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/header.php'; ?>
 
-<div class="wrap hero">
-  <div class="hero-grid">
-    <div>
-      <div class="eyebrow">Darth Beer.com</div>
-      <h1>宇宙は、<span class="grad">味わいでできている</span>。</h1>
-      <p class="lead">度数もIBUも、フルーティーさも。すべての感覚を色と光にして、<?= count($beers) ?>の銘柄が星雲のように渦を巻く。惹かれた星をタップすれば、そこに新しい一杯が待っている。</p>
-      <div class="cta">
-        <a class="btn pri" href="/beer/products.php">銀河を旅する →</a>
-        <a class="btn ghost" href="#latest">最新のBeer</a>
-      </div>
-      <div class="stat-row">
-        <div class="stat"><b class="grad"><?= count($beers) ?></b><span>登録ビール</span></div>
-        <div class="stat"><b class="grad"><?= count($makers) ?></b><span>ブリュワリー</span></div>
-      </div>
-    </div>
-    <div class="galaxy-shell">
-      <canvas id="gx"></canvas>
-      <div class="galaxy-tag">Flavour Galaxy · 味覚銀河</div>
-      <div class="galaxy-hint">ドラッグで回転 · クリックで詳細</div>
-      <div class="legend" id="lg"></div>
-      <div class="tt" id="tt"></div>
-    </div>
+<div class="wrap">
+  <h1 class="sr">Darth Beer.com</h1>
+  <div class="galaxy-shell galaxy-wide" style="margin-top:14px">
+    <canvas id="gx"></canvas>
+    <div class="galaxy-tag">味覚銀河</div>
+    <div class="galaxy-hint">ドラッグで回転 · クリックで詳細</div>
+    <div class="legend" id="lg"></div>
+    <div class="tt" id="tt"></div>
   </div>
+  <div class="statline"><b><?= count($beers) ?></b> 銘柄 · <b><?= count($makers) ?></b> 蔵</div>
+
+  <section class="blk">
+    <div class="sec-top" id="latest">
+      <h2 class="sec-h">新着</h2>
+      <a class="more" href="/beer/products.php">すべて →</a>
+    </div>
+    <div class="subhead">日本</div>
+    <div class="grid-b"><?php foreach (array_slice($beersJP, 0, 4) as $b) echo beer_card($b); ?></div>
+    <?php if ($beersOV): ?>
+    <div class="subhead">海外</div>
+    <div class="grid-b"><?php foreach (array_slice($beersOV, 0, 4) as $b) echo beer_card($b); ?></div>
+    <?php endif; ?>
+  </section>
+
+  <section class="blk">
+    <div class="sec-top">
+      <h2 class="sec-h">人気の蔵</h2>
+      <a class="more" href="/brewery/makers.php">すべて →</a>
+    </div>
+    <div class="subhead">日本</div>
+    <div class="grid-br"><?php foreach (array_slice($makJP, 0, 4) as $m) echo brewery_card($m); ?></div>
+    <?php if ($makOV): ?>
+    <div class="subhead">海外</div>
+    <div class="grid-br"><?php foreach (array_slice($makOV, 0, 4) as $m) echo brewery_card($m); ?></div>
+    <?php endif; ?>
+  </section>
+
+  <section class="blk">
+    <div class="sec-top">
+      <h2 class="sec-h">人気のスタイル</h2>
+      <a class="more" href="/style/styles.php">すべて →</a>
+    </div>
+    <div class="types">
+      <?php foreach (array_slice($types, 0, 6) as $t):
+        $g = style_group($t['FamilyName'] ?? '', $t['StyleName'] ?? '');
+        list($gcol, $glabel) = group_meta($g);
+      ?>
+      <a class="trow" href="/style/detail/style.php?StyleID=<?= e($t['StyleID']) ?>">
+        <i class="ex-dot" style="background:<?= $gcol ?>"></i>
+        <div class="tn"><?= e($t['StyleName']) ?></div>
+        <div class="cap"><?= e($t['catchcopy'] ?: ($t['FamilyName'] ?: '')) ?></div>
+        <div class="ct"><?= e($glabel) ?> · <?= (int)$t['beer_count'] ?>件</div>
+      </a>
+      <?php endforeach; ?>
+    </div>
+  </section>
 </div>
-
-<section class="blk"><div class="wrap">
-  <div class="sec-top">
-    <div><div class="eyebrow">Latest Beer</div><div class="sec-h" id="latest">最新のBeer</div></div>
-    <a class="more" href="/beer/products.php">すべてのBeerを見る →</a>
-  </div>
-  <div class="subhead"><span class="fl">🇯🇵</span>日本</div>
-  <div class="grid-b"><?php foreach (array_slice($beersJP, 0, 4) as $b) echo beer_card($b); ?></div>
-  <?php if ($beersOV): ?>
-  <div class="subhead"><span class="fl">🌍</span>海外</div>
-  <div class="grid-b"><?php foreach (array_slice($beersOV, 0, 4) as $b) echo beer_card($b); ?></div>
-  <?php endif; ?>
-</div></section>
-
-<section class="blk"><div class="wrap">
-  <div class="sec-top">
-    <div><div class="eyebrow">Popular Brewery</div><div class="sec-h">人気のBrewery</div></div>
-    <a class="more" href="/brewery/makers.php">すべてのBreweryを見る →</a>
-  </div>
-  <div class="subhead"><span class="fl">🇯🇵</span>日本</div>
-  <div class="grid-br"><?php foreach (array_slice($makJP, 0, 4) as $m) echo brewery_card($m); ?></div>
-  <?php if ($makOV): ?>
-  <div class="subhead"><span class="fl">🌍</span>海外</div>
-  <div class="grid-br"><?php foreach (array_slice($makOV, 0, 4) as $m) echo brewery_card($m); ?></div>
-  <?php endif; ?>
-</div></section>
-
-<section class="blk"><div class="wrap">
-  <div class="sec-top">
-    <div><div class="eyebrow">Popular Type</div><div class="sec-h">人気のType</div></div>
-    <a class="more" href="/style/styles.php">すべてのTypeを見る →</a>
-  </div>
-  <div class="types" style="margin-top:24px">
-    <?php $rank = 0; foreach (array_slice($types, 0, 6) as $t):
-      $rank++;
-      $g = style_group($t['FamilyName'] ?? '', $t['StyleName'] ?? '');
-      list($gcol, $glabel) = group_meta($g);
-    ?>
-    <a class="trow" href="/style/detail/style.php?StyleID=<?= e($t['StyleID']) ?>">
-      <div class="n" style="color:<?= $gcol ?>;-webkit-text-fill-color:<?= $gcol ?>"><?= str_pad($rank, 2, '0', STR_PAD_LEFT) ?></div>
-      <div class="tn"><?= e($t['StyleName']) ?></div>
-      <div class="cap"><?= e($t['catchcopy'] ?: ($t['FamilyName'] ?: '')) ?></div>
-      <div class="ct"><span style="color:<?= $gcol ?>"><?= e($glabel) ?></span> · <?= (int)$t['beer_count'] ?>件</div>
-    </a>
-    <?php endforeach; ?>
-  </div>
-</div></section>
 
 <script>window.BEERS = <?= json_encode(beers_for_js($beers), JSON_UNESCAPED_UNICODE) ?>;</script>
 <script>

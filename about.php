@@ -11,15 +11,14 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
 <?php require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/header.php'; ?>
 
 <div class="wrap doc">
-  <div class="eyebrow">About</div>
   <h1 class="doc-h1">このサイトについて</h1>
   <p class="doc-lead">Darth Beer.com は、クラフトビールを「味わいの座標」で並べて探せるようにしたサイトです。私が個人で作っています。飲んだ人が次の一杯を選べるようにすること、それだけを目的にしています。</p>
 
   <h2>何が載っているか</h2>
-  <div class="stat-row" style="margin:18px 0 26px">
-    <div class="stat"><b class="grad"><?= count($beers) ?></b><span>ビール</span></div>
-    <div class="stat"><b class="grad"><?= count($makers) ?></b><span>ブリュワリー</span></div>
-    <div class="stat"><b class="grad"><?= count($styles) ?></b><span>掲載中のスタイル</span></div>
+  <div class="stat-row">
+    <div class="stat"><b><?= count($beers) ?></b><span>ビール</span></div>
+    <div class="stat"><b><?= count($makers) ?></b><span>ブリュワリー</span></div>
+    <div class="stat"><b><?= count($styles) ?></b><span>掲載中のスタイル</span></div>
   </div>
   <p>それぞれのビールに、度数・苦味（IBU）・色・透明度・フルーティーさの5つの数値を持たせています。トップページの「味覚銀河」は、この数値をそのまま座標にして全銘柄を配置したものです。似た位置にある星は、似た味わいのビールです。</p>
 

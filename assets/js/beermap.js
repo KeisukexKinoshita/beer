@@ -14,7 +14,7 @@
       subdomains:'abcd', maxZoom:19,
       attribution:'&copy; OpenStreetMap &copy; CARTO'
     }).addTo(map);
-    // Nebulaカラーの発光マーカー
+    // 白い点のマーカー(色はスタイル分類だけが持つ)
     var icon = L.divIcon({className:'neb-pin', html:'<span></span>', iconSize:[18,18], iconAnchor:[9,9]});
     var m = L.marker([lat,lng], {icon:icon}).addTo(map);
     if (el.dataset.label) m.bindPopup(el.dataset.label);
