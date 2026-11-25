@@ -1,5 +1,6 @@
 <?php
 require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/helpers.php';
+$ageGate = false;   // 答える前に読めるよう、年齢確認の幕を出さない
 $title = '利用規約';
 $desc  = 'Darth Beer.com の利用規約です。写真の扱い、推薦の性質、掲載料を受け取った枠の表示についてお知らせします。';
 require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';

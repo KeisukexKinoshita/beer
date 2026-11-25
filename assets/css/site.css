@@ -195,6 +195,15 @@ canvas.radar{width:100%;aspect-ratio:1/1;display:block}
 .nf{padding:60px 0}
 .nf p{color:var(--dim);margin-top:12px;font-size:13.5px}
 
+/* ---- 年齢確認の幕(全公開ページ。中身は agecheck.php と同じ) ---- */
+html.age-lock{overflow:hidden}
+html.age-lock body>*:not(.age-gate){visibility:hidden}
+.age-gate{position:fixed;inset:0;z-index:100;background:var(--bg);overflow-y:auto}
+.age-gate .ex-bar{max-width:var(--wide)}
+.age-gate .age-q{font-size:16px;font-weight:500;letter-spacing:.02em;line-height:1.8}
+.age-gate .ex-intake>div{text-align:center}
+.age-gate .ex-intake>div p{margin-left:auto;margin-right:auto}
+
 /* ---- レスポンシブ ---- */
 @media(max-width:1000px){
   .grid-b{grid-template-columns:repeat(3,1fr)}

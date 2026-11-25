@@ -3,8 +3,19 @@
 $pageTitle = isset($title) && $title !== '' ? ($title . ' | Darth Beer.com') : 'Darth Beer.com';
 $pageDesc  = $desc ?? 'クラフトビールを、度数・苦味・フルーティーさで比べて探せます。';
 $extraCss  = $extraCss ?? [];
+/* 年齢確認の幕(全公開ページ)。privacy / terms / agecheck はページ側で $ageGate = false にする。
+   ここでは Cookie を読んで DB を引くだけ(行も visitor Cookie も作らない)。ボットが大量に来るため。
+   確認済みかどうかはサーバ側(visitor.age_confirmed)が唯一の正で、ブラウザ側の目印は持たない。 */
+require_once __DIR__ . '/../reco/visitor.php';
+require_once __DIR__ . '/../reco/age.php';
+$ageLock = (($ageGate ?? true) !== false) && age_gate_needed($_COOKIE[VISITOR_COOKIE] ?? null);
+if ($ageLock) {
+    $ageTok  = age_tok_issue();
+    $ageBack = age_back_url((string)($_SERVER['REQUEST_URI'] ?? '/'));
+    header('Vary: Cookie');
+}
 ?><!DOCTYPE html>
-<html lang="ja">
+<html lang="ja"<?= $ageLock ? ' class="age-lock"' : '' ?>>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">

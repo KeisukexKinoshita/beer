@@ -9,7 +9,7 @@ $navTab = function ($key, $href, $label) use ($navOn) {
     return '<a' . ($navOn === $key ? ' class="on" aria-current="page"' : '') . ' href="' . $href . '">' . $label . '</a>';
 };
 ?>
-<div class="site-top">
+<div class="site-top"<?= !empty($ageLock) ? ' inert' : '' ?>>
 <div class="ex-bar"><a class="ex-mark" href="/index.php">DARTH BEER</a></div>
 <nav class="ex-tabs">
   <?= $navTab('try', '/try.php', 'さがす') ?>
@@ -22,4 +22,4 @@ $navTab = function ($key, $href, $label) use ($navOn) {
 
 </nav>
 </div>
-<main>
+<main<?= !empty($ageLock) ? ' inert' : '' ?>>
