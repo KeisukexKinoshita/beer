@@ -7,7 +7,23 @@ SOCK=/run/mariadb/mariadb.sock
 RDS_HOST=beer-rds.cqpmrauqnmy0.ap-northeast-1.rds.amazonaws.com
 
 # 旧RDSホスト名をローカルに向ける (実RDSへの誤接続防止も兼ねる)
-grep -q "$RDS_HOST" /etc/hosts || echo "127.0.0.1 $RDS_HOST" >> /etc/hosts
+# (このコンテナの中だけの話。deploy/ 側の _remote_query が実 RDS を引く経路とは無関係)
+# 追記は「末尾の改行を保証してから」行う。以前は `echo >>` だけで、/etc/hosts の最後が改行で
+# 終わっていないと前の行に連結して(例: `ff02::2 ip6-allrouters127.0.0.1 beer-rds…`)
+# どちらの行も壊れ、RDS ホスト名が名前解決できなくなっていた。
+# /etc/hosts はコンテナでは bind mount なので、sed -i(rename)ではなく中身を書き戻す
+fix_hosts() {
+  local tmp; tmp="$(mktemp)"
+  # すでに連結してしまっている行を、改行で分け直す
+  sed -E "s/([^[:space:]])(127\.0\.0\.1[[:space:]]+$RDS_HOST)/\1\n\2/" /etc/hosts > "$tmp"
+  if ! grep -Eq "^127\.0\.0\.1[[:space:]]+$RDS_HOST[[:space:]]*$" "$tmp"; then
+    [ -n "$(tail -c1 "$tmp")" ] && echo >> "$tmp"
+    echo "127.0.0.1 $RDS_HOST" >> "$tmp"
+  fi
+  if ! cmp -s "$tmp" /etc/hosts; then cat "$tmp" > /etc/hosts; echo "/etc/hosts を修復/追記した"; fi
+  rm -f "$tmp"
+}
+fix_hosts
 
 mkdir -p /run/mariadb
 chown mysql:mysql /run/mariadb /var/lib/mysql 2>/dev/null || true
