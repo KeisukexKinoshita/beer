@@ -60,7 +60,9 @@ function initGalaxy(opt){
   ];
   var AXC={line:'rgba(214,218,235,.42)',arrow:'rgba(236,238,248,.75)',name:'rgba(240,242,252,.92)',val:'rgba(176,182,206,.7)'};
 
+  var lbls=[];
   function drawFrame(){
+    lbls=[];
     // 立方体ワイヤーフレーム(原点中心) — 淡いグレー
     var c8=[[-1,-1,-1],[1,-1,-1],[1,1,-1],[-1,1,-1],[-1,-1,1],[1,-1,1],[1,1,1],[-1,1,1]];
     var edges=[[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
@@ -90,13 +92,20 @@ function initGalaxy(opt){
       x.textAlign='center';x.textBaseline='middle';var pad=52*DPR;
       var lx=pe.sx+(pe.sx-o.sx)*0.09,ly=pe.sy+(pe.sy-o.sy)*0.09;
       lx=Math.max(pad,Math.min(W-pad,lx));ly=Math.max(52*DPR,Math.min(H-40*DPR,ly));
-      x.font='700 '+(12*DPR)+'px "Zen Kaku Gothic New","Noto Sans JP",sans-serif';x.fillStyle=AXC.name;x.fillText(ax.name,lx,ly);
-      x.font=(9.5*DPR)+'px "Zen Kaku Gothic New","Noto Sans JP",sans-serif';x.fillStyle=AXC.val;x.fillText('max '+ax.max,lx,ly+13*DPR);
+      lbls.push(['700 '+(12*DPR)+'px "Zen Kaku Gothic New","Noto Sans JP",sans-serif',AXC.name,ax.name,lx,ly]);
+      lbls.push([(9.5*DPR)+'px "Zen Kaku Gothic New","Noto Sans JP",sans-serif',AXC.val,'max '+ax.max,lx,ly+13*DPR]);
       // -端に min
       var nx=ne.sx+(ne.sx-o.sx)*0.06,ny=ne.sy+(ne.sy-o.sy)*0.06;
       nx=Math.max(pad,Math.min(W-pad,nx));ny=Math.max(52*DPR,Math.min(H-40*DPR,ny));
-      x.fillStyle=AXC.val;x.fillText('min '+ax.min,nx,ny);
+      lbls.push([(9.5*DPR)+'px "Zen Kaku Gothic New","Noto Sans JP",sans-serif',AXC.val,'min '+ax.min,nx,ny]);
     }
+  }
+  // 軸ラベルは星より手前に、黒の縁取りつきで描く(星と重なっても読める)
+  function drawLabels(){
+    x.textAlign='center';x.textBaseline='middle';x.lineJoin='round';
+    for(var i=0;i<lbls.length;i++){var l=lbls[i];
+      x.font=l[0];x.lineWidth=3*DPR;x.strokeStyle='rgba(0,0,0,.85)';x.strokeText(l[2],l[3],l[4]);
+      x.fillStyle=l[1];x.fillText(l[2],l[3],l[4]);}
   }
 
   function draw(){
@@ -130,6 +139,7 @@ function initGalaxy(opt){
         x.textAlign='center';x.fillText(b.n,pr.sx,pr.sy-rad*2.4);}
       o._sx=pr.sx;o._sy=pr.sy;o._r=rad*3.4;
     }
+    drawLabels();
   }
   function tick(){if(auto&&!drag&&!rm)tRy+=0.0016;ry+=(tRy-ry)*.08;rx+=(tRx-rx)*.08;draw();requestAnimationFrame(tick);}
   tick();

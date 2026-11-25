@@ -2,8 +2,8 @@
 require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/helpers.php';
 $makers = all_makers();
 $total  = count($makers);
-$title  = 'Brewery一覧';
-$desc   = "掲載中の{$total}のクラフトブリュワリー。日本と海外の造り手を、宇宙の星団のように紹介します。";
+$title  = '蔵';
+$desc   = "クラフトビールの蔵{$total}か所の一覧です。日本と海外の造り手を、取扱銘柄数とあわせて載せています。";
 require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
 ?>
 <body>

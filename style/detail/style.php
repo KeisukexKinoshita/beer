@@ -26,7 +26,7 @@ $g        = style_group($style['FamilyName'] ?? '', $style['StyleName'] ?? '');
 list($gcol, $glabel) = group_meta($g);
 $sn       = $style['StyleName'];
 $title    = $sn;
-$desc     = trim((string)$style['StyleExplain']) ?: ($sn . ' — ' . $glabel . 'のクラフトビール' . count($beers) . '件');
+$desc     = trim((string)$style['StyleExplain']) ?: ($sn . '(' . $glabel . ')。' . (count($beers) > 0 ? 'このスタイルのクラフトビール' . count($beers) . '銘柄を載せています。' : 'スタイルの解説です。'));
 $pageJs   = ['/assets/js/galaxy.js', '/assets/js/beerglass.js'];
 require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
 ?>
@@ -43,9 +43,10 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
     <p class="dt-desc"><?= nl2br(e(trim((string)$style['StyleExplain']))) ?></p>
   <?php endif; ?>
 
+  <?php if ($beers): ?>
   <div class="panel" style="margin-top:24px">
     <h3>味覚マップ上の位置</h3>
-    <div class="sub">全<?= count($allBeers) ?>銘柄のうち、<?= count($beers) ?>件を強調(原点=平均)</div>
+    <div class="sub">明るい点がこのスタイルの<?= count($beers) ?>銘柄(原点=平均)</div>
     <div class="galaxy-shell galaxy-wide">
       <canvas id="gx"></canvas>
       <div class="galaxy-tag">味覚銀河</div>
@@ -73,6 +74,7 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
       <?php endforeach; ?>
     </div>
   </section>
+  <?php endif; ?>
 </div>
 
 <script>window.BEERS = <?= json_encode(beers_for_js($allBeers), JSON_UNESCAPED_UNICODE) ?>;</script>

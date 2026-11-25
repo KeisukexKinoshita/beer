@@ -1,7 +1,7 @@
 <?php
 /* <head> 出力。ページ側で $title / $desc を設定してから require する (§7: タイトル・meta動的化) */
 $pageTitle = isset($title) && $title !== '' ? ($title . ' | Darth Beer.com') : 'Darth Beer.com';
-$pageDesc  = $desc ?? '世界中のクラフトビールを、味わいの座標で並べた宇宙。あなたの好みの一杯を見つけよう。';
+$pageDesc  = $desc ?? 'クラフトビールを、度数・苦味・フルーティーさで比べて探せます。';
 $extraCss  = $extraCss ?? [];
 ?><!DOCTYPE html>
 <html lang="ja">

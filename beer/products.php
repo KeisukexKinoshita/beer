@@ -2,8 +2,8 @@
 require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/helpers.php';
 $beers   = all_beers();
 $total   = count($beers);
-$title   = 'Beer一覧';
-$desc    = "登録されている{$total}銘柄のクラフトビールを、味わいの銀河とカードで探せます。スタイルで絞り込み、度数・IBU・評価で並び替え。";
+$title   = '銘柄';
+$desc    = "クラフトビール{$total}銘柄の一覧です。スタイルで絞り込み、度数・IBU・評価で並び替えられます。";
 $pageJs  = ['/assets/js/galaxy.js', '/assets/js/beerlist.js', '/assets/js/beerglass.js'];
 require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
 ?>

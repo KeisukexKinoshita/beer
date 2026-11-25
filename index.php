@@ -3,7 +3,7 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/helpers.php';
 $beers   = all_beers();               // 新着順(ProductID降順)
 $makers  = all_makers();
 $title   = '';                        // トップは "Darth Beer.com" のみ
-$desc    = '世界中のクラフトビールを、味わいの座標で並べた宇宙。度数・IBU・フルーティーさの銀河から、あなたの好みの一杯を見つけよう。';
+$desc    = 'クラフトビール' . count($beers) . '銘柄を、度数・苦味・フルーティーさで比べて探せます。写真を撮ると、似た一本を提案します。';
 $pageJs  = ['/assets/js/galaxy.js', '/assets/js/beerglass.js'];
 
 $beersJP = array_values(array_filter($beers, fn($b) => ($b['country_code'] ?? 'JP') === 'JP'));

@@ -13,8 +13,8 @@ $others = array_values(array_filter(all_styles(), function ($s) {
 usort($others, fn($a, $b) => strcmp($a['StyleName'], $b['StyleName']));
 
 $total = count($types) + count($others);
-$title = 'Type一覧';
-$desc  = "クラフトビールのスタイル（Type）{$total}種を解説。IPA・スタウト・サワーなど、味わいの違いと取扱銘柄数で紹介します。";
+$title = 'スタイル';
+$desc  = "IPA・スタウト・サワーなど、クラフトビールのスタイル{$total}種の解説です。銘柄数の多い順に並べています。";
 require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
 ?>
 <body>

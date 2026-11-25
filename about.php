@@ -4,7 +4,7 @@ $beers  = all_beers();
 $makers = all_makers();
 $styles = styles_used();
 $title = 'このサイトについて';
-$desc  = 'Darth Beer.com に何が載っていて、どうやって作っているかについて。';
+$desc  = 'Darth Beer.com に載っている内容と、紹介文の書き方、運営者についてのご案内です。';
 require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
 ?>
 <body>

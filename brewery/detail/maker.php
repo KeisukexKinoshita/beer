@@ -24,7 +24,7 @@ $allBeers = all_beers();
 $hlIds    = array_column($beers, 'ProductID');
 $mn       = $maker['MakerName'];
 $title    = $mn;
-$desc     = mb_strimwidth(trim((string)$maker['MakerExplain']) ?: ($mn . ' のクラフトビール'), 0, 110, '…');
+$desc     = mb_strimwidth(trim((string)$maker['MakerExplain']) ?: ($mn . '(' . country_name($maker['country_code']) . ')のクラフトビール' . count($beers) . '銘柄。'), 0, 110, '…');
 $pageJs   = ['/assets/js/galaxy.js', '/assets/js/beermap.js', '/assets/js/beerglass.js'];
 $useMap   = !empty($maker['latitude']) && !empty($maker['longitude']);
 require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
@@ -67,7 +67,7 @@ require $_SERVER['DOCUMENT_ROOT'] . '/common/nebula/head.php';
   <!-- 味覚マップ: このブリュワリーのビールを強調 -->
   <div class="panel" style="margin-top:26px">
     <h3>味覚マップ上の位置</h3>
-    <div class="sub">全<?= count($allBeers) ?>銘柄のうち、この蔵の<?= count($beers) ?>件を強調(原点=平均)</div>
+    <div class="sub">明るい点がこの蔵の<?= count($beers) ?>銘柄(原点=平均)</div>
     <div class="galaxy-shell galaxy-wide">
       <canvas id="gx"></canvas>
       <div class="galaxy-tag">味覚銀河</div>
