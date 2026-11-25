@@ -1184,6 +1184,9 @@ sandbox(`beer/`ディレクトリのコピーが追加済み)上で実行して�
 
 ## 6. カバレッジ集計・実行結果
 
+> **当時の記録(2026-08〜09)。現状ではない。** 件数(「全28ケース」「27 PASS / 1 仕様不一致」など)・known-failures の扱い・fixtures.sql の記述は、
+> 2026-11 の立て直しで置き換わった。現行の件数・方式・ケース一覧は §14。
+
 > **【最新の正式な件数は §11.4 を参照】** 本セクション以下(§6〜§10)は各ラウンド時点での
 > 件数・結果を歴史的記録として残しているため、19件→28件→**26件**(最終)と段階的に増減した
 > 記述が混在する。現時点の正しい総ケース数・結果内訳は §11.4 の「最終ケース数集計」を参照。
@@ -1222,6 +1225,9 @@ sandbox(`beer/`ディレクトリのコピーが追加済み)上で実行して�
 ---
 
 ## 7. 実行結果まとめ
+
+> **当時の記録(2026-08〜09)。現状ではない。** 件数(「全28ケース」「27 PASS / 1 仕様不一致」など)・known-failures の扱い・fixtures.sql の記述は、
+> 2026-11 の立て直しで置き換わった。現行の件数・方式・ケース一覧は §14。
 
 **再現コマンド**:
 ```bash
@@ -1374,6 +1380,9 @@ done   # → 出力なし(差分ゼロ)
 ---
 
 ## 9. 改修後ラウンド 実行結果まとめ(2026-08-22)
+
+> **当時の記録(2026-08〜09)。現状ではない。** 件数(「全28ケース」「27 PASS / 1 仕様不一致」など)・known-failures の扱い・fixtures.sql の記述は、
+> 2026-11 の立て直しで置き換わった。現行の件数・方式・ケース一覧は §14。
 
 **再現コマンド**:
 ```bash
@@ -1528,6 +1537,9 @@ diff -rq tests/out tests/golden # 差分ゼロを確認(全87ファイル: html/
 ---
 
 ## 11. クリーンアップ+公開前修正の記録(2026-08-22、commit 8621067 / db02f69)
+
+> **当時の記録(2026-08〜09)。現状ではない。** 件数(「全28ケース」「27 PASS / 1 仕様不一致」など)・known-failures の扱い・fixtures.sql の記述は、
+> 2026-11 の立て直しで置き換わった。現行の件数・方式・ケース一覧は §14。
 
 ユーザー指示によりオーケストレーターが適用した3件の変更(共有SQL層のクリーンアップ1件+
 意図的な挙動修正2件)を記録する。独立確認は `bash tests/runner/make_sandbox.sh && bash
@@ -1726,6 +1738,9 @@ function fmt_num($v) {
   変わった」ことの確認であり、不一致には分類しない)。
 
 ## 13. ゴールデン取り直し(2026-09-19、計画2タスク6)
+
+> **当時の記録(2026-08〜09)。現状ではない。** 件数(「全28ケース」「27 PASS / 1 仕様不一致」など)・known-failures の扱い・fixtures.sql の記述は、
+> 2026-11 の立て直しで置き換わった。現行の件数・方式・ケース一覧は §14。
 
 ### 13.1 なぜ取り直したか
 
@@ -1992,65 +2007,105 @@ GB・緯度経度つきの蔵 mk9004 と、推定値(`estimated_fields='IBU_all'
 | `Set-Cookie: db_age_tok=<32hex>` | `<AGE_TOK>` |
 | agecheck の hidden `csrf`(64桁hex) | `<CSRF>` |
 | `Set-Cookie: db_vid=<32hex>` | `<VISITOR_ID>` |
-| Set-Cookie の `expires=…` / `Max-Age=…` | `<DATE>` / `<N>` |
+| Set-Cookie の `Max-Age=<秒>` | `<MAX_AGE:<日数>d>`(値は日数に丸めて残す。寿命が変われば落ちる。§14.7) |
+| Set-Cookie の `expires=<日時>` | `<DATE:ok>`(Max-Age と30秒以内で整合)/ `<DATE:MISMATCH>` |
+| checkout の絶対パス | `<ROOT>` |
 
 日時・件数・文言・Cookie の属性(`secure` / `HttpOnly` / `SameSite`)・Cache-Control / Vary / Location は置き換えない。
 同じ状態で2回続けて実行し、`tests/out/` が完全に一致することを確認した。
 
-### 14.5 ケース一覧(立て直し後。53件 = 新サイト 34 + 旧コード 19)
+### 14.5 ケース一覧(2026-11-26 時点。90件 = 新サイト 71 + 旧コード 19)
 
 新サイト(`scope=site`。例外に入れられない。すべて exit 0 で Warning なし)。**幕あり=Cookie なしまたは未確認 / 幕なし=確認済み。**
 
 | ページ | ケース |
 |---|---|
-| index.php | IDX-01 幕あり(Set-Cookie db_age_tok)/ IDX-02 確認済み=幕なし / IDX-03 行はあるが未確認=幕あり / IDX-04 ホスト drtbeer.com=GA4 あり / IDX-05 dev.drtbeer.com=GA4 なし / IDX-06 www.drtbeer.com=GA4 なし / IDX-07 db_vid が不正な書式=幕あり |
-| about.php | ABOUT-01 幕あり / ABOUT-02 幕なし |
-| privacy.php / terms.php | PRIVACY-01 / TERMS-01(Cookie なしでも幕を出さず db_age_tok も出さない) |
-| agecheck.php | AGECHECK-01 GET(tok のみ)/ -02 行のある訪問者(tok+csrf)/ -03 「はい」=302・db_vid 発行・visitor に確認済み1行 / -04 合言葉違い=出し直し・行を作らない / -05 next が許可外=/index.php へ / -06 「いいえ」 |
-| beer/products.php | BEERPRODUCTS-01 幕あり / -02 幕なし |
-| beer/detail/product.php | BEERDETAIL-01 幕あり / -02 幕なし(度数・IBU 表示)/ -03 推定値・公式リンク・地図 / -04 存在しない ID=404 |
-| brewery/makers.php | BRWMAKERS-01 / -02 |
-| brewery/detail/maker.php | BRWMAKER-01 幕あり / -02 地図あり / -03 存在しない ID=404 |
+| index.php | IDX-01 幕あり(Set-Cookie db_age_tok)/ -02 確認済み=幕なし / -03 行はあるが未確認=幕あり / -04 drtbeer.com=GA4 あり / -05 dev.drtbeer.com=GA4 なし / -06 www.drtbeer.com=GA4 なし / -07 db_vid が不正な書式=幕あり / **-08 `/` そのもの(canonical と幕の戻り先が `/`)/ -09 余計なクエリ(`?utm=x&fbclid=y`)付き=canonical と戻り先から落ちる / -10 tok の乱数性(2回取得して毎回違う)/ -11 Host が DRTBEER.COM=GA4 あり / -12 `drtbeer.com:443`=GA4 なし(現状の固定)/ -13 未確認で drtbeer.com=幕ありでも GA4 あり(現状の固定)** |
+| about.php | ABOUT-01 幕あり / -02 幕なし / **-03 drtbeer.com=GA4 あり** |
+| privacy.php / terms.php | PRIVACY-01 / TERMS-01(Cookie なしでも幕を出さず db_age_tok も出さない)/ **PRIVACY-02 drtbeer.com=幕なしで GA4 あり** |
+| agecheck.php | AGECHECK-01 GET(tok のみ)/ -02 行のある訪問者(tok+csrf)/ -03 「はい」=302・db_vid 発行・visitor に確認済み1行 / -04 合言葉違い=出し直し・行を作らない / -05 next が許可外 / -06 「いいえ」 / **-07 行のある未確認の訪問者が行ベースの csrf で「はい」=成立(try.php から飛ばされる人の経路。csrf は site.sql の固定値)/ -08 その csrf が違う=不成立 / -09 tok の Cookie が無い POST=「Cookie を有効にしてからお試しください。」・行を作らない / -10 next が詳細ページ=そこへ 302 / -11〜-15 next の回避例(`/\evil.example`、余計なクエリ付き詳細、`ProductID=../x`、`https://…`、改行を混ぜたもの)=/index.php へ / -16 一連の流れ(未確認で一覧=幕 → 幕の「はい」=302 → 発行された db_vid で取り直すと幕が消える。発行された db_vid が DB の行の ID と一致し確認済みであることも見る)** |
+| beer/products.php | BEERPRODUCTS-01 幕あり / -02 幕なし(NULL・0 の銘柄も並ぶ) |
+| beer/detail/product.php | BEERDETAIL-01 幕あり / -02 幕なし / -03 推定値・公式リンク・地図 / -04 存在しない ID=404 / **-05 すべて NULL(未計測「—」・未評価・スタイルなし・説明なし・official_url なし)/ -06 評価だけ NULL / -07 度数と IBU だけ NULL / -08 本当の 0(「—」と区別)/ -09 404 を未確認で見る=幕あり / -10 余計なクエリ / -11 drtbeer.com=GA4** |
+| brewery/makers.php | BRWMAKERS-01 / -02(country_code NULL・銘柄 0 件の蔵も並ぶ) |
+| brewery/detail/maker.php | BRWMAKER-01 幕あり / -02 地図あり / -03 404 / **-04 説明・URL1 が空・country_code NULL・緯度経度なし / -05 logo_path あり / -06 銘柄 0 件の蔵 / -07 404 を未確認で見る** |
 | style/styles.php | STYSTYLES-01 / -02(銘柄 0 件のスタイルも載る) |
-| style/detail/style.php | STYDETAIL-01 幕あり / -02 幕なし / -03 銘柄 0 件=味覚マップ・銘柄の節なし / -04 存在しない ID=404 |
+| style/detail/style.php | STYDETAIL-01 幕あり / -02 幕なし / -03 銘柄 0 件=味覚マップ・銘柄の節なし / -04 404 / **-05 404 を未確認で見る / -06 余計なクエリ** |
+| sitemap.php / robots.txt | **SITEMAP-01(PHP の出力だけ。/sitemap.xml の振り向けは nginx)/ ROBOTS-01(静的ファイルの中身)** |
+| try.php / history.php | **TRY-01 未確認=`/agecheck.php?next=/try.php` へ 302・db_vid 発行・行を1件作る / TRY-02 確認済み=200 / HISTORY-01 未確認=302・行を1件作る / HISTORY-02 確認済みで記録なし=200**(API キーも外部通信も無しで GET を返せた。写真のアップロード・Anthropic API・LINE 連携は外部を呼ぶので入れていない) |
+
+太字は 2026-11-26 に足した37件。NULL・空の期待値は、フィクスチャ(`site.sql`)の SQL 値と突き合わせた(105〜108 の度数・IBU・フルーティー・評価が、
+画面の「—」「0%」「0.0」「未評価」と一致すること。sitemap の `<url>` 26件 = 固定7 + 銘柄8 + 蔵7 + 解説のあるスタイル4)。
 
 旧コード(`scope=legacy`。配布対象外。TC-CORE-01〜03、TC-POST-THANK-*、TC-SEL-{ADDP,CHECK-*,EVAL,LMAK,LSTY,MAK,MAKERS,PHPCHECK-NEW,POSTADDP,POSTEVAL,POSTPRD,PRD})
-19件は、今の DB 定義で全部クリーンに実行できる(立て直し前に Fatal だった THANK-NEW-01/-02 も通る)。
-golden は取り直した。差分は次の2種だけで、機械的に確認済み(新しい列が `SELECT *` の JSON・ダンプに増えた分。
-THANK-NEW の db.txt では、`php/sql_POST.php` が旧版の「IBU=0 の全行の IBU_all を上書きする UPDATE」を
-やめた(コード側の変更)ため、銘柄 102 の IBU_all が 30.00 から 99.99(元の値)に変わった)。
-このうち 11 件は旧コードの PHP 8 警告を含んだまま固定しており、`known-failures.txt` の `noise:` に
-理由つきで載せている(ハーネスが `$_FILES` を渡さない、GET/POST が無いときの未定義変数 など)。
-旧コードは直していない。`known-failures.txt` の「ファイルの DIFF 例外」は 0 件。
+19件は、今の DB 定義で Fatal もなく実行できる(立て直し前に Fatal だった THANK-NEW-01/-02 も通る)。ただし**うち11件は旧コードの PHP 8 警告
+(Warning / Notice / Deprecated)を含んだまま固定**しており、`known-failures.txt` の `noise:` に理由つきで載せている(ハーネスが `$_FILES` を渡さない、
+GET/POST が無いときの未定義変数 など)。残り8件は警告なし。旧コードは直していない。
+golden の差分は、増えた列(`SELECT *` の JSON・ダンプ)と、THANK-NEW の db.txt(`php/sql_POST.php` が旧版の「IBU=0 の全行の IBU_all を上書きする UPDATE」を
+やめたため、銘柄 102 の IBU_all が 30.00 から 99.99 に戻った)だけ。checkout の絶対パスは `<ROOT>` に正規化した。
 
-### 14.6 再発防止の仕組み(`tests/runner/compare_golden.py`)
+### 14.6 再発防止の仕組み(`tests/runner/compare_golden.py`、`run_all.sh`)
 
-- ケース定義(`cases/*.json`)を起点に、あるべきファイルを決める。golden が無ければ MISSING で失敗。
-  ケースの無い golden は ORPHAN で失敗。
-- **実行が Fatal・Warning・Notice・Deprecated・非 0 終了なら、golden と一致していても失敗(NOISE)。**
-  旧コードで意図して固定するものだけ、`known-failures.txt` に `noise:<ID> | 理由` で載せる。
-- `known-failures.txt` は全行に理由が要る(無いと BAD-KNOWN で失敗)。**新サイト(scope=site)のケースは
-  載せられない(載せると失敗)。** 載っているのに当てはまらなくなったら STALE で失敗。
-- 最後に必ず「比較したケース数(新サイト/旧コード)/ 除外したファイル数 / 許容したケース数と内訳(理由つき)」を出す。
-- `start_db.sh` の `/etc/hosts` 追記は、末尾の改行を保証してから行い、すでに連結した行も分け直す。
+- ケース定義(`cases/*.json`)を起点に、あるべきファイルを決める。golden が無ければ MISSING、ケースの無い golden は ORPHAN で失敗。
+- **`scope`(site / legacy)は必須。** 無いケースは SCOPE で失敗(`run_case.sh` も止まる)。書き忘れで旧コード扱いになって例外に載せられるのを防ぐ。
+- **最低ケース数**(`MIN_CASES`: 新サイト71 / 旧コード19)を下回ると TOO-FEW で失敗。ケースと golden を両方消して静かに減らせない。ケースを足したら `MIN_CASES` も上げる。
+- **`run_all.sh` は最初に `tests/out` を消し、全ケースを走り切ったときだけ完了の印(`tests/out/RUN_COMPLETE`: ケース数・HEAD・未コミットのファイル数)を書く。**
+  `compare_golden` は、印が無い・ケース数が合わない・HEAD が違うときに INCOMPLETE で失敗する(途中で落ちたのに古い出力で通る、を防ぐ)。
+- Warning・Notice・Deprecated は、golden と一致していても失敗(NOISE)。旧コードで意図して固定するものだけ `noise:<ID> | 理由` で許す。
+  **Fatal・Parse error・非 0 終了は、例外があっても失敗(FATAL)。**
+- `known-failures.txt` は全行に理由が要る(無いと BAD-KNOWN)。**新サイト(scope=site)のケースは載せられない。** 当てはまらなくなった行は STALE で失敗。
+- 最後に必ず「比較したケース数(新サイト/旧コード)/ 除外ファイル数 / 許容ケース数と内訳(理由つき)」を出す。
+- `load_fixtures.sh` は `pipefail` と、追加 SQL の存在検査つき(存在しないファイルを渡すと止まる)。
+- `start_db.sh` の `/etc/hosts` 修復: 末尾の改行を保証してから追記し、連結した行は分け直し、RDS ホスト名が 127.0.0.1 以外の IP で書かれていればその行から外す
+  (`HOSTS_FILE` で写しを指して試せる)。
 
-### 14.7 実行結果
+### 14.7 ハーネスの拡張(2026-11-26)
 
-`bash tests/runner/start_db.sh` → `bash tests/runner/run_all.sh` → `bash tests/runner/compare_golden.sh`:
-**53 ケース(新サイト 34 / 旧コード 19)すべて一致、除外 0 件、旧コードの警告を理由つきで許容 11 件**。2回続けて同じ。
-単体テスト `php tests/unit/run.php`: 394 pass / 0 fail。実データ `beer`(products 200 / maker 40 / style 102)は
-特性テストの前後で変わらない。単体テスト(`tests/unit/`)は `beer` の visitor ほかを書き換えるが、
-特性テストは別スキーマ `beer_characterization` だけを使うので干渉しない。
+- `http_page.py` に **steps**(複数リクエストを同じ cookie jar で順に叩く。前の応答の Set-Cookie が次の Cookie になり、`{db_age_tok}` `{db_vid}` を post の値に埋められる)と
+  **`check_distinct_cookie`**(発行された Cookie の値が毎回違うことを head の末尾に書く)を足した。
+- `dump_queries` の `{db_vid}` は、そのケースで実際に発行された db_vid に置き換わる(発行された db_vid と DB の行の ID が一致することを、正規化で見えなくならない形で検査する)。
+- 正規化(`normalize.php`)の変更: `Max-Age` は値を潰さず日数に丸めて残す(`<MAX_AGE:365d>`。db_vid の1年が30日になれば落ちる)。`expires` は日時を潰すが、
+  Max-Age と30秒以内で整合していれば `<DATE:ok>`、食い違えば `<DATE:MISMATCH>`。checkout の絶対パスは `<ROOT>`。複数 step のケースでは、本文の tok を同じ番号の step の Set-Cookie と突き合わせる。
 
-### 14.8 わざと壊して拾えるかを確かめた結果
+### 14.8 実行結果
+
+`bash tests/runner/start_db.sh` → `bash tests/runner/run_all.sh` → `bash tests/runner/compare_golden.sh`: **90 ケース(新サイト 71 / 旧コード 19)すべて一致、
+ファイルの除外 0 件、旧コードの警告を理由つきで許容 11 件**。2回続けて同じ。`git archive HEAD` を別ディレクトリに展開(`db_config.local.php` だけコピー)しても同じく全件一致。
+単体テスト `php tests/unit/run.php`: 394 pass / 0 fail。実データ `beer`(products 200 / maker 40 / style 102)は特性テストの前後で変わらない。
+単体テストは `beer` の visitor ほかを書き換えるが、特性テストは別スキーマ `beer_characterization` だけを使うので干渉しない。
+
+### 14.9 わざと壊して拾えるかを確かめた結果(すべて写しの上。リポジトリ本体は書き換えていない)
+
+2026-11-25 の分(その後のケース追加で落ちるケースは増減しているが、いずれも検出される):
+
+| 壊し方 | 結果 |
+|---|---|
+| footer.php の「20歳未満」を変える / 度数表示を消す / `Cache-Control` を消す / 幕を常に出さない / all_beers に存在しない列 | いずれも落ちる(本文・ヘッダ・Fatal) |
+| `assets/css/site.css` の中身を変える(filemtime が変わる) | 落ちない(意図どおり。CSS の中身は検査対象外) |
+
+2026-11-26 の分(検証担当が「落ちなかった」とした変異):
 
 | 壊し方 | 落ちたケース |
 |---|---|
-| footer.php の「20歳未満」を「21歳未満」に | 本文を持つ全31ケース(IDX・ABOUT・AGECHECK-01/02/04・BEER*・BRW*・STY*・PRIVACY・TERMS。302 の AGECHECK-03/05 と AGECHECK-06 は footer が無いので落ちない) |
-| 銘柄詳細の度数表示を消す | BEERDETAIL-01/-02/-03 の3件だけ |
-| head.php の `Cache-Control: private` を消す | 32ケース(.head.txt)。head.php を使うページすべて |
-| age.php で幕を常に出さない | 幕ありを期待する10ケース(IDX-01/03/07、ABOUT-01、BEERPRODUCTS-01、BEERDETAIL-01、BRWMAKERS-01、BRWMAKER-01、STYSTYLES-01、STYDETAIL-01) |
-| helpers.php の all_beers に存在しない列 | Fatal(exit 255)で NOISE と DIFF。all_beers を使う全ページ |
-| assets/css/site.css の中身を変える(filemtime が変わる) | 落ちない(ALL MATCH) |
+| db_vid の寿命を1年→30日 | AGECHECK-03/05/07/10〜16、TRY-01/02、HISTORY-01/02(db_vid を発行する14件) |
+| tok を固定値に | IDX-10 |
+| GA4 の `strtolower` を外す | IDX-11 |
+| `stars_html` の未評価の分岐を潰す | 23件(IDX 全件・BEERPRODUCTS・BEERDETAIL-05/06・BRWMAKER-04/05 ほか) |
+| Cookie の案内文を消す | AGECHECK-08/09 |
+| csrf 検査を外す(`age_answer_valid`) | AGECHECK-08 |
+| `age_next` の詳細 ID の厳格検査を外す | AGECHECK-12/13 |
+| canonical に全クエリを残す | IDX-09、BEERDETAIL-10、STYDETAIL-06 |
+| `MakerExplain` の空判定を外す | BRWMAKER-04 |
+| `URL1` の空判定を外す | BRWMAKER-04 |
+| (抜け道)壊れたケース定義で `run_all.sh` を失敗させる / 印を消す / ケースだけ足す | INCOMPLETE で失敗 |
+| (抜け道)`noise:` 例外のある旧コードを Fatal にして golden も取り直す | FATAL で失敗 |
+| (抜け道)`scope` を消して known-failures に載せる / 新サイトのケースを載せる | SCOPE / BAD-KNOWN で失敗 |
+| (抜け道)ケースと golden を13件消す | TOO-FEW で失敗 |
 
-いずれも確認後に `git checkout` で元に戻し、`git status` で戻ったことを確認した。
+### 14.10 残っている限界
+
+- `assets/` の CSS / JS の中身は検査しない(`?v=` を正規化しており、中身を変えても落ちない)。
+- ブラウザでの描画と JS の実行は検査しない。HTML・応答ヘッダ・DB の副作用まで。
+- テストの DB は MariaDB で、本番は MySQL 8。SQL の方言や照合順序の差は拾えない。
+- `db/seeds/`(データの投入)は当てない。フィクスチャは合成データで、実データの分布(約4分の3が未評価など)は NULL のケースで代表させている。
+- 写真のアップロード・Anthropic API を呼ぶ経路・LINE 連携は、外部を呼ぶため入れていない。
+- 旧コード 11 件は PHP 8 警告を含んだまま固定している(直していない)。
