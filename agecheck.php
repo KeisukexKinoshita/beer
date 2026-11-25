@@ -6,19 +6,25 @@ require_once __DIR__ . '/common/reco/visitor.php';
 require_once __DIR__ . '/common/reco/age.php';
 require_once __DIR__ . '/common/reco/repo.php';
 
-$visitorId = visitor_current();
+// **ここでは visitor_current() を呼ばない**(行と Cookie を作るため)。
+// 行を作るのは「はい」が成立したときだけ。Cookie の無い訪問者の GET や、失敗する POST で
+// 行を増やすと、ボットが POST を投げ続けて行を増やせてしまう。
+$visitorCookie = $_COOKIE[VISITOR_COOKIE] ?? null;
+$cookieMissing = false;   // 「はい」を押したのに合言葉の Cookie が届いていない
 
 // "はい" ボタンが押された（CSRF対策：画面を見た人だけが答えられる）
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm'])) {
     // いちばん先に合言葉を確認。合わなければ画面をもう一度見せ直す。
     // 合言葉は2通り: この画面のフォーム(visitor の行に持つ csrf)と、
     // 一覧・詳細ページの幕のフォーム(行を作らずに出すため、二重送信Cookie の tok)
-    $tokOk = age_tok_check($_COOKIE[AGE_TOK_COOKIE] ?? null, $_POST['tok'] ?? null);
-    if (!$tokOk && !csrf_check($visitorId, $_POST['csrf'] ?? null)) {
+    if (!age_answer_valid($visitorCookie, $_COOKIE[AGE_TOK_COOKIE] ?? null, $_POST['tok'] ?? null, $_POST['csrf'] ?? null)) {
         // 外部サイトからの POST を防ぐ。正規の利用者が時間を置いて送った場合にも起きるので、
         // エラーにせず、黙ってやり直させる（親切なUI）
-        // （年齢確認画面をもう一度出す）
+        // （年齢確認画面をもう一度出す）。Cookie を無効にしたブラウザでは何度押しても通らないので、
+        // 合言葉の Cookie が無いときは、その旨を一行だけ出す
+        $cookieMissing = !isset($_COOKIE[AGE_TOK_COOKIE]);
     } else {
+        $visitorId = visitor_current();   // ここで初めて行と Cookie を作る
         age_confirm($visitorId);
 
         // next パラメータへ安全にリダイレクト（許可したパスだけを受け付ける）
@@ -68,8 +74,15 @@ require __DIR__ . '/common/nebula/head.php';
           <a href="/terms.php" target="_blank" rel="noopener">利用規約</a>をご確認ください
         </p>
       </div>
+      <?php if ($cookieMissing): ?>
+        <p style="color:var(--faint);font-size:11px;margin:0">Cookie を有効にしてからお試しください。</p>
+      <?php endif; ?>
       <form class="ex-acts" method="POST">
-        <input type="hidden" name="csrf" value="<?= e(csrf_issue($visitorId)) ?>">
+        <?php /* 行の無い訪問者は二重送信Cookie の合言葉、try.php から来た(行のある)訪問者は従来の csrf */ ?>
+        <input type="hidden" name="tok" value="<?= e(age_tok_issue()) ?>">
+        <?php if (age_visitor_known($visitorCookie)): ?>
+        <input type="hidden" name="csrf" value="<?= e(csrf_issue((string)$visitorCookie)) ?>">
+        <?php endif; ?>
         <button type="submit" name="confirm" value="yes" class="ex-btn">はい</button>
         <button type="submit" name="declined" value="yes" class="ex-btn ghost">いいえ</button>
       </form>

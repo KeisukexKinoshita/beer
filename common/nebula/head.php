@@ -9,10 +9,13 @@ $extraCss  = $extraCss ?? [];
 require_once __DIR__ . '/../reco/visitor.php';
 require_once __DIR__ . '/../reco/age.php';
 $ageLock = (($ageGate ?? true) !== false) && age_gate_needed($_COOKIE[VISITOR_COOKIE] ?? null);
+// 幕の有無(と、確認済みかどうか)で同じ URL の応答が変わる。共有キャッシュに保存させない。
+// no-store にはしない(ブラウザの「戻る」が遅くなるため)。出力より前に送る
+header('Cache-Control: private');
+header('Vary: Cookie');
 if ($ageLock) {
     $ageTok  = age_tok_issue();
     $ageBack = age_back_url((string)($_SERVER['REQUEST_URI'] ?? '/'));
-    header('Vary: Cookie');
 }
 ?><!DOCTYPE html>
 <html lang="ja"<?= $ageLock ? ' class="age-lock"' : '' ?>>

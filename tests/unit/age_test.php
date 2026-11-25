@@ -112,3 +112,30 @@ eq(age_tok_check($t, null), false, '送信値が無ければ通らない');
 eq(age_tok_check('', ''),   false, '空同士は通さない');
 eq(age_tok_check('abc', 'abc'), false, '形の違うものは一致しても通さない');
 eq(age_tok_check([$t], $t), false, '配列は通さない');
+
+
+// === agecheck.php の「はい」: 検査は読むだけ。失敗する POST で行を作らない ===
+require_once __DIR__ . '/../../common/reco/repo.php';
+$cnt = fn() => (int)db()->query("SELECT COUNT(*) FROM visitor")->fetchColumn();
+$before = $cnt();
+$tok = age_tok_new();
+eq(age_answer_valid(null, null, null, null),        false, '何も無い POST は通さない');
+eq(age_answer_valid(null, null, $tok, null),        false, 'Cookie の合言葉が無ければ通さない');
+eq(age_answer_valid(null, $tok, 'x', null),         false, '合言葉が違えば通さない');
+eq(age_answer_valid(null, $tok, [$tok], null),      false, '配列は通さない');
+eq(age_answer_valid(str_repeat('b', 32), null, null, 'csrf'), false, '行の無い訪問者の csrf は通さない');
+eq(age_answer_valid('zzz', $tok, 'x', 'y'),         false, '形の違う Cookie は通さない');
+eq($cnt(), $before, '失敗する POST の検査で visitor の行は増えない');
+eq(age_answer_valid(null, $tok, $tok, null),        true,  '合言葉が合えば、行が無くても通る(検査自体は書かない)');
+eq($cnt(), $before, '成立の検査でも行は作らない(作るのは呼び出し側が確認するとき)');
+
+// try.php から来た既存の訪問者: 行ベースの csrf で通る
+$vid = 'abc' . str_repeat('1', 29);
+db()->prepare("INSERT INTO visitor (visitor_id, first_seen, last_seen) VALUES (:v, NOW(), NOW())
+               ON DUPLICATE KEY UPDATE csrf_token = NULL")->execute([':v' => $vid]);
+eq(age_visitor_known($vid), true, '行のある訪問者は既知');
+eq(age_visitor_known('a1b2c3d4' . str_repeat('9', 24)), false, '行の無い訪問者は未知');
+$c = csrf_issue($vid);
+eq(age_answer_valid($vid, null, null, $c),   true,  '既存の訪問者は行ベースの csrf で通る');
+eq(age_answer_valid($vid, null, null, 'bad'), false, '違う csrf は通さない');
+db()->prepare("DELETE FROM visitor WHERE visitor_id = :v")->execute([':v' => $vid]);

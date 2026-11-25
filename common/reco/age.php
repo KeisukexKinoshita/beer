@@ -130,3 +130,27 @@ function age_tok_issue(): string
     }
     return $t;
 }
+
+/** その訪問者の行があるか。読むだけ */
+function age_visitor_known($visitorCookie): bool
+{
+    if (!is_string($visitorCookie) || !preg_match('/^[0-9a-f]{32}$/', $visitorCookie)) { return false; }
+    $st = db()->prepare("SELECT 1 FROM visitor WHERE visitor_id = :v");
+    $st->execute([':v' => $visitorCookie]);
+    return $st->fetchColumn() !== false;
+}
+
+/**
+ * 確認画面の「はい」が成立するか。**読むだけで、何も書かない**(行も Cookie も作らない)。
+ * 通るのは次のどちらか。
+ *  - 二重送信Cookie の合言葉が合う(幕・agecheck.php を直接開いた新規の訪問者。行が無くてよい)
+ *  - すでに行と Cookie を持つ訪問者(try.php から飛ばされてきた人)が、行に持つ csrf を返してきた
+ * 行を作るのは、これが true のときに呼び出し側が visitor_current() を呼ぶ時点。
+ * 失敗する POST(ボットなど)では行を増やさない。
+ */
+function age_answer_valid($visitorCookie, $tokCookie, $postTok, $postCsrf): bool
+{
+    if (age_tok_check($tokCookie, $postTok)) { return true; }
+    return age_visitor_known($visitorCookie)
+        && csrf_check((string)$visitorCookie, $postCsrf);
+}
