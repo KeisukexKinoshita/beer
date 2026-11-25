@@ -10,8 +10,11 @@ $visitorId = visitor_current();
 
 // "はい" ボタンが押された（CSRF対策：画面を見た人だけが答えられる）
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm'])) {
-    // いちばん先に合言葉を確認。合わなければ画面をもう一度見せ直す
-    if (!csrf_check($visitorId, $_POST['csrf'] ?? null)) {
+    // いちばん先に合言葉を確認。合わなければ画面をもう一度見せ直す。
+    // 合言葉は2通り: この画面のフォーム(visitor の行に持つ csrf)と、
+    // 一覧・詳細ページの幕のフォーム(行を作らずに出すため、二重送信Cookie の tok)
+    $tokOk = age_tok_check($_COOKIE[AGE_TOK_COOKIE] ?? null, $_POST['tok'] ?? null);
+    if (!$tokOk && !csrf_check($visitorId, $_POST['csrf'] ?? null)) {
         // 外部サイトからの POST を防ぐ。正規の利用者が時間を置いて送った場合にも起きるので、
         // エラーにせず、黙ってやり直させる（親切なUI）
         // （年齢確認画面をもう一度出す）
@@ -27,6 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm'])) {
 // "いいえ" の選択
 $declined = $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['declined']);
 
+$ageGate = false;   // この画面そのものなので、幕は重ねない
 $title = '年齢確認';
 $desc  = 'Darth Beer.com は酒類に関する情報を扱っています。20歳以上であることをご確認ください。';
 // ex-wrap / ex-intake / ex-ring / ex-btn などは exposure.css のもの。head.php が読み込む
