@@ -2048,8 +2048,10 @@ golden の差分は、増えた列(`SELECT *` の JSON・ダンプ)と、THANK-N
 - ケース定義(`cases/*.json`)を起点に、あるべきファイルを決める。golden が無ければ MISSING、ケースの無い golden は ORPHAN で失敗。
 - **`scope`(site / legacy)は必須。** 無いケースは SCOPE で失敗(`run_case.sh` も止まる)。書き忘れで旧コード扱いになって例外に載せられるのを防ぐ。
 - **最低ケース数**(`MIN_CASES`: 新サイト71 / 旧コード19)を下回ると TOO-FEW で失敗。ケースと golden を両方消して静かに減らせない。ケースを足したら `MIN_CASES` も上げる。
-- **`run_all.sh` は最初に `tests/out` を消し、全ケースを走り切ったときだけ完了の印(`tests/out/RUN_COMPLETE`: ケース数・HEAD・未コミットのファイル数)を書く。**
-  `compare_golden` は、印が無い・ケース数が合わない・HEAD が違うときに INCOMPLETE で失敗する(途中で落ちたのに古い出力で通る、を防ぐ)。
+- **`run_all.sh` は最初に `tests/out` を消し、全ケースを走り切ったときだけ完了の印(`tests/out/RUN_COMPLETE`: ケース数・HEAD・未コミットのファイル数・作業ツリーの指紋)を書く。**
+  `compare_golden` は、印が無い・ケース数が合わない・HEAD が違う・指紋が違う(run_all のあとにソースを編集した)ときに INCOMPLETE で失敗する。
+  指紋は `tests/runner/fingerprint.sh`(`git diff HEAD` + 未追跡ファイルの一覧と中身のハッシュ。tests/golden・out・sandbox は対象外。git が無い場所では none)。
+  汚れた状態で run_all → compare は通る(試している最中に使える)。`update_golden.sh` も古い出力(印なし・指紋違い)や、出力の無いケースでは、golden を1つも消さずに拒否する。
 - Warning・Notice・Deprecated は、golden と一致していても失敗(NOISE)。旧コードで意図して固定するものだけ `noise:<ID> | 理由` で許す。
   **Fatal・Parse error・非 0 終了は、例外があっても失敗(FATAL)。**
 - `known-failures.txt` は全行に理由が要る(無いと BAD-KNOWN)。**新サイト(scope=site)のケースは載せられない。** 当てはまらなくなった行は STALE で失敗。
@@ -2109,3 +2111,7 @@ golden の差分は、増えた列(`SELECT *` の JSON・ダンプ)と、THANK-N
 - `db/seeds/`(データの投入)は当てない。フィクスチャは合成データで、実データの分布(約4分の3が未評価など)は NULL のケースで代表させている。
 - 写真のアップロード・Anthropic API を呼ぶ経路・LINE 連携は、外部を呼ぶため入れていない。
 - 旧コード 11 件は PHP 8 警告を含んだまま固定している(直していない)。
+- try.php の結果画面(`?u=`)と history.php の記録ありの表示、他人の記録との分離は未検査(アップロード系のフィクスチャが無い。写真の判定は外部 API を呼ぶため)。
+- sitemap.php の https 分岐(`X-Forwarded-Proto` / `HTTPS`)は未検査。golden は http の姿を固定している(本番は https で返るので、`<loc>` の scheme は本番と違う)。
+- `tests/out/RUN_COMPLETE`(完了の印と作業ツリーの指紋)は手で書けば偽造できる。事故防止(古い出力で通る、編集後に run_all を忘れる)が目的で、悪意は防がない。
+- `Max-Age` は日単位に丸めるので、半日未満の変化は見ない(db_vid の寿命の検査は日単位)。

@@ -3,7 +3,7 @@
   "type": "page",
   "scope": "site",
   "page": "agecheck.php",
-  "note": "行のある未確認の訪問者の csrf が違う=成立せず画面を出し直す。行は未確認のまま",
+  "note": "行のある未確認の訪問者が、画面を見て tok の Cookie を受け取ったあとに csrf を間違えて「はい」=成立せず画面を出し直す(tok の hidden は送らない)。行は未確認のまま。Cookie が無いわけではないので「Cookie を有効にしてからお試しください。」は出ない(Cookie なしは -09)",
   "extra_sql": [
     "tests/fixtures/site.sql"
   ],
@@ -14,7 +14,8 @@
       "csrf": "0000000000000000000000000000000000000000000000000000000000000000"
     },
     "cookies": {
-      "db_vid": "fedcba9876543210fedcba9876543210"
+      "db_vid": "fedcba9876543210fedcba9876543210",
+      "db_age_tok": "aaaabbbbccccddddeeeeffff00001111"
     },
     "method": "POST"
   },

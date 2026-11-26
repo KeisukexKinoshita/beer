@@ -1,1 +1,1 @@
-{"get": {}, "post": {"confirm": "yes", "csrf": "0000000000000000000000000000000000000000000000000000000000000000"}, "cookies": {"db_vid": "fedcba9876543210fedcba9876543210"}, "method": "POST"}
+{"get": {}, "post": {"confirm": "yes", "csrf": "0000000000000000000000000000000000000000000000000000000000000000"}, "cookies": {"db_vid": "fedcba9876543210fedcba9876543210", "db_age_tok": "aaaabbbbccccddddeeeeffff00001111"}, "method": "POST"}
