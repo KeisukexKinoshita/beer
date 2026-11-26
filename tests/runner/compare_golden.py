@@ -6,7 +6,8 @@ golden のファイルを数え上げる方式ではなく、ケースから「�
   NOISE              : 実行が Warning / Notice / Deprecated を出した(golden と一致していても失敗。
                        理由つきの "noise:" 例外を除く)
   FATAL              : Fatal / Parse error / 非 0 終了。**例外があっても必ず失敗**
-  INCOMPLETE         : run_all.sh の完了の印(tests/out/RUN_COMPLETE)が無い・ケース数が合わない・HEAD が違う
+  INCOMPLETE         : run_all.sh の完了の印(tests/out/RUN_COMPLETE)が無い・ケース数が合わない・HEAD が違う・
+                       作業ツリーの指紋が違う(run_all のあとに編集した)
   SCOPE              : ケース定義に scope(site / legacy)が無い
   TOO-FEW            : 新サイト・旧コードそれぞれの最低ケース数を下回った(ケースと golden を両方消して静かに減るのを防ぐ)
   STALE              : known-failures / noise 例外にあるのに、もう当てはまらない
@@ -80,6 +81,13 @@ if not mark:
 else:
     if mark.get('cases') != str(len(cases)):
         problems.append(f"INCOMPLETE: 実行したケース数 {mark.get('cases')} がケース定義の数 {len(cases)} と合わない")
+    cur_fp = 'none'
+    try:
+        cur_fp = subprocess.run(['bash', 'tests/runner/fingerprint.sh'], capture_output=True, text=True).stdout.strip() or 'none'
+    except Exception:
+        pass
+    if mark.get('fingerprint', 'none') != cur_fp:
+        problems.append("INCOMPLETE: run_all.sh のあとに作業ツリー(ソース・フィクスチャ・ケース)が変わっている。run_all.sh をやり直す")
     if mark.get('head') != cur_head:
         problems.append(f"INCOMPLETE: 出力を作ったときの HEAD({mark.get('head','?')[:7]})が今の HEAD({cur_head[:7]})と違う。run_all.sh をやり直す")
 
